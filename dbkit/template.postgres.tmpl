@@ -1,0 +1,262 @@
+type {{ .GoLowerTableName }}PostgresDriver struct {
+	db *sql.DB
+}
+
+func (d *{{ .GoLowerTableName }}PostgresDriver) insert(ctx context.Context, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}) (*{{ .StructName }}, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	{{ if .AutoIDColumn }}
+	sql := "insert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values ({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}${{$i | plusone}}{{end}}) returning id"
+	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
+	defer done()
+	var newID int64
+	err := d.db.QueryRowContext(ctx,sql{{range .NonAutoIDColumns}}, {{.GoLowerName}}{{end}}).Scan(&newID)
+	{{else}}
+	sql := "insert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values ({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}${{$i | plusone}}{{end}})"
+	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
+	defer done()
+	_, err := d.db.ExecContext(ctx,sql{{range .NonAutoIDColumns}}, {{.GoLowerName}}{{end}})
+	{{end}}
+	if err != nil {
+		return nil, err
+	}
+
+	return &{{ .StructName }}{
+		driver:      d,
+		{{ if .AutoIDColumn }}
+		{{.AutoIDColumn.GoName}}: newID,
+		load{{.AutoIDColumn.GoName}}: newID,
+		{{ end }}
+		{{ range .NonAutoIDColumns }}{{.GoName}}:      {{.GoLowerName}},
+		{{ end }}
+		{{ range .NonAutoIDColumns }}load{{.GoName}}:      {{.GoLowerName}},
+		{{ end }}
+	}, nil
+}
+
+func (d *{{ .GoLowerTableName }}PostgresDriver) load(ctx context.Context, query string, args ...interface{}) (*{{ .StructName }}, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	sql := "SELECT {{range $i, $c := .Columns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}} from {{ .DBTableName }} where "+query
+	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
+	defer done()
+	rows, err := d.db.QueryContext(ctx,sql, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var item *{{ .StructName }}
+	if rows.Next() {
+		item = &{{ .StructName }}{}
+		if err := d.scan(item, rows); err != nil {
+			return nil, err
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return item, nil
+}
+
+func (d *{{ .GoLowerTableName }}PostgresDriver) delete(ctx context.Context, query string, args ...interface{}) error {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	sql := "delete from {{.DBTableName}} where "+query
+	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
+	defer done()
+
+	_, err := d.db.ExecContext(ctx,sql,args...);
+	return err
+}
+
+func (d *{{ .GoLowerTableName }}PostgresDriver) scan(item *{{ .StructName }}, rows *sql.Rows) error {
+	err := rows.Scan({{range $i, $c := .Columns}}{{if $i}}, {{end}}&item.{{$c.GoName}}{{end}})
+	if err != nil {
+		return err
+	}
+	item.driver = d
+	{{ range .Columns }}item.load{{.GoName}} = item.{{.GoName}}
+	{{ end }}
+	return nil
+}
+
+func (d *{{ .GoLowerTableName }}PostgresDriver) save(ctx context.Context, item *{{ .StructName }}) error {
+	var sb bytes.Buffer
+	sb.WriteString("update {{ .DBTableName }} set ")
+	args := make([]interface{}, 0, {{ .Columns | len }} )
+
+	{{ range .Columns }}
+	if {{changed . "item." "item.load"}} { 
+		if len(args) != 0 {
+			sb.WriteString(", ")
+		}
+		args = append(args, item.{{.GoName}})
+		sb.WriteString("{{.DBName}}=$")
+		sb.WriteString(strconv.FormatInt(int64(len(args)), 10))
+	}
+	{{ end }}
+
+	// nothing changed!
+	if len(args) == 0 {
+		return nil
+	}
+
+	// where clause
+	sb.WriteString(" where ")
+	{{ range .PrimaryIndex.Columns }}
+	args = append(args, item.{{.GoName}})
+	sb.WriteString(" {{.DBName}}=$")
+	sb.WriteString(strconv.FormatInt(int64(len(args)), 10))
+	{{ end }}
+
+	// execute
+	sql := sb.String()
+	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
+	defer done()
+
+	if _, err := d.db.Exec(sql, args...); err != nil {
+		return err
+	}
+
+	// reset load variables.
+	{{ range .Columns }}item.load{{.GoName}} = item.{{.GoName}}
+	{{ end }}
+
+	return nil
+}
+
+func (d *{{ .GoLowerTableName }}PostgresDriver) queryFirst(ctx context.Context, query *{{ .StructName }}Query) (*{{ .StructName }}, error) {
+	sql := d.querySQL(query)
+	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
+	defer done()
+	rows, err := d.db.Query(sql, query.args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var item *{{ .StructName }}
+	if rows.Next() {
+		item = &{{ .StructName }}{}
+		if err := d.scan(item, rows); err != nil {
+			return nil, err
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return item, nil
+}
+
+func (d *{{ .GoLowerTableName }}PostgresDriver) querySlice(ctx context.Context, query *{{ .StructName }}Query, expectedSliceSize int) ([]*{{ .StructName }}, error) {
+	sql := d.querySQL(query)
+	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
+	defer done()
+
+	rows, err := d.db.Query(sql, query.args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make([]*{{ .StructName }}, 0, expectedSliceSize)
+	for rows.Next() {
+		item := &{{ .StructName }}{}
+		if err := d.scan(item, rows); err != nil {
+			return nil, err
+		}
+		result = append(result, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (d *{{ .GoLowerTableName }}PostgresDriver) queryEach(ctx context.Context, query *{{ .StructName }}Query, reuseItem bool, action func(*{{ .StructName }}) error) error {
+	sql := d.querySQL(query)
+	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
+	defer done()
+
+	rows, err := d.db.Query(sql, query.args...)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	var item *{{ .StructName }}
+	for rows.Next() {
+		if item == nil || !reuseItem {
+			item = &{{ .StructName }}{}
+		}
+
+		if err := d.scan(item, rows); err != nil {
+			return err
+		}
+
+		if err := action(item); err != nil {
+			return err
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d *{{ .GoLowerTableName }}PostgresDriver) querySQL(query *{{ .StructName }}Query) string {
+	var sb bytes.Buffer
+
+	sb.WriteString("Select {{range $i, $c := .Columns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}} from {{ .DBTableName }}")
+
+	if query.whereQuery != "" {
+		sb.WriteString(" WHERE ")
+		sb.WriteString(query.whereQuery)
+	}
+	if len(query.orderColumns) > 0 {
+		sb.WriteString(" ORDER BY ")
+		for i, col := range query.orderColumns {
+			if i > 0 {
+				sb.WriteString(", ")
+			}
+			sb.WriteString(col)
+			if query.orderDirection[i] == 1 {
+				sb.WriteString(" ASC")
+			}else{
+				sb.WriteString(" DESC")
+			}
+		}
+
+	}
+	if query.limit > 0 {
+		sb.WriteString(" LIMIT ")
+		sb.WriteString(strconv.FormatInt(int64(query.limit), 10))
+	}
+
+	return sb.String()
+}
+
+{{ range .IndexCombinations }}
+func (d *{{ .Table.GoLowerTableName }}PostgresDriver) loadBy{{.Name}}(ctx context.Context, {{.FuncArgs}}) (*{{ .Table.StructName }}, error) {
+	return d.load(ctx,"{{range $i, $c := .Columns}}{{if $i}} and {{end}}{{$c.DBName}}=${{$i | plusone}}{{end}}", {{.CallArgs}})
+}
+
+func (d *{{ .Table.GoLowerTableName }}PostgresDriver) findBy{{.Name}}({{.FuncArgs}}) *{{ .Table.StructName }}Query {
+	q :=&{{ .Table.StructName }}Query{driver: d}
+	q.Where("{{range $i, $c := .Columns}}{{if $i}} and {{end}}{{$c.DBName}}=${{$i | plusone}}{{end}}", {{.CallArgs}})
+	return q
+}
+
+func (d *{{ .Table.GoLowerTableName }}PostgresDriver) deleteBy{{.Name}}(ctx context.Context, {{.FuncArgs}}) error {
+	return d.delete(ctx,"{{range $i, $c := .Columns}}{{if $i}} and {{end}}{{$c.DBName}}=${{$i | plusone}}{{end}}", {{.CallArgs}})
+}
+{{end}}

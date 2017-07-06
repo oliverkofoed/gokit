@@ -1,0 +1,11 @@
+
+currently doesn't deal well with this case
+
+	context
+		child1
+		child2
+
+and then context is cancelled. The child1 and child2 should die at that point too.
+
+todo: benchmark if it's smarter to use *Event instead of Event (benchmark)
+todo: add a EventsOutput ([]Event) so implementaitons can take a lock once (if they wanna)

@@ -1,0 +1,91 @@
+type cassandraBatch struct {
+	db *gocql.Session
+	cqlBatch *gocql.Batch 
+	saveObjects []loadVarResetable
+}
+
+func (b *cassandraBatch) String() string{
+	var buf bytes.Buffer 
+	for i, stmt := range b.cqlBatch.Entries {
+		if i > 0{
+			buf.WriteString(";\n")
+		}
+		cqlString(&buf, stmt.Stmt, stmt.Args)
+	}
+	return buf.String()
+}
+
+func (b *cassandraBatch) Execute(ctx context.Context) error {
+	if len(b.cqlBatch.Entries)>0 {
+		ctx, done := logkit.Operation(ctx,"cassandra.cql", logkit.Stringer("cql",b))
+		defer done()
+		b.cqlBatch.DefaultTimestamp(true)
+		if err := b.db.ExecuteBatch(b.cqlBatch); err != nil {
+			return logkit.Error(ctx, "CQL Error",logkit.Err(err), logkit.Stringer("cql",b))
+		}
+		for _, obj := range b.saveObjects {
+			obj.resetLoadVars()
+		}
+	}
+	return nil
+}
+
+{{range $.Schema.Tables}}
+func (b *cassandraBatch) Save{{.StructName}}({{.LowerStructName}} *{{.StructName}}){
+	cql, args := getSave{{.StructName}}CQL({{.LowerStructName}})
+	if cql != "" {
+		b.cqlBatch.Query(cql, args...)
+		b.saveObjects = append(b.saveObjects, {{.LowerStructName}})
+	}
+}
+
+func (b *cassandraBatch) Insert{{.StructName}}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}){
+	b.cqlBatch.Query("insert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values ({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}?{{end}})"{{range $i, $v :=.NonAutoIDColumns}}, {{$v.GoLowerName}}{{end}})
+}
+{{ range .IndexCombinations }}
+func (b *cassandraBatch) Delete{{.Table.StructName}}By{{.Name}}({{.FuncArgs}}) {
+	b.cqlBatch.Query("delete from {{.Table.DBTableName}} where {{range $i, $c := .Columns}}{{if $i}} and {{end}}{{$c.DBName}}=?{{end}}", {{.CallArgs}})
+}
+{{end}}{{end}}
+
+type cqlStringer struct {
+	cql string
+	args []interface{}
+}
+
+func (c cqlStringer) String() string {
+	b := bytes.NewBuffer(nil)
+	cqlString(b, c.cql, c.args)
+	return b.String()
+}
+
+func cqlString(b *bytes.Buffer, cql string, args []interface{}) {
+	i := 0
+	for _, r := range cql {
+		if r == '?' {
+			arg := args[i]
+			i++
+			if s, ok := arg.(string); ok {
+				b.WriteString(s)
+			} else if s, ok := arg.(fmt.Stringer); ok {
+				b.WriteString(s.String())
+			} else if arr, ok := arg.([]byte); ok {
+				b.WriteString("0x")
+				b.WriteString(hex.EncodeToString(arr))
+			} else if arr, ok := arg.([][]byte); ok {
+				b.WriteString("[")
+				for i,val := range arr {
+					if i > 0{
+						b.WriteString(",")
+					}
+					b.WriteString(hex.EncodeToString(val))
+				}
+				b.WriteString("]")
+			} else {
+				fmt.Fprintf(b, "%v", arg)
+			}
+		} else {
+			b.WriteRune(r)
+		}
+	}
+}

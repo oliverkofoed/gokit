@@ -1,0 +1,73 @@
+package {{.Schema.PackageName}}
+
+{{.Imports}}
+
+// DB is the main access point to the database
+type DB struct {
+	newBatch func() Batch
+{{range .Schema.Tables}}	{{.GoTableName}} {{.GoTableName}}Table
+{{end}}}
+
+// NewDB creates a new DB pointer to access a database
+func NewDB(driverName, dataSourceName string) (*DB, error) {
+	switch(driverName){
+	{{range $generator := .Generators }}
+		{{ if (eq $generator "cassandra") }} 
+		case "cassandra":
+			u, err := url.Parse(dataSourceName)
+			if err != nil {
+				return nil, err
+			}
+			cluster := gocql.NewCluster(u.Host)
+			if u.Query().Get("DisableInitialHostLookup") == "true" {
+				cluster.DisableInitialHostLookup = true
+			}
+			if u.Query().Get("IgnorePeerAddr") == "true" {
+				cluster.IgnorePeerAddr = true
+			}
+			cluster.Keyspace = u.Path[1:]
+
+			db, err := cluster.CreateSession()
+			if err != nil {
+				return nil, err
+			}
+
+			return &DB{
+				newBatch:func() Batch{return &cassandraBatch{db:db, cqlBatch: gocql.NewBatch(gocql.LoggedBatch)}},
+			{{range $.Schema.Tables}}	{{.GoTableName}}: {{.GoTableName}}Table{driver: &{{.GoLowerTableName}}CassandraDriver{db: db}},
+			{{end}}}, nil
+		{{else}}
+		case "postgres":
+			db, err := sql.Open(driverName, dataSourceName)
+			if err != nil {
+				return nil, err
+			}
+
+			return &DB{
+			{{range $.Schema.Tables}}	{{.GoTableName}}: {{.GoTableName}}Table{driver: &{{.GoLowerTableName}}PostgresDriver{db: db}},
+			{{end}}}, nil
+			{{end}}
+	{{end}}
+		default:
+			return nil, errors.New("unknown database driver: " + driverName)
+	}
+
+}
+
+type Batch interface {
+	String() string
+	Execute(ctx context.Context) error
+	{{range .Schema.Tables}}
+	Insert{{.StructName}}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}) {{ range .IndexCombinations }}
+	Delete{{.Table.StructName}}By{{.Name}}({{.FuncArgs}}){{end}}
+	Save{{.StructName}}({{.LowerStructName}} *{{.StructName}}){{end}}
+
+}
+
+func (db *DB) NewBatch() Batch{
+	return db.newBatch()
+}
+
+type loadVarResetable interface{
+	resetLoadVars()
+}

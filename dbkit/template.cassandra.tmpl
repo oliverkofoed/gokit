@@ -1,0 +1,268 @@
+type {{ .GoLowerTableName }}CassandraDriver struct {
+	db *gocql.Session
+}
+
+func (d *{{ .GoLowerTableName }}CassandraDriver) insert(ctx context.Context, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}) (*{{ .StructName }}, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	{{ if .AutoIDColumn }}
+	panic("AutoID Columns not implemented yet in Cassandra")
+	//sql := "insert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values ({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}${{$i | plusone}}{{end}}) returning id"
+	//ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
+	//defer done()
+	//var newID int64
+	//err := d.db.QueryRowContext(ctx,sql{{range .NonAutoIDColumns}}, {{.GoLowerName}}{{end}}).Scan(&newID)
+	{{else}}
+	cql := "insert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values ({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}?{{end}})"
+	args := []interface{}{ {{range $i, $v :=.NonAutoIDColumns}}{{if ne $i 0}},{{end}} {{$v.GoLowerName}}{{end}} }
+	ctx, done := logkit.Operation(ctx,"cassandra.cql", logkit.Stringer("cql",cqlStringer{cql:cql, args:args}))
+	defer done()
+
+	err := d.db.Query(cql, args...).Exec()
+	{{end}}
+	if err != nil {
+		return nil, logkit.Error(ctx, "CQL Error", logkit.Stringer("cql",cqlStringer{cql:cql, args:args}), logkit.Err(err))
+	}
+
+	return &{{ .StructName }}{
+		driver:      d,
+		{{ if .AutoIDColumn }}
+		{{.AutoIDColumn.GoName}}: newID,
+		load{{.AutoIDColumn.GoName}}: newID,
+		{{ end }}
+		{{ range .NonAutoIDColumns }}{{.GoName}}:      {{.GoLowerName}},
+		{{ end }}
+		{{ range .NonAutoIDColumns }}load{{.GoName}}:      {{.GoLowerName}},
+		{{ end }}
+	}, nil
+	return nil, nil
+}
+
+func (d *{{ .GoLowerTableName }}CassandraDriver) load(ctx context.Context, query string, args ...interface{}) (*{{ .StructName }}, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	cql := "SELECT {{range $i, $c := .Columns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}} from {{ .DBTableName }} where "+query
+	ctx, done := logkit.Operation(ctx,"cassandra.cql", logkit.Stringer("cql",cqlStringer{cql:cql, args:args}))
+	defer done()
+
+	item := &{{ .StructName }}{}
+	if err := d.db.Query(cql, args...).Scan({{range $i, $c := .Columns}}{{if $i}}, {{end}}&item.{{$c.GoName}}{{end}}); err != nil {
+		if err == gocql.ErrNotFound {
+			return nil, nil
+		}
+		return nil, logkit.Error(ctx, "CQL Error", logkit.Stringer("cql",cqlStringer{cql:cql, args:args}), logkit.Err(err))
+	}
+	item.driver = d
+	{{ range .Columns }}item.load{{.GoName}} = item.{{.GoName}}
+	{{ end }}
+	return item, nil
+}
+
+func (d *{{ .GoLowerTableName }}CassandraDriver) delete(ctx context.Context, query string, args ...interface{}) error {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	cql := "delete from {{.DBTableName}} where "+query
+	ctx, done := logkit.Operation(ctx,"cassandra.cql", logkit.Stringer("cql",cqlStringer{cql:cql, args:args}))
+	defer done()
+
+	if err := d.db.Query(cql, args...).Exec(); err != nil {
+		return logkit.Error(ctx, "CQL Error", logkit.Stringer("cql",cqlStringer{cql:cql, args:args}), logkit.Err(err))
+	}
+	return nil
+}
+
+
+func cassandraScan{{.StructName}}(d *{{.GoLowerTableName}}CassandraDriver, iter *gocql.Iter, item *{{ .StructName }}) bool {
+	result := iter.Scan({{range $i, $c := .Columns}}{{if $i}}, {{end}}&item.{{$c.GoName}}{{end}})
+	item.driver = d
+	{{ range .Columns }}item.load{{.GoName}} = item.{{.GoName}}
+	{{ end }}
+	return result
+	/*err := rows.Scan()
+	if err != nil {
+		return err
+	}
+	return nil
+	return nil
+	*/
+}
+
+func (d *{{ .GoLowerTableName }}CassandraDriver) save(ctx context.Context, item *{{ .StructName }}) error {
+	cql, args := getSave{{.StructName}}CQL(item)
+	
+	// nothings changed
+	if cql == "" {
+		return nil
+	}
+
+	// execute
+	ctx, done := logkit.Operation(ctx,"cassandra.cql", logkit.Stringer("cql",cqlStringer{cql:cql, args:args}))
+	defer done()
+
+	if err := d.db.Query(cql, args...).Exec(); err != nil {
+		return logkit.Error(ctx, "CQL Error", logkit.Stringer("cql",cqlStringer{cql:cql, args:args}), logkit.Err(err))
+	}
+
+	// reset load variables.
+	item.resetLoadVars()
+	return nil
+}
+
+func getSave{{.StructName}}CQL(item *{{ .StructName }}) (string, []interface{}) {
+	var sb bytes.Buffer
+	sb.WriteString("update {{ .DBTableName }} set ")
+	args := make([]interface{}, 0, {{ .Columns | len }} )
+
+	{{ range .Columns }}
+	if {{changed . "item." "item.load"}} { 
+		if len(args) != 0 {
+			sb.WriteString(", ")
+		}
+		args = append(args, item.{{.GoName}})
+		sb.WriteString("{{.DBName}}=?")
+		//sb.WriteString(strconv.FormatInt(int64(len(args)), 10))
+	}
+	{{ end }}
+
+	if len(args) == 0 {
+		return "", args
+	}
+
+	// where clause
+	sb.WriteString(" where {{ range $i, $c := .PrimaryIndex.Columns }}{{if gt $i 0}}  and {{end}} {{$c.DBName}}=?{{ end }}")
+	{{ range $i, $c := .PrimaryIndex.Columns }}
+	args = append(args, item.{{$c.GoName}}){{ end }}
+
+	return sb.String(), args
+}
+
+func (i *{{.StructName}}) resetLoadVars(){
+	{{ range .Columns }}i.load{{.GoName}} = i.{{.GoName}}
+	{{ end }}
+}
+
+func (d *{{ .GoLowerTableName }}CassandraDriver) queryFirst(ctx context.Context, query *{{ .StructName }}Query) (*{{ .StructName }}, error) {
+	cql := d.queryCQL(query)
+	ctx, done := logkit.Operation(ctx,"cassandra.cql", logkit.Stringer("cql",cqlStringer{cql:cql, args:query.args}))
+	defer done()
+
+	item := &{{ .StructName }}{}
+	if err := d.db.Query(cql, query.args...).Scan({{range $i, $c := .Columns}}{{if $i}}, {{end}}&item.{{$c.GoName}}{{end}}); err != nil {
+		if err == gocql.ErrNotFound {
+			return nil, nil
+		}
+		return nil, logkit.Error(ctx, "CQL Error", logkit.Stringer("cql",cqlStringer{cql:cql, args:query.args}), logkit.Err(err))
+	}
+	item.driver = d
+	{{ range .Columns }}item.load{{.GoName}} = item.{{.GoName}}
+	{{ end }}
+	return item, nil
+}
+
+func (d *{{ .GoLowerTableName }}CassandraDriver) querySlice(ctx context.Context, query *{{ .StructName }}Query, expectedSliceSize int) ([]*{{ .StructName }}, error) {
+	cql := d.queryCQL(query)
+	ctx, done := logkit.Operation(ctx,"cassandra.cql", logkit.Stringer("cql",cqlStringer{cql:cql, args:query.args}))
+	defer done()
+
+	iter := d.db.Query(cql, query.args...).Iter()
+	result := make([]*{{ .StructName }}, 0, expectedSliceSize)
+	for {
+		item := &{{ .StructName }}{}
+		if iter.Scan({{range $i, $c := .Columns}}{{if $i}}, {{end}}&item.{{$c.GoName}}{{end}}) {
+			item.driver = d
+			{{ range .Columns }}item.load{{.GoName}} = item.{{.GoName}}
+			{{ end }}
+			result = append(result, item)
+		}else{
+			break
+		}
+	}
+	if err := iter.Close(); err != nil {
+		return nil, logkit.Error(ctx, "CQL Error", logkit.Stringer("cql",cqlStringer{cql:cql, args:query.args}), logkit.Err(err))
+	}
+	return result, nil
+}
+
+func (d *{{ .GoLowerTableName }}CassandraDriver) queryEach(ctx context.Context, query *{{ .StructName }}Query, reuseItem bool, action func(*{{ .StructName }}) error) error {
+	cql := d.queryCQL(query)
+	ctx, done := logkit.Operation(ctx,"cassandra.cql", logkit.Stringer("cql",cqlStringer{cql:cql, args:query.args}))
+	defer done()
+
+	iter := d.db.Query(cql, query.args...).Iter()
+	var item *{{ .StructName }}
+	for {
+		if item == nil || !reuseItem {
+			item = &{{ .StructName }}{}
+			item.driver = d
+		}
+
+		if iter.Scan({{range $i, $c := .Columns}}{{if $i}}, {{end}}&item.{{$c.GoName}}{{end}}) {
+			{{ range .Columns }}item.load{{.GoName}} = item.{{.GoName}}
+			{{ end }}
+			if err := action(item); err != nil {
+				iter.Close(); 
+				return err
+			}
+		}else{
+			break
+		}
+
+	}
+	if err := iter.Close(); err != nil {
+		return  logkit.Error(ctx, "CQL Error", logkit.Stringer("cql",cqlStringer{cql:cql, args:query.args}), logkit.Err(err))
+	}
+
+	return nil
+}
+
+func (d *{{ .GoLowerTableName }}CassandraDriver) queryCQL(query *{{ .StructName }}Query) string {
+	var sb bytes.Buffer
+
+	sb.WriteString("Select {{range $i, $c := .Columns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}} from {{ .DBTableName }}")
+
+	if query.whereQuery != "" {
+		sb.WriteString(" WHERE ")
+		sb.WriteString(query.whereQuery)
+	}
+	if len(query.orderColumns) > 0 {
+		sb.WriteString(" ORDER BY ")
+		for i, col := range query.orderColumns {
+			if i > 0 {
+				sb.WriteString(", ")
+			}
+			sb.WriteString(col)
+			if query.orderDirection[i] == 1 {
+				sb.WriteString(" ASC")
+			}else{
+				sb.WriteString(" DESC")
+			}
+		}
+
+	}
+	if query.limit > 0 {
+		sb.WriteString(" LIMIT ")
+		sb.WriteString(strconv.FormatInt(int64(query.limit), 10))
+	}
+
+	return sb.String()
+}
+
+{{ range .IndexCombinations }}
+func (d *{{ .Table.GoLowerTableName }}CassandraDriver) loadBy{{.Name}}(ctx context.Context, {{.FuncArgs}}) (*{{ .Table.StructName }}, error) {
+	return d.load(ctx,"{{range $i, $c := .Columns}}{{if $i}} and {{end}}{{$c.DBName}}=?{{end}}", {{.CallArgs}})
+}
+
+func (d *{{ .Table.GoLowerTableName }}CassandraDriver) findBy{{.Name}}({{.FuncArgs}}) *{{ .Table.StructName }}Query {
+	q :=&{{ .Table.StructName }}Query{driver: d}
+	q.Where("{{range $i, $c := .Columns}}{{if $i}} and {{end}}{{$c.DBName}}=?{{end}}", {{.CallArgs}})
+	return q
+}
+
+func (d *{{ .Table.GoLowerTableName }}CassandraDriver) deleteBy{{.Name}}(ctx context.Context, {{.FuncArgs}}) error {
+	return d.delete(ctx,"{{range $i, $c := .Columns}}{{if $i}} and {{end}}{{$c.DBName}}=?{{end}}", {{.CallArgs}})
+}
+{{end}}

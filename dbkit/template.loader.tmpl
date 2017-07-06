@@ -1,0 +1,51 @@
+func (db *DB) NewLoader() *Loader {
+	return &Loader{db: db}
+}
+
+// Loader makes it easy to load multiple values from multiple tables in one go
+type Loader struct {
+	db *DB
+{{range .Tables}}	ids{{.StructName}} map[{{.PrimaryIndex.LoaderKeyGoType}}]bool
+{{end}}{{range .Tables}}	values{{.StructName}} map[{{.PrimaryIndex.LoaderKeyGoType}}]*{{.StructName}}
+{{end}}}
+{{range .Tables}}{{if ne (len .PrimaryIndex.Columns) 1}}
+type loaderKey{{.StructName}} struct{
+{{range .PrimaryIndex.Columns}}	{{.GoLowerName}} {{if eq .GoType "[]byte"}}string{{else}}{{.GoType}}{{end}} 
+{{end}}}
+{{end}}{{end}}{{range .Tables}}
+func (l *Loader) Add{{.StructName}}({{.LowerStructName}} *{{.StructName}}) {
+	if l.values{{.StructName}} == nil {
+		l.values{{.StructName}} = make(map[{{.PrimaryIndex.LoaderKeyGoType}}]*{{.StructName}})
+	}
+	l.values{{.StructName}}[{{(.PrimaryIndex.LoaderKeyFromStruct .LowerStructName)}}] = {{.LowerStructName}}
+}
+
+func (l *Loader) Mark{{.StructName}}ForLoad({{.PrimaryIndex.LoaderKeyFuncArgs}}) {
+	if l.ids{{.StructName}} == nil {
+		l.ids{{.StructName}} = make(map[{{.PrimaryIndex.LoaderKeyGoType}}]bool)
+	}
+	l.ids{{.StructName}}[{{.PrimaryIndex.LoaderKeyFuncValue}}] = true
+}
+
+func (l *Loader) Get{{.StructName}}({{.PrimaryIndex.LoaderKeyFuncArgs}}) *{{.StructName}} {
+	return l.values{{.StructName}}[{{.PrimaryIndex.LoaderKeyFuncValue}}]
+}
+{{end}}
+func (l *Loader) Load(ctx context.Context) error { {{range .Tables}}
+	if len(l.ids{{.StructName}})>0 {
+		if l.values{{.StructName}} == nil {
+			l.values{{.StructName}} = make(map[{{.PrimaryIndex.LoaderKeyGoType}}]*{{.StructName}})
+		}
+		for id := range l.ids{{.StructName}} {
+			v, err := l.db.{{.GoTableName}}.LoadBy{{.PrimaryIndex.LoaderKeyUnpack "id"}}
+			if err != nil {
+				return err
+			}
+			if v != nil {
+				l.values{{.StructName}}[{{(.PrimaryIndex.LoaderKeyFromStruct "v")}}] = v
+			}
+		}
+	}
+{{end}}
+	return nil
+}

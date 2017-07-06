@@ -1,0 +1,24 @@
+type postgresBatch struct {
+}
+
+func (b *postgresBatch) String() string{
+	panic("not implemented")
+}
+
+func (b *postgresBatch) Execute(ctx context.Context) error {
+	panic("not implemented")
+}
+
+{{range $.Schema.Tables}}
+func (b *postgresBatch) Save{{.StructName}}({{.LowerStructName}} *{{.StructName}}){
+	panic("not implemented")
+}
+
+func (b *postgresBatch) Insert{{.StructName}}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}){
+	panic("not implemented")
+}
+{{ range .IndexCombinations }}
+func (b *postgresBatch) Delete{{.Table.StructName}}By{{.Name}}({{.FuncArgs}}) {
+	panic("not implemented")
+}
+{{end}}{{end}}
