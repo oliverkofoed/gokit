@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"crypto/sha1"
+	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -215,6 +216,7 @@ func (f *Assets) Serve(url string, w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", file.ContentType)
+	w.Header().Set("Cache-Control", "public, max-age=31556926")
 	w.Header().Set("Expires", time.Now().AddDate(1, 0, 0).Format(http.TimeFormat))
 
 	if r != nil && strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
@@ -325,6 +327,12 @@ func replaceProcessor(assets *Assets, path string, content []byte, regex *regexp
 		//fmt.Println("Match: " + string(match))
 		file := string(match)[len(prefix) : len(match)-len(postfix)]
 
+		inlineBase64 := false
+		if strings.HasPrefix(file, "base64:") {
+			file = file[7:]
+			inlineBase64 = true
+		}
+
 		// root the path
 		rootedPath, err := assets.getRooted(path, strings.TrimSpace(file))
 		if err != nil {
@@ -333,8 +341,7 @@ func replaceProcessor(assets *Assets, path string, content []byte, regex *regexp
 		}
 
 		// inline base64 support
-		/*base64encode := rootedPath == "/images/sprite.png"
-		if base64encode {
+		if inlineBase64 {
 			f, err := assets.Get(rootedPath)
 			if err != nil {
 				replaceErr = err
@@ -346,7 +353,7 @@ func replaceProcessor(assets *Assets, path string, content []byte, regex *regexp
 			buf.WriteString(";base64,")
 			buf.WriteString(base64.StdEncoding.EncodeToString(f.Content))
 			return buf.Bytes()
-		}*/
+		}
 
 		// get the url from asset system
 		url, err := assets.GetUrl(rootedPath)
