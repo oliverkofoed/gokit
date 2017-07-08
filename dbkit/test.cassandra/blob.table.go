@@ -159,12 +159,24 @@ type blobsCassandraDriver struct {
 }
 
 func (d *blobsCassandraDriver) insert(ctx context.Context, id []byte, _type int32, data []byte) (*Blob, error) {
+	return d.insertTTL(ctx, 0, id, _type, data)
+}
+
+// InsertTTL creates a record in the Cassandra Blobs table with the given TTL value
+func (t BlobsTable) InsertTTL(ctx context.Context, ttl int64, id []byte, _type int32, data []byte) (*Blob, error) {
+	return t.driver.(*blobsCassandraDriver).insertTTL(ctx, ttl, id, _type, data)
+}
+
+func (d *blobsCassandraDriver) insertTTL(ctx context.Context, ttl int64, id []byte, _type int32, data []byte) (*Blob, error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
 	
 	cql := "insert into Blobs(id, type, data) values (?, ?, ?)"
+	if ttl > 0 {
+		cql += " USING TTL " + strconv.FormatInt(ttl, 10)
+	}
 	args := []interface{}{  id, _type, data }
 	ctx, done := logkit.Operation(ctx,"cassandra.cql", logkit.Stringer("cql",cqlStringer{cql:cql, args:args}))
 	defer done()

@@ -3,19 +3,26 @@ type {{ .GoLowerTableName }}CassandraDriver struct {
 }
 
 func (d *{{ .GoLowerTableName }}CassandraDriver) insert(ctx context.Context, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}) (*{{ .StructName }}, error) {
+	return d.insertTTL(ctx, 0, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}}{{end}})
+}
+
+// InsertTTL creates a record in the Cassandra {{ .GoTableName }} table with the given TTL value
+func (t {{ .GoTableName }}Table) InsertTTL(ctx context.Context, ttl int64, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}) (*{{ .StructName }}, error) {
+	return t.driver.(*{{ .GoLowerTableName }}CassandraDriver).insertTTL(ctx, ttl, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}}{{end}})
+}
+
+func (d *{{ .GoLowerTableName }}CassandraDriver) insertTTL(ctx context.Context, ttl int64, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}) (*{{ .StructName }}, error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
 	{{ if .AutoIDColumn }}
 	panic("AutoID Columns not implemented yet in Cassandra")
-	//sql := "insert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values ({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}${{$i | plusone}}{{end}}) returning id"
-	//ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
-	//defer done()
-	//var newID int64
-	//err := d.db.QueryRowContext(ctx,sql{{range .NonAutoIDColumns}}, {{.GoLowerName}}{{end}}).Scan(&newID)
 	{{else}}
 	cql := "insert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values ({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}?{{end}})"
+	if ttl > 0 {
+		cql += " USING TTL " + strconv.FormatInt(ttl, 10)
+	}
 	args := []interface{}{ {{range $i, $v :=.NonAutoIDColumns}}{{if ne $i 0}},{{end}} {{$v.GoLowerName}}{{end}} }
 	ctx, done := logkit.Operation(ctx,"cassandra.cql", logkit.Stringer("cql",cqlStringer{cql:cql, args:args}))
 	defer done()

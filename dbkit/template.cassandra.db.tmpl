@@ -42,6 +42,11 @@ func (b *cassandraBatch) Save{{.StructName}}({{.LowerStructName}} *{{.StructName
 func (b *cassandraBatch) Insert{{.StructName}}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}){
 	b.cqlBatch.Query("insert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values ({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}?{{end}})"{{range $i, $v :=.NonAutoIDColumns}}, {{$v.GoLowerName}}{{end}})
 }
+
+func (b *cassandraBatch) Insert{{.StructName}}TTL(ttl int64, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}){
+	b.cqlBatch.Query("insert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values ({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}?{{end}}) USING TTL ?"{{range $i, $v :=.NonAutoIDColumns}}, {{$v.GoLowerName}}{{end}}, ttl)
+}
+
 {{ range .IndexCombinations }}
 func (b *cassandraBatch) Delete{{.Table.StructName}}By{{.Name}}({{.FuncArgs}}) {
 	b.cqlBatch.Query("delete from {{.Table.DBTableName}} where {{range $i, $c := .Columns}}{{if $i}} and {{end}}{{$c.DBName}}=?{{end}}", {{.CallArgs}})

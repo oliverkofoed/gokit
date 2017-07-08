@@ -57,10 +57,13 @@ func NewDB(driverName, dataSourceName string) (*DB, error) {
 type Batch interface {
 	String() string
 	Execute(ctx context.Context) error
-	{{range .Schema.Tables}}
-	Insert{{.StructName}}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}) {{ range .IndexCombinations }}
+	{{range $_, $t := .Schema.Tables}}
+	{{range $_, $n := $.Generators}}{{if eq $n "cassandra"}}
+	Insert{{$t.StructName}}TTL(ttl int64, {{range $i, $c := $t.NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}})
+	{{end}}{{end}}
+	Insert{{$t.StructName}}({{range $i, $c := $t.NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}) {{ range .IndexCombinations }}
 	Delete{{.Table.StructName}}By{{.Name}}({{.FuncArgs}}){{end}}
-	Save{{.StructName}}({{.LowerStructName}} *{{.StructName}}){{end}}
+	Save{{$t.StructName}}({{$t.LowerStructName}} *{{$t.StructName}}){{end}}
 
 }
 

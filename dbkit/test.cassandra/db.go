@@ -57,6 +57,9 @@ type Batch interface {
 	String() string
 	Execute(ctx context.Context) error
 	
+	
+	InsertBlobTTL(ttl int64, id []byte, _type int32, data []byte)
+	
 	InsertBlob(id []byte, _type int32, data []byte) 
 	DeleteBlobByID(id []byte)
 	DeleteBlobByIDAndType(id []byte, _type int32)
@@ -167,6 +170,11 @@ func (b *cassandraBatch) SaveBlob(blob *Blob){
 func (b *cassandraBatch) InsertBlob(id []byte, _type int32, data []byte){
 	b.cqlBatch.Query("insert into Blobs(id, type, data) values (?, ?, ?)", id, _type, data)
 }
+
+func (b *cassandraBatch) InsertBlobTTL(ttl int64, id []byte, _type int32, data []byte){
+	b.cqlBatch.Query("insert into Blobs(id, type, data) values (?, ?, ?) USING TTL ?", id, _type, data, ttl)
+}
+
 
 func (b *cassandraBatch) DeleteBlobByID(id []byte) {
 	b.cqlBatch.Query("delete from Blobs where id=?", id)
