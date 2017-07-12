@@ -99,17 +99,7 @@ func (s *Site) AddRoute(route Route) {
 }
 
 func (s *Site) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	defer func() {
-		if err := recover(); err != nil {
-			fmt.Println(err, string(debug.Stack()))
-			if s.ServerError.Action != nil {
-				w.WriteHeader(500)
-				s.runRoute(&s.ServerError, w, req, make(httprouter.Params, 0, 0), true)
-			} else {
-				http.Error(w, fmt.Sprintf("%v", err), 500)
-			}
-		}
-	}()
+
 	path := req.URL.Path
 	handle, params, trailingSlashRedirect := s.router.Lookup("GET", path)
 
@@ -154,7 +144,17 @@ func (s *Site) runRoute(route *Route, w http.ResponseWriter, req *http.Request, 
 			w = &compressorResponseWriter{Writer: compressor, ResponseWriter: w, hasContentType: false}
 		}
 	}
-
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err, string(debug.Stack()))
+			if s.ServerError.Action != nil {
+				w.WriteHeader(500)
+				s.runRoute(&s.ServerError, w, req, make(httprouter.Params, 0, 0), true)
+			} else {
+				http.Error(w, fmt.Sprintf("%v", err), 500)
+			}
+		}
+	}()
 	var ctx *logkit.Context
 	var done func()
 	if s.BufferedEventsFilter != nil {
