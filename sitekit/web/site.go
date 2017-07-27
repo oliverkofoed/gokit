@@ -9,6 +9,8 @@ import (
 
 	"runtime/debug"
 
+	"bytes"
+
 	"github.com/julienschmidt/httprouter"
 	"github.com/oliverkofoed/gokit/logkit"
 )
@@ -144,17 +146,6 @@ func (s *Site) runRoute(route *Route, w http.ResponseWriter, req *http.Request, 
 			w = &compressorResponseWriter{Writer: compressor, ResponseWriter: w, hasContentType: false}
 		}
 	}
-	defer func() {
-		if err := recover(); err != nil {
-			fmt.Println(err, string(debug.Stack()))
-			if s.ServerError.Action != nil {
-				w.WriteHeader(500)
-				s.runRoute(&s.ServerError, w, req, make(httprouter.Params, 0, 0), true)
-			} else {
-				http.Error(w, fmt.Sprintf("%v", err), 500)
-			}
-		}
-	}()
 	var ctx *logkit.Context
 	var done func()
 	if s.BufferedEventsFilter != nil {
@@ -164,9 +155,33 @@ func (s *Site) runRoute(route *Route, w http.ResponseWriter, req *http.Request, 
 	}
 	defer done()
 
+	// catch panics
+	defer func() {
+		if err := recover(); err != nil {
+			logkit.Error(ctx, fmt.Sprintf("%v", err), logkit.String("stack", stackToPanic(debug.Stack(), 4)))
+			if s.ServerError.Action != nil {
+				w.WriteHeader(500)
+				s.runRoute(&s.ServerError, w, req, make(httprouter.Params, 0, 0), true)
+			} else {
+				http.Error(w, fmt.Sprintf("%v", err), 500)
+			}
+		}
+	}()
+
 	// create context
 	c := CreateContext(ctx, s, route, w, req, params)
 
 	// run the middleware chain.
 	s.middlewareChain(c)
+}
+
+func stackToPanic(stack []byte, skipframes int) string {
+	if ix := bytes.Index(stack, []byte("runtime/panic.go")); ix != -1 {
+		for skipframes > 0 && ix > 0 {
+			stack = stack[ix:]
+			ix = bytes.Index(stack, []byte("\n"))
+			skipframes--
+		}
+	}
+	return string(stack)
 }
