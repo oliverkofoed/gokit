@@ -27,7 +27,6 @@ func TestBlob(t *testing.T) {
 	//load
 	loaded, err := db.Blobs.Load(ctx, "id=?", id)
 	testkit.NoError(t, err)
-	dev.JSON(loaded)
 
 	//update
 	loaded.Data = []byte{9, 9, 9, 9}

@@ -14,3 +14,7 @@ func JSON(data interface{}) {
 
 	fmt.Println(string(j))
 }
+
+func Println(args ...interface{}) {
+	fmt.Println(args...)
+}

@@ -52,8 +52,8 @@ func NewSite(development bool, assetPath string) *Site {
 	return &site
 }
 
-func (s *Site) ListenAndServe(addr string) {
-	http.ListenAndServe(addr, s)
+func (s *Site) ListenAndServe(addr string) error {
+	return http.ListenAndServe(addr, s)
 }
 
 type Route struct {

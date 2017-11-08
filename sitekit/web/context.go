@@ -40,6 +40,12 @@ func CreateContext(ctx *logkit.Context, site *Site, route *Route, w http.Respons
 	}
 }
 
+func (c *Context) RemoveData(key string) {
+	if c.data != nil {
+		delete(c.data, key)
+	}
+}
+
 func (c *Context) SetData(key string, value interface{}) {
 	if c.data == nil {
 		c.data = make(map[string]interface{})
@@ -103,6 +109,9 @@ func (c *Context) RenderTemplate(templatePath string, data interface{}) error {
 	if master == "" {
 		master = c.Site.DefaultMasterFile
 	}
+	if master == "none" {
+		master = ""
+	}
 
 	if c.Site.TemplateDataWrapper != nil {
 		var err error
@@ -113,9 +122,14 @@ func (c *Context) RenderTemplate(templatePath string, data interface{}) error {
 		}
 	}
 
-	err := c.Site.Assets.RenderTemplate([]string{templatePath, master}, c.w, data)
+	templateFiles := []string{templatePath, master}
+	if master == "" {
+		templateFiles = templateFiles[0:1]
+	}
+
+	err := c.Site.Assets.RenderTemplate(templateFiles, c.w, data)
 	if err != nil {
-		fmt.Println("RenderTemplate error: ", err)
+		fmt.Println("RenderTemplate error: ", err, templatePath, master)
 		return err
 	}
 
@@ -155,6 +169,6 @@ func (c *Context) ServerError(err string, code int) {
 		c.w.WriteHeader(code)
 		c.Site.runRoute(&c.Site.ServerError, c.w, c.Request, make(httprouter.Params, 0, 0), true)
 	} else {
-		http.Error(c, err, 500)
+		http.Error(c, err, code)
 	}
 }

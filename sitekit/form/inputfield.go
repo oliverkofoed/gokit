@@ -35,6 +35,7 @@ type InputField struct {
 	Regexp      *regexp.Regexp
 	RegexpError string
 	Placeholder string
+	Attributes  map[string]string
 
 	// readable value
 	Error string
@@ -136,6 +137,16 @@ func (t *InputField) Render(buffer *bytes.Buffer) {
 		buffer.WriteString("\"")
 	}
 
+	if t.Attributes != nil {
+		for k, v := range t.Attributes {
+			buffer.WriteString(" ")
+			buffer.WriteString(k)
+			buffer.WriteString("=\"")
+			buffer.WriteString(html.EscapeString(v))
+			buffer.WriteString("\"")
+		}
+	}
+
 	if t.Type == InputTypeTextArea {
 		buffer.WriteString(">")
 		buffer.WriteString(html.EscapeString(t.Value))
@@ -151,6 +162,13 @@ func addType(buffer *bytes.Buffer, t string) {
 	buffer.WriteString(" type=\"")
 	buffer.WriteString(t)
 	buffer.WriteString("\"")
+}
+
+func (t *InputField) SetAttribute(key, value string) {
+	if t.Attributes == nil {
+		t.Attributes = make(map[string]string)
+	}
+	t.Attributes[key] = value
 }
 
 // -------------------------------------
