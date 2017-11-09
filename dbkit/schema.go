@@ -92,7 +92,7 @@ func (t *Table) Validate(generators []generator) []error {
 			autoColCount++
 		}
 	}
-	if (autoColCount == 1 && (len(t.PrimaryIndex.Columns) != 1 || t.PrimaryIndex.Columns[0].Type != DataTypeAutoID)) || autoColCount > 1 {
+	if (autoColCount == 1 && (t.PrimaryIndex != nil && (len(t.PrimaryIndex.Columns) != 1 || t.PrimaryIndex.Columns[0].Type != DataTypeAutoID))) || autoColCount > 1 {
 		errors = append(errors, fmt.Errorf(t.DBTableName+": a table can only have one AutoID column, and it must be the only column in the primary index."))
 	}
 
@@ -237,7 +237,9 @@ func (t *Table) AddColumn(dbName string, goName string, dataType DataType, nulla
 	if goNameLower == "iD" {
 		goNameLower = "id"
 	}
-
+	if goNameLower == "oS" {
+		goNameLower = "os"
+	}
 	if goNameLower == "type" {
 		goNameLower = "_type"
 	}

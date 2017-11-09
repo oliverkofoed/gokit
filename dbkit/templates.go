@@ -89,7 +89,7 @@ func templateDbTmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "template.db.tmpl", size: 2253, mode: os.FileMode(420), modTime: time.Unix(1499502758, 0)}
+	info := bindataFileInfo{name: "template.db.tmpl", size: 2253, mode: os.FileMode(420), modTime: time.Unix(1499915984, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -189,7 +189,7 @@ func templateCassandraTmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "template.cassandra.tmpl", size: 9696, mode: os.FileMode(420), modTime: time.Unix(1499502296, 0)}
+	info := bindataFileInfo{name: "template.cassandra.tmpl", size: 9696, mode: os.FileMode(420), modTime: time.Unix(1499915984, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -209,7 +209,7 @@ func templateCassandraDbTmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "template.cassandra.db.tmpl", size: 3059, mode: os.FileMode(420), modTime: time.Unix(1499502363, 0)}
+	info := bindataFileInfo{name: "template.cassandra.db.tmpl", size: 3059, mode: os.FileMode(420), modTime: time.Unix(1499915984, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

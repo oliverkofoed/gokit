@@ -36,6 +36,9 @@ func (c *Cassandra) goname(name string) string {
 		case "id":
 			parts[i] = strings.ToUpper(parts[i])
 			break
+		case "os":
+			parts[i] = strings.ToUpper(parts[i])
+			break
 		case "ip":
 			parts[i] = strings.ToUpper(parts[i])
 			break
