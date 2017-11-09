@@ -158,7 +158,9 @@ func (p *Postgres) GetSchema(packageName string, log func(msg string, args ...in
 	}
 
 	// 4. get indexes
-	query = "select table_name, constraint_name, column_name  from information_schema.key_column_usage where table_schema = '" + *dbName + "' order by table_name, ordinal_position asc"
+	query = "select ixs.tablename, ixs.indexname, a.attname from pg_indexes ixs, pg_class c, pg_attribute a where ixs.schemaname = '" + *dbName + "' AND c.oid = ixs.crdb_oid AND a.attrelid = c.oid order by ixs.tablename, ixs.indexname, a.attnum"
+
+	//query = "select table_name, constraint_name, column_name  from information_schema.key_column_usage where table_schema = '" + *dbName + "' order by table_name, ordinal_position asc"
 	//query = "select table_name, index_name, column_name from information_schema.statistics where index_schema='" + *dbName + "' order by table_name, index_name, seq_in_index asc"
 	//query = "select table_name from information_schema.tables  where table_schema='" + *dbName + "'"
 	errTemplate = "Could not load indexes from " + *dbName + " with query %v. error: %v"

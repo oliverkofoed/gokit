@@ -16,7 +16,7 @@ func noerr(err error) {
 }
 
 func TestUsersPostgres(t *testing.T) {
-	db, err := NewDB("postgres", "host=localhost port=5432 dbname=dbkit_tests sslmode=disable")
+	db, err := NewDB("postgres", "host=localhost user=root port=26257 dbname=dbkit_tests sslmode=disable")
 	noerr(err)
 	testUsers(db, t)
 }

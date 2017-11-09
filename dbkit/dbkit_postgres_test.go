@@ -40,8 +40,10 @@ func TestPostgres(t *testing.T) {
 			email TEXT NULL,
 			facebook_user_id TEXT NULL,
 			CONSTRAINT "primary" PRIMARY KEY (id),
+			INDEX interest(avatar),
+			INDEX interestix( created, gender, birthdate),
 			UNIQUE INDEX by_email (email),
-			UNIQUE INDEX by_facebook_user_id (facebook_user_id)
+			UNIQUE INDEX by_facebook_user_id (facebook_user_id, avatar)
 		)
 	`)
 	testkit.NoError(t, err)

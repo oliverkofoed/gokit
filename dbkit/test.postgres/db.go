@@ -41,10 +41,16 @@ type Batch interface {
 	String() string
 	Execute(ctx context.Context) error
 	
+	
 	InsertUser(birthdate time.Time, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string) 
+	DeleteUserByAvatar(avatar string)
+	DeleteUserByCreated(created time.Time)
+	DeleteUserByCreatedAndGender(created time.Time, gender int64)
+	DeleteUserByCreatedAndGenderAndBirthdate(created time.Time, gender int64, birthdate time.Time)
 	DeleteUserByID(id int64)
 	DeleteUserByEmail(email *string)
 	DeleteUserByFacebookUserID(facebookUserID *string)
+	DeleteUserByFacebookUserIDAndAvatar(facebookUserID *string, avatar string)
 	SaveUser(user *User)
 
 }
@@ -123,14 +129,34 @@ func (b *postgresBatch) InsertUser(birthdate time.Time, gender int64, created ti
 	panic("not implemented")
 }
 
-func (b *postgresBatch) DeleteUserByID(id int64) {
-	panic("not implemented")
-}
-
 func (b *postgresBatch) DeleteUserByEmail(email *string) {
 	panic("not implemented")
 }
 
 func (b *postgresBatch) DeleteUserByFacebookUserID(facebookUserID *string) {
+	panic("not implemented")
+}
+
+func (b *postgresBatch) DeleteUserByFacebookUserIDAndAvatar(facebookUserID *string, avatar string) {
+	panic("not implemented")
+}
+
+func (b *postgresBatch) DeleteUserByAvatar(avatar string) {
+	panic("not implemented")
+}
+
+func (b *postgresBatch) DeleteUserByCreated(created time.Time) {
+	panic("not implemented")
+}
+
+func (b *postgresBatch) DeleteUserByCreatedAndGender(created time.Time, gender int64) {
+	panic("not implemented")
+}
+
+func (b *postgresBatch) DeleteUserByCreatedAndGenderAndBirthdate(created time.Time, gender int64, birthdate time.Time) {
+	panic("not implemented")
+}
+
+func (b *postgresBatch) DeleteUserByID(id int64) {
 	panic("not implemented")
 }

@@ -31,6 +31,66 @@ func (t UsersTable) Delete(ctx context.Context, query string, args ...interface{
 	return t.driver.delete(ctx, query, args...)
 }
 
+// LoadByAvatar loads a single record from the Users table based on the given values
+func (t UsersTable) LoadByAvatar(ctx context.Context, avatar string) (*User, error) {
+	return t.driver.loadByAvatar(ctx, avatar)
+}
+
+// FindByAvatar finds records the Users table based on the given values
+func (t UsersTable) FindByAvatar(avatar string) *UserQuery {
+	return t.driver.findByAvatar(avatar)
+}
+
+// DeleteByAvatar deletes records the Users table based on the given values
+func (t UsersTable) DeleteByAvatar(ctx context.Context, avatar string) error {
+	return t.driver.deleteByAvatar(ctx,avatar)
+}
+
+// LoadByCreated loads a single record from the Users table based on the given values
+func (t UsersTable) LoadByCreated(ctx context.Context, created time.Time) (*User, error) {
+	return t.driver.loadByCreated(ctx, created)
+}
+
+// FindByCreated finds records the Users table based on the given values
+func (t UsersTable) FindByCreated(created time.Time) *UserQuery {
+	return t.driver.findByCreated(created)
+}
+
+// DeleteByCreated deletes records the Users table based on the given values
+func (t UsersTable) DeleteByCreated(ctx context.Context, created time.Time) error {
+	return t.driver.deleteByCreated(ctx,created)
+}
+
+// LoadByCreatedAndGender loads a single record from the Users table based on the given values
+func (t UsersTable) LoadByCreatedAndGender(ctx context.Context, created time.Time, gender int64) (*User, error) {
+	return t.driver.loadByCreatedAndGender(ctx, created, gender)
+}
+
+// FindByCreatedAndGender finds records the Users table based on the given values
+func (t UsersTable) FindByCreatedAndGender(created time.Time, gender int64) *UserQuery {
+	return t.driver.findByCreatedAndGender(created, gender)
+}
+
+// DeleteByCreatedAndGender deletes records the Users table based on the given values
+func (t UsersTable) DeleteByCreatedAndGender(ctx context.Context, created time.Time, gender int64) error {
+	return t.driver.deleteByCreatedAndGender(ctx,created, gender)
+}
+
+// LoadByCreatedAndGenderAndBirthdate loads a single record from the Users table based on the given values
+func (t UsersTable) LoadByCreatedAndGenderAndBirthdate(ctx context.Context, created time.Time, gender int64, birthdate time.Time) (*User, error) {
+	return t.driver.loadByCreatedAndGenderAndBirthdate(ctx, created, gender, birthdate)
+}
+
+// FindByCreatedAndGenderAndBirthdate finds records the Users table based on the given values
+func (t UsersTable) FindByCreatedAndGenderAndBirthdate(created time.Time, gender int64, birthdate time.Time) *UserQuery {
+	return t.driver.findByCreatedAndGenderAndBirthdate(created, gender, birthdate)
+}
+
+// DeleteByCreatedAndGenderAndBirthdate deletes records the Users table based on the given values
+func (t UsersTable) DeleteByCreatedAndGenderAndBirthdate(ctx context.Context, created time.Time, gender int64, birthdate time.Time) error {
+	return t.driver.deleteByCreatedAndGenderAndBirthdate(ctx,created, gender, birthdate)
+}
+
 // LoadByID loads a single record from the Users table based on the given values
 func (t UsersTable) LoadByID(ctx context.Context, id int64) (*User, error) {
 	return t.driver.loadByID(ctx, id)
@@ -74,6 +134,21 @@ func (t UsersTable) FindByFacebookUserID(facebookUserID *string) *UserQuery {
 // DeleteByFacebookUserID deletes records the Users table based on the given values
 func (t UsersTable) DeleteByFacebookUserID(ctx context.Context, facebookUserID *string) error {
 	return t.driver.deleteByFacebookUserID(ctx,facebookUserID)
+}
+
+// LoadByFacebookUserIDAndAvatar loads a single record from the Users table based on the given values
+func (t UsersTable) LoadByFacebookUserIDAndAvatar(ctx context.Context, facebookUserID *string, avatar string) (*User, error) {
+	return t.driver.loadByFacebookUserIDAndAvatar(ctx, facebookUserID, avatar)
+}
+
+// FindByFacebookUserIDAndAvatar finds records the Users table based on the given values
+func (t UsersTable) FindByFacebookUserIDAndAvatar(facebookUserID *string, avatar string) *UserQuery {
+	return t.driver.findByFacebookUserIDAndAvatar(facebookUserID, avatar)
+}
+
+// DeleteByFacebookUserIDAndAvatar deletes records the Users table based on the given values
+func (t UsersTable) DeleteByFacebookUserIDAndAvatar(ctx context.Context, facebookUserID *string, avatar string) error {
+	return t.driver.deleteByFacebookUserIDAndAvatar(ctx,facebookUserID, avatar)
 }
 
 // Query creates a query for records in the Users table by id
@@ -184,6 +259,21 @@ type usersDriver interface {
 	loadByFacebookUserID(ctx context.Context,facebookUserID *string) (*User, error)
 	findByFacebookUserID(facebookUserID *string) *UserQuery
 	deleteByFacebookUserID(ctx context.Context,facebookUserID *string) error
+	loadByFacebookUserIDAndAvatar(ctx context.Context,facebookUserID *string, avatar string) (*User, error)
+	findByFacebookUserIDAndAvatar(facebookUserID *string, avatar string) *UserQuery
+	deleteByFacebookUserIDAndAvatar(ctx context.Context,facebookUserID *string, avatar string) error
+	loadByAvatar(ctx context.Context,avatar string) (*User, error)
+	findByAvatar(avatar string) *UserQuery
+	deleteByAvatar(ctx context.Context,avatar string) error
+	loadByCreated(ctx context.Context,created time.Time) (*User, error)
+	findByCreated(created time.Time) *UserQuery
+	deleteByCreated(ctx context.Context,created time.Time) error
+	loadByCreatedAndGender(ctx context.Context,created time.Time, gender int64) (*User, error)
+	findByCreatedAndGender(created time.Time, gender int64) *UserQuery
+	deleteByCreatedAndGender(ctx context.Context,created time.Time, gender int64) error
+	loadByCreatedAndGenderAndBirthdate(ctx context.Context,created time.Time, gender int64, birthdate time.Time) (*User, error)
+	findByCreatedAndGenderAndBirthdate(created time.Time, gender int64, birthdate time.Time) *UserQuery
+	deleteByCreatedAndGenderAndBirthdate(ctx context.Context,created time.Time, gender int64, birthdate time.Time) error
 }
 
 
@@ -547,20 +637,6 @@ func (d *usersPostgresDriver) querySQL(query *UserQuery) string {
 }
 
 
-func (d *usersPostgresDriver) loadByID(ctx context.Context, id int64) (*User, error) {
-	return d.load(ctx,"id=$1", id)
-}
-
-func (d *usersPostgresDriver) findByID(id int64) *UserQuery {
-	q :=&UserQuery{driver: d}
-	q.Where("id=$1", id)
-	return q
-}
-
-func (d *usersPostgresDriver) deleteByID(ctx context.Context, id int64) error {
-	return d.delete(ctx,"id=$1", id)
-}
-
 func (d *usersPostgresDriver) loadByEmail(ctx context.Context, email *string) (*User, error) {
 	return d.load(ctx,"email=$1", email)
 }
@@ -587,4 +663,88 @@ func (d *usersPostgresDriver) findByFacebookUserID(facebookUserID *string) *User
 
 func (d *usersPostgresDriver) deleteByFacebookUserID(ctx context.Context, facebookUserID *string) error {
 	return d.delete(ctx,"facebook_user_id=$1", facebookUserID)
+}
+
+func (d *usersPostgresDriver) loadByFacebookUserIDAndAvatar(ctx context.Context, facebookUserID *string, avatar string) (*User, error) {
+	return d.load(ctx,"facebook_user_id=$1 and avatar=$2", facebookUserID, avatar)
+}
+
+func (d *usersPostgresDriver) findByFacebookUserIDAndAvatar(facebookUserID *string, avatar string) *UserQuery {
+	q :=&UserQuery{driver: d}
+	q.Where("facebook_user_id=$1 and avatar=$2", facebookUserID, avatar)
+	return q
+}
+
+func (d *usersPostgresDriver) deleteByFacebookUserIDAndAvatar(ctx context.Context, facebookUserID *string, avatar string) error {
+	return d.delete(ctx,"facebook_user_id=$1 and avatar=$2", facebookUserID, avatar)
+}
+
+func (d *usersPostgresDriver) loadByAvatar(ctx context.Context, avatar string) (*User, error) {
+	return d.load(ctx,"avatar=$1", avatar)
+}
+
+func (d *usersPostgresDriver) findByAvatar(avatar string) *UserQuery {
+	q :=&UserQuery{driver: d}
+	q.Where("avatar=$1", avatar)
+	return q
+}
+
+func (d *usersPostgresDriver) deleteByAvatar(ctx context.Context, avatar string) error {
+	return d.delete(ctx,"avatar=$1", avatar)
+}
+
+func (d *usersPostgresDriver) loadByCreated(ctx context.Context, created time.Time) (*User, error) {
+	return d.load(ctx,"created=$1", created)
+}
+
+func (d *usersPostgresDriver) findByCreated(created time.Time) *UserQuery {
+	q :=&UserQuery{driver: d}
+	q.Where("created=$1", created)
+	return q
+}
+
+func (d *usersPostgresDriver) deleteByCreated(ctx context.Context, created time.Time) error {
+	return d.delete(ctx,"created=$1", created)
+}
+
+func (d *usersPostgresDriver) loadByCreatedAndGender(ctx context.Context, created time.Time, gender int64) (*User, error) {
+	return d.load(ctx,"created=$1 and gender=$2", created, gender)
+}
+
+func (d *usersPostgresDriver) findByCreatedAndGender(created time.Time, gender int64) *UserQuery {
+	q :=&UserQuery{driver: d}
+	q.Where("created=$1 and gender=$2", created, gender)
+	return q
+}
+
+func (d *usersPostgresDriver) deleteByCreatedAndGender(ctx context.Context, created time.Time, gender int64) error {
+	return d.delete(ctx,"created=$1 and gender=$2", created, gender)
+}
+
+func (d *usersPostgresDriver) loadByCreatedAndGenderAndBirthdate(ctx context.Context, created time.Time, gender int64, birthdate time.Time) (*User, error) {
+	return d.load(ctx,"created=$1 and gender=$2 and birthdate=$3", created, gender, birthdate)
+}
+
+func (d *usersPostgresDriver) findByCreatedAndGenderAndBirthdate(created time.Time, gender int64, birthdate time.Time) *UserQuery {
+	q :=&UserQuery{driver: d}
+	q.Where("created=$1 and gender=$2 and birthdate=$3", created, gender, birthdate)
+	return q
+}
+
+func (d *usersPostgresDriver) deleteByCreatedAndGenderAndBirthdate(ctx context.Context, created time.Time, gender int64, birthdate time.Time) error {
+	return d.delete(ctx,"created=$1 and gender=$2 and birthdate=$3", created, gender, birthdate)
+}
+
+func (d *usersPostgresDriver) loadByID(ctx context.Context, id int64) (*User, error) {
+	return d.load(ctx,"id=$1", id)
+}
+
+func (d *usersPostgresDriver) findByID(id int64) *UserQuery {
+	q :=&UserQuery{driver: d}
+	q.Where("id=$1", id)
+	return q
+}
+
+func (d *usersPostgresDriver) deleteByID(ctx context.Context, id int64) error {
+	return d.delete(ctx,"id=$1", id)
 }
