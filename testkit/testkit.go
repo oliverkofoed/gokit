@@ -23,6 +23,11 @@ func NoError(t *testing.T, err error) {
 	}
 }
 
+func NotNil(t *testing.T, value interface{}) {
+	if value == nil {
+		fail(t, "Values should not be nil.")
+	}
+}
 func Equal(t *testing.T, value interface{}, expected interface{}) {
 	if !reflect.DeepEqual(value, expected) {
 		fail(t, "Values not equal\n\t------- VALUE: "+fmt.Sprintf("%v", value)+"\n\t---- EXPECTED: "+fmt.Sprintf("%v", expected))

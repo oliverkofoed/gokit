@@ -44,7 +44,7 @@ func printValues(w io.Writer, fields []Field) {
 		case FieldTypeStringer:
 			io.WriteString(w, field.Value.(fmt.Stringer).String())
 		case FieldTypeDuration:
-			fmt.Fprintf(w, "%v", field.Value)
+			fmt.Fprintf(w, "%v", field.Integer)
 		case FieldTypeTime:
 			fmt.Fprintf(w, "%v", field.Value)
 		case FieldTypeErr:

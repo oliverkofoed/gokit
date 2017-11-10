@@ -8,6 +8,7 @@ import (
 
 type Field interface {
 	Bind(c *web.Context, texts *Text)
+	SetAttribute(name, value string)
 	Render(buffer *bytes.Buffer)
 	GetRenderDetails() (err, desc, name, caption string)
 }
