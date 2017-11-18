@@ -57,7 +57,7 @@ func NewDB(driverName, dataSourceName string) (*DB, error) {
 type Batch interface {
 	String() string
 	Execute(ctx context.Context) error
-	{{range $_, $t := .Schema.Tables}}
+	{{range $_, $t := .Schema.SortedTables}}
 	{{range $_, $n := $.Generators}}{{if eq $n "cassandra"}}
 	Insert{{$t.StructName}}TTL(ttl int64, {{range $i, $c := $t.NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}})
 	{{end}}{{end}}

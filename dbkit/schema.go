@@ -2,6 +2,7 @@ package dbkit
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -50,6 +51,27 @@ func (s *Schema) Validate(generators []generator) []error {
 	}
 
 	return errors
+}
+
+func (s *Schema) SortedTables() []*Table {
+	result := make([]*Table, 0, len(s.Tables))
+	for _, t := range s.Tables {
+		result = append(result, t)
+	}
+	sort.Sort(byName(result))
+	return result
+}
+
+type byName []*Table
+
+func (s byName) Len() int {
+	return len(s)
+}
+func (s byName) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+func (s byName) Less(i, j int) bool {
+	return s[i].DBTableName < s[j].DBTableName
 }
 
 // NewSchema creates a new schema
@@ -132,13 +154,23 @@ type IndexCombination struct {
 // IndexCombinations builds a list of column combinations suitable for index lookups.
 func (t *Table) IndexCombinations() []*IndexCombination {
 	arr := make([]*IndexCombination, 0, 0)
-	for _, index := range t.Indexes {
+	for _, key := range sortedKeys(t.Indexes) {
+		index := t.Indexes[key]
 		for ix := range index.Columns {
 			arr = append(arr, makeIndexCombination(index.Columns[:ix+1], *t))
 		}
 	}
 
 	return arr
+}
+
+func sortedKeys(m map[string]*Index) []string {
+	result := make([]string, 0, len(m))
+	for k := range m {
+		result = append(result, k)
+	}
+	sort.Strings(result)
+	return result
 }
 
 func makeIndexCombination(columns []*Column, table Table) *IndexCombination {
