@@ -87,6 +87,27 @@ func (d *{{ .GoLowerTableName }}PostgresDriver) scan(item *{{ .StructName }}, ro
 }
 
 func (d *{{ .GoLowerTableName }}PostgresDriver) save(ctx context.Context, item *{{ .StructName }}) error {
+	sql, args := getSave{{.StructName}}SQL(item,1)
+
+	// nothing changed
+	if sql == "" {
+		return nil
+	}
+
+	// execute
+	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
+	defer done()
+
+	if _, err := d.db.Exec(sql, args...); err != nil {
+		return logkit.Error(ctx, "SQL Error", logkit.String("sql",sql), logkit.Err(err))
+	}
+
+	// reset load variables.
+	item.resetLoadVars()
+	return nil
+}
+
+func getSave{{.StructName}}SQL(item *{{ .StructName }}, argOffset int) (string, []interface{}) {
 	var sb bytes.Buffer
 	sb.WriteString("update {{ .DBTableName }} set ")
 	args := make([]interface{}, 0, {{ .Columns | len }} )
@@ -96,39 +117,30 @@ func (d *{{ .GoLowerTableName }}PostgresDriver) save(ctx context.Context, item *
 		if len(args) != 0 {
 			sb.WriteString(", ")
 		}
-		args = append(args, item.{{.GoName}})
 		sb.WriteString("{{.DBName}}=$")
-		sb.WriteString(strconv.FormatInt(int64(len(args)), 10))
+		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
+		args = append(args, item.{{.GoName}})
 	}
 	{{ end }}
 
-	// nothing changed!
 	if len(args) == 0 {
-		return nil
+		return "", args
 	}
 
 	// where clause
-	sb.WriteString(" where ")
+	sb.WriteString(" where")
 	{{ range .PrimaryIndex.Columns }}
-	args = append(args, item.{{.GoName}})
 	sb.WriteString(" {{.DBName}}=$")
-	sb.WriteString(strconv.FormatInt(int64(len(args)), 10))
+	sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
+	args = append(args, item.{{.GoName}})
 	{{ end }}
 
-	// execute
-	sql := sb.String()
-	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
-	defer done()
+	return sb.String(), args
+}
 
-	if _, err := d.db.Exec(sql, args...); err != nil {
-		return err
-	}
-
-	// reset load variables.
-	{{ range .Columns }}item.load{{.GoName}} = item.{{.GoName}}
+func (i *{{.StructName}}) resetLoadVars(){
+	{{ range .Columns }}i.load{{.GoName}} = i.{{.GoName}}
 	{{ end }}
-
-	return nil
 }
 
 func (d *{{ .GoLowerTableName }}PostgresDriver) queryFirst(ctx context.Context, query *{{ .StructName }}Query) (*{{ .StructName }}, error) {

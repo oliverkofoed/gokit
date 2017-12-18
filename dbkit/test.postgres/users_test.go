@@ -45,6 +45,8 @@ func testUsers(db *DB, t *testing.T) {
 	// Update
 	u.DisplayName = "bobby"
 	noerr(u.Save(nil))
+
+	// save with no changes
 	noerr(u.Save(nil))
 
 	// Load
@@ -70,6 +72,15 @@ func testUsers(db *DB, t *testing.T) {
 		return nil
 	}))
 
+	// batch test
+	batch := db.NewBatch()
+	batch.InsertUser(time.Now(), 0, time.Now(), time.Now(), 0, "b1", "abcdef", nil, nil)
+	batch.InsertUser(time.Now(), 0, time.Now(), time.Now(), 0, "b2", "abcdef", nil, nil)
+	batch.InsertUser(time.Now(), 0, time.Now(), time.Now(), 0, "b3", "abcdef", nil, nil)
+	u.DisplayName = "bobbyboy"
+	batch.SaveUser(u)
+	err = batch.Execute(ctx)
+	noerr(err)
 	// Delete
 	// ...
 }

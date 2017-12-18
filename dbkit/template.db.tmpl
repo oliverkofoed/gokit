@@ -44,6 +44,7 @@ func NewDB(driverName, dataSourceName string) (*DB, error) {
 			}
 
 			return &DB{
+				newBatch:func() Batch{return &postgresBatch{db:db}},
 			{{range $.Schema.Tables}}	{{.GoTableName}}: {{.GoTableName}}Table{driver: &{{.GoLowerTableName}}PostgresDriver{db: db}},
 			{{end}}}, nil
 			{{end}}
