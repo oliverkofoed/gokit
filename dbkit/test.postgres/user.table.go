@@ -31,66 +31,6 @@ func (t UsersTable) Delete(ctx context.Context, query string, args ...interface{
 	return t.driver.delete(ctx, query, args...)
 }
 
-// LoadByAvatar loads a single record from the Users table based on the given values
-func (t UsersTable) LoadByAvatar(ctx context.Context, avatar string) (*User, error) {
-	return t.driver.loadByAvatar(ctx, avatar)
-}
-
-// FindByAvatar finds records the Users table based on the given values
-func (t UsersTable) FindByAvatar(avatar string) *UserQuery {
-	return t.driver.findByAvatar(avatar)
-}
-
-// DeleteByAvatar deletes records the Users table based on the given values
-func (t UsersTable) DeleteByAvatar(ctx context.Context, avatar string) error {
-	return t.driver.deleteByAvatar(ctx,avatar)
-}
-
-// LoadByCreated loads a single record from the Users table based on the given values
-func (t UsersTable) LoadByCreated(ctx context.Context, created time.Time) (*User, error) {
-	return t.driver.loadByCreated(ctx, created)
-}
-
-// FindByCreated finds records the Users table based on the given values
-func (t UsersTable) FindByCreated(created time.Time) *UserQuery {
-	return t.driver.findByCreated(created)
-}
-
-// DeleteByCreated deletes records the Users table based on the given values
-func (t UsersTable) DeleteByCreated(ctx context.Context, created time.Time) error {
-	return t.driver.deleteByCreated(ctx,created)
-}
-
-// LoadByCreatedAndGender loads a single record from the Users table based on the given values
-func (t UsersTable) LoadByCreatedAndGender(ctx context.Context, created time.Time, gender int64) (*User, error) {
-	return t.driver.loadByCreatedAndGender(ctx, created, gender)
-}
-
-// FindByCreatedAndGender finds records the Users table based on the given values
-func (t UsersTable) FindByCreatedAndGender(created time.Time, gender int64) *UserQuery {
-	return t.driver.findByCreatedAndGender(created, gender)
-}
-
-// DeleteByCreatedAndGender deletes records the Users table based on the given values
-func (t UsersTable) DeleteByCreatedAndGender(ctx context.Context, created time.Time, gender int64) error {
-	return t.driver.deleteByCreatedAndGender(ctx,created, gender)
-}
-
-// LoadByCreatedAndGenderAndBirthdate loads a single record from the Users table based on the given values
-func (t UsersTable) LoadByCreatedAndGenderAndBirthdate(ctx context.Context, created time.Time, gender int64, birthdate time.Time) (*User, error) {
-	return t.driver.loadByCreatedAndGenderAndBirthdate(ctx, created, gender, birthdate)
-}
-
-// FindByCreatedAndGenderAndBirthdate finds records the Users table based on the given values
-func (t UsersTable) FindByCreatedAndGenderAndBirthdate(created time.Time, gender int64, birthdate time.Time) *UserQuery {
-	return t.driver.findByCreatedAndGenderAndBirthdate(created, gender, birthdate)
-}
-
-// DeleteByCreatedAndGenderAndBirthdate deletes records the Users table based on the given values
-func (t UsersTable) DeleteByCreatedAndGenderAndBirthdate(ctx context.Context, created time.Time, gender int64, birthdate time.Time) error {
-	return t.driver.deleteByCreatedAndGenderAndBirthdate(ctx,created, gender, birthdate)
-}
-
 // LoadByID loads a single record from the Users table based on the given values
 func (t UsersTable) LoadByID(ctx context.Context, id int64) (*User, error) {
 	return t.driver.loadByID(ctx, id)
@@ -149,6 +89,66 @@ func (t UsersTable) FindByFacebookUserIDAndAvatar(facebookUserID *string, avatar
 // DeleteByFacebookUserIDAndAvatar deletes records the Users table based on the given values
 func (t UsersTable) DeleteByFacebookUserIDAndAvatar(ctx context.Context, facebookUserID *string, avatar string) error {
 	return t.driver.deleteByFacebookUserIDAndAvatar(ctx,facebookUserID, avatar)
+}
+
+// LoadByAvatar loads a single record from the Users table based on the given values
+func (t UsersTable) LoadByAvatar(ctx context.Context, avatar string) (*User, error) {
+	return t.driver.loadByAvatar(ctx, avatar)
+}
+
+// FindByAvatar finds records the Users table based on the given values
+func (t UsersTable) FindByAvatar(avatar string) *UserQuery {
+	return t.driver.findByAvatar(avatar)
+}
+
+// DeleteByAvatar deletes records the Users table based on the given values
+func (t UsersTable) DeleteByAvatar(ctx context.Context, avatar string) error {
+	return t.driver.deleteByAvatar(ctx,avatar)
+}
+
+// LoadByCreated loads a single record from the Users table based on the given values
+func (t UsersTable) LoadByCreated(ctx context.Context, created time.Time) (*User, error) {
+	return t.driver.loadByCreated(ctx, created)
+}
+
+// FindByCreated finds records the Users table based on the given values
+func (t UsersTable) FindByCreated(created time.Time) *UserQuery {
+	return t.driver.findByCreated(created)
+}
+
+// DeleteByCreated deletes records the Users table based on the given values
+func (t UsersTable) DeleteByCreated(ctx context.Context, created time.Time) error {
+	return t.driver.deleteByCreated(ctx,created)
+}
+
+// LoadByCreatedAndGender loads a single record from the Users table based on the given values
+func (t UsersTable) LoadByCreatedAndGender(ctx context.Context, created time.Time, gender int64) (*User, error) {
+	return t.driver.loadByCreatedAndGender(ctx, created, gender)
+}
+
+// FindByCreatedAndGender finds records the Users table based on the given values
+func (t UsersTable) FindByCreatedAndGender(created time.Time, gender int64) *UserQuery {
+	return t.driver.findByCreatedAndGender(created, gender)
+}
+
+// DeleteByCreatedAndGender deletes records the Users table based on the given values
+func (t UsersTable) DeleteByCreatedAndGender(ctx context.Context, created time.Time, gender int64) error {
+	return t.driver.deleteByCreatedAndGender(ctx,created, gender)
+}
+
+// LoadByCreatedAndGenderAndBirthdate loads a single record from the Users table based on the given values
+func (t UsersTable) LoadByCreatedAndGenderAndBirthdate(ctx context.Context, created time.Time, gender int64, birthdate time.Time) (*User, error) {
+	return t.driver.loadByCreatedAndGenderAndBirthdate(ctx, created, gender, birthdate)
+}
+
+// FindByCreatedAndGenderAndBirthdate finds records the Users table based on the given values
+func (t UsersTable) FindByCreatedAndGenderAndBirthdate(created time.Time, gender int64, birthdate time.Time) *UserQuery {
+	return t.driver.findByCreatedAndGenderAndBirthdate(created, gender, birthdate)
+}
+
+// DeleteByCreatedAndGenderAndBirthdate deletes records the Users table based on the given values
+func (t UsersTable) DeleteByCreatedAndGenderAndBirthdate(ctx context.Context, created time.Time, gender int64, birthdate time.Time) error {
+	return t.driver.deleteByCreatedAndGenderAndBirthdate(ctx,created, gender, birthdate)
 }
 
 // Query creates a query for records in the Users table by id
@@ -388,6 +388,27 @@ func (d *usersPostgresDriver) scan(item *User, rows *sql.Rows) error {
 }
 
 func (d *usersPostgresDriver) save(ctx context.Context, item *User) error {
+	sql, args := getSaveUserSQL(item,1)
+
+	// nothing changed
+	if sql == "" {
+		return nil
+	}
+
+	// execute
+	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
+	defer done()
+
+	if _, err := d.db.Exec(sql, args...); err != nil {
+		return logkit.Error(ctx, "SQL Error", logkit.String("sql",sql), logkit.Err(err))
+	}
+
+	// reset load variables.
+	item.resetLoadVars()
+	return nil
+}
+
+func getSaveUserSQL(item *User, argOffset int) (string, []interface{}) {
 	var sb bytes.Buffer
 	sb.WriteString("update Users set ")
 	args := make([]interface{}, 0, 10 )
@@ -397,129 +418,120 @@ func (d *usersPostgresDriver) save(ctx context.Context, item *User) error {
 		if len(args) != 0 {
 			sb.WriteString(", ")
 		}
-		args = append(args, item.ID)
 		sb.WriteString("id=$")
-		sb.WriteString(strconv.FormatInt(int64(len(args)), 10))
+		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
+		args = append(args, item.ID)
 	}
 	
 	if item.Birthdate != item.loadBirthdate { 
 		if len(args) != 0 {
 			sb.WriteString(", ")
 		}
-		args = append(args, item.Birthdate)
 		sb.WriteString("birthdate=$")
-		sb.WriteString(strconv.FormatInt(int64(len(args)), 10))
+		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
+		args = append(args, item.Birthdate)
 	}
 	
 	if item.Gender != item.loadGender { 
 		if len(args) != 0 {
 			sb.WriteString(", ")
 		}
-		args = append(args, item.Gender)
 		sb.WriteString("gender=$")
-		sb.WriteString(strconv.FormatInt(int64(len(args)), 10))
+		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
+		args = append(args, item.Gender)
 	}
 	
 	if item.Created != item.loadCreated { 
 		if len(args) != 0 {
 			sb.WriteString(", ")
 		}
-		args = append(args, item.Created)
 		sb.WriteString("created=$")
-		sb.WriteString(strconv.FormatInt(int64(len(args)), 10))
+		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
+		args = append(args, item.Created)
 	}
 	
 	if item.LastSeen != item.loadLastSeen { 
 		if len(args) != 0 {
 			sb.WriteString(", ")
 		}
-		args = append(args, item.LastSeen)
 		sb.WriteString("last_seen=$")
-		sb.WriteString(strconv.FormatInt(int64(len(args)), 10))
+		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
+		args = append(args, item.LastSeen)
 	}
 	
 	if item.Interest != item.loadInterest { 
 		if len(args) != 0 {
 			sb.WriteString(", ")
 		}
-		args = append(args, item.Interest)
 		sb.WriteString("interest=$")
-		sb.WriteString(strconv.FormatInt(int64(len(args)), 10))
+		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
+		args = append(args, item.Interest)
 	}
 	
 	if item.DisplayName != item.loadDisplayName { 
 		if len(args) != 0 {
 			sb.WriteString(", ")
 		}
-		args = append(args, item.DisplayName)
 		sb.WriteString("display_name=$")
-		sb.WriteString(strconv.FormatInt(int64(len(args)), 10))
+		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
+		args = append(args, item.DisplayName)
 	}
 	
 	if item.Avatar != item.loadAvatar { 
 		if len(args) != 0 {
 			sb.WriteString(", ")
 		}
-		args = append(args, item.Avatar)
 		sb.WriteString("avatar=$")
-		sb.WriteString(strconv.FormatInt(int64(len(args)), 10))
+		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
+		args = append(args, item.Avatar)
 	}
 	
 	if item.Email != item.loadEmail { 
 		if len(args) != 0 {
 			sb.WriteString(", ")
 		}
-		args = append(args, item.Email)
 		sb.WriteString("email=$")
-		sb.WriteString(strconv.FormatInt(int64(len(args)), 10))
+		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
+		args = append(args, item.Email)
 	}
 	
 	if item.FacebookUserID != item.loadFacebookUserID { 
 		if len(args) != 0 {
 			sb.WriteString(", ")
 		}
-		args = append(args, item.FacebookUserID)
 		sb.WriteString("facebook_user_id=$")
-		sb.WriteString(strconv.FormatInt(int64(len(args)), 10))
+		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
+		args = append(args, item.FacebookUserID)
 	}
 	
 
-	// nothing changed!
 	if len(args) == 0 {
-		return nil
+		return "", args
 	}
 
 	// where clause
-	sb.WriteString(" where ")
+	sb.WriteString(" where")
 	
-	args = append(args, item.ID)
 	sb.WriteString(" id=$")
-	sb.WriteString(strconv.FormatInt(int64(len(args)), 10))
+	sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
+	args = append(args, item.ID)
 	
 
-	// execute
-	sql := sb.String()
-	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
-	defer done()
+	return sb.String(), args
+}
 
-	if _, err := d.db.Exec(sql, args...); err != nil {
-		return err
-	}
-
-	// reset load variables.
-	item.loadID = item.ID
-	item.loadBirthdate = item.Birthdate
-	item.loadGender = item.Gender
-	item.loadCreated = item.Created
-	item.loadLastSeen = item.LastSeen
-	item.loadInterest = item.Interest
-	item.loadDisplayName = item.DisplayName
-	item.loadAvatar = item.Avatar
-	item.loadEmail = item.Email
-	item.loadFacebookUserID = item.FacebookUserID
+func (i *User) resetLoadVars(){
+	i.loadID = i.ID
+	i.loadBirthdate = i.Birthdate
+	i.loadGender = i.Gender
+	i.loadCreated = i.Created
+	i.loadLastSeen = i.LastSeen
+	i.loadInterest = i.Interest
+	i.loadDisplayName = i.DisplayName
+	i.loadAvatar = i.Avatar
+	i.loadEmail = i.Email
+	i.loadFacebookUserID = i.FacebookUserID
 	
-
-	return nil
 }
 
 func (d *usersPostgresDriver) queryFirst(ctx context.Context, query *UserQuery) (*User, error) {
@@ -637,6 +649,20 @@ func (d *usersPostgresDriver) querySQL(query *UserQuery) string {
 }
 
 
+func (d *usersPostgresDriver) loadByID(ctx context.Context, id int64) (*User, error) {
+	return d.load(ctx,"id=$1", id)
+}
+
+func (d *usersPostgresDriver) findByID(id int64) *UserQuery {
+	q :=&UserQuery{driver: d}
+	q.Where("id=$1", id)
+	return q
+}
+
+func (d *usersPostgresDriver) deleteByID(ctx context.Context, id int64) error {
+	return d.delete(ctx,"id=$1", id)
+}
+
 func (d *usersPostgresDriver) loadByEmail(ctx context.Context, email *string) (*User, error) {
 	return d.load(ctx,"email=$1", email)
 }
@@ -733,18 +759,4 @@ func (d *usersPostgresDriver) findByCreatedAndGenderAndBirthdate(created time.Ti
 
 func (d *usersPostgresDriver) deleteByCreatedAndGenderAndBirthdate(ctx context.Context, created time.Time, gender int64, birthdate time.Time) error {
 	return d.delete(ctx,"created=$1 and gender=$2 and birthdate=$3", created, gender, birthdate)
-}
-
-func (d *usersPostgresDriver) loadByID(ctx context.Context, id int64) (*User, error) {
-	return d.load(ctx,"id=$1", id)
-}
-
-func (d *usersPostgresDriver) findByID(id int64) *UserQuery {
-	q :=&UserQuery{driver: d}
-	q.Where("id=$1", id)
-	return q
-}
-
-func (d *usersPostgresDriver) deleteByID(ctx context.Context, id int64) error {
-	return d.delete(ctx,"id=$1", id)
 }

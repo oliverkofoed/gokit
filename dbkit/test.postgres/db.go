@@ -3,9 +3,12 @@ package dbkit_tests
 import (
 	// db library
 	_ "github.com/lib/pq"
+	"bytes"
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/oliverkofoed/gokit/logkit"
+	"strconv"
 	"time"
 )
 
@@ -27,6 +30,7 @@ func NewDB(driverName, dataSourceName string) (*DB, error) {
 			}
 
 			return &DB{
+				newBatch:func() Batch{return &postgresBatch{db:db}},
 				Users: UsersTable{driver: &usersPostgresDriver{db: db}},
 			}, nil
 			
@@ -43,14 +47,14 @@ type Batch interface {
 	
 	
 	InsertUser(birthdate time.Time, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string) 
-	DeleteUserByAvatar(avatar string)
-	DeleteUserByCreated(created time.Time)
-	DeleteUserByCreatedAndGender(created time.Time, gender int64)
-	DeleteUserByCreatedAndGenderAndBirthdate(created time.Time, gender int64, birthdate time.Time)
 	DeleteUserByID(id int64)
 	DeleteUserByEmail(email *string)
 	DeleteUserByFacebookUserID(facebookUserID *string)
 	DeleteUserByFacebookUserIDAndAvatar(facebookUserID *string, avatar string)
+	DeleteUserByAvatar(avatar string)
+	DeleteUserByCreated(created time.Time)
+	DeleteUserByCreatedAndGender(created time.Time, gender int64)
+	DeleteUserByCreatedAndGenderAndBirthdate(created time.Time, gender int64, birthdate time.Time)
 	SaveUser(user *User)
 
 }
@@ -110,53 +114,343 @@ func (l *Loader) Load(ctx context.Context) error {
 	return nil
 }
 type postgresBatch struct {
+	db *sql.DB
+	operations []*postgresBatchOperation
+	//sql bytes.Buffer
+	//statementCount int
+	//args []interface{}
+}
+
+type postgresBatchOperation struct{
+	key string
+	sql *bytes.Buffer
+	args []interface{}
+	saveObject loadVarResetable
 }
 
 func (b *postgresBatch) String() string{
-	panic("not implemented")
+	sql := bytes.NewBuffer(nil);
+	for i, op := range b.operations {
+		if i > 0 {
+			sql.WriteString(";\n");
+		}
+		sql.WriteString(op.sql.String())
+	}
+	return sql.String()
 }
 
 func (b *postgresBatch) Execute(ctx context.Context) error {
-	panic("not implemented")
+	if len(b.operations) > 0 {
+		ctx, done := logkit.Operation(ctx,"pg.sql", logkit.Stringer("sql",b))
+		defer done()
+		for _, op := range b.operations {
+			sql := op.sql.String()
+			if _, err := b.db.ExecContext(ctx, sql, op.args...); err != nil {
+				return logkit.Error(ctx, "SQL Error",logkit.Err(err), logkit.String("sql",sql))
+			}
+			if op.saveObject != nil {
+				op.saveObject.resetLoadVars()
+			}
+		}
+	}
+
+	return nil
 }
+
 
 
 func (b *postgresBatch) SaveUser(user *User){
-	panic("not implemented")
+	sql, args := getSaveUserSQL(user, 1)
+	if sql != "" {
+		sb := bytes.NewBuffer(nil)
+		sb.WriteString(sql) //TODO: smarter?
+		b.operations = append(b.operations, &postgresBatchOperation{
+			sql: sb,
+			args: args,
+			saveObject: user,
+		})
+	}
 }
 
 func (b *postgresBatch) InsertUser(birthdate time.Time, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string){
-	panic("not implemented")
+	key := "insert_User"
+	var op *postgresBatchOperation
+	for _, o := range b.operations {
+		if o.key == key {
+			op = o;
+			break
+		}
+	}
+	if op == nil {
+		sql := bytes.NewBuffer(nil)
+		sql.WriteString("insert into Users(birthdate, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id) values ")
+
+		op = &postgresBatchOperation{
+			key: key,
+			sql: sql,
+		}
+		b.operations = append(b.operations, op)
+	}
+
+	if len(op.args)> 0 {
+		op.sql.WriteString(",")
+	}
+	op.sql.WriteString("(")
+	for i:=0; i!= 9;i++ {
+		if i >0 {
+			op.sql.WriteString(",")
+		}
+		op.sql.WriteString("$")
+		op.sql.WriteString(strconv.Itoa(1+i+len(op.args)))
+	}
+	op.sql.WriteString(")")
+	op.args = append(op.args, birthdate, gender, created, lastSeen, interest, displayName, avatar, email, facebookUserID)
+}
+
+
+func (b *postgresBatch) DeleteUserByID(id int64) {
+	sql := bytes.NewBuffer(nil)
+	sql.WriteString("delete from Users where id=$1")
+	b.operations = append(b.operations, &postgresBatchOperation{
+		sql: sql,
+		args: []interface{}{ id },
+	})
 }
 
 func (b *postgresBatch) DeleteUserByEmail(email *string) {
-	panic("not implemented")
+	sql := bytes.NewBuffer(nil)
+	sql.WriteString("delete from Users where email=$1")
+	b.operations = append(b.operations, &postgresBatchOperation{
+		sql: sql,
+		args: []interface{}{ email },
+	})
 }
 
 func (b *postgresBatch) DeleteUserByFacebookUserID(facebookUserID *string) {
-	panic("not implemented")
+	sql := bytes.NewBuffer(nil)
+	sql.WriteString("delete from Users where facebook_user_id=$1")
+	b.operations = append(b.operations, &postgresBatchOperation{
+		sql: sql,
+		args: []interface{}{ facebookUserID },
+	})
 }
 
 func (b *postgresBatch) DeleteUserByFacebookUserIDAndAvatar(facebookUserID *string, avatar string) {
-	panic("not implemented")
+	sql := bytes.NewBuffer(nil)
+	sql.WriteString("delete from Users where facebook_user_id=$1 and avatar=$2")
+	b.operations = append(b.operations, &postgresBatchOperation{
+		sql: sql,
+		args: []interface{}{ facebookUserID, avatar },
+	})
 }
 
 func (b *postgresBatch) DeleteUserByAvatar(avatar string) {
-	panic("not implemented")
+	sql := bytes.NewBuffer(nil)
+	sql.WriteString("delete from Users where avatar=$1")
+	b.operations = append(b.operations, &postgresBatchOperation{
+		sql: sql,
+		args: []interface{}{ avatar },
+	})
 }
 
 func (b *postgresBatch) DeleteUserByCreated(created time.Time) {
-	panic("not implemented")
+	sql := bytes.NewBuffer(nil)
+	sql.WriteString("delete from Users where created=$1")
+	b.operations = append(b.operations, &postgresBatchOperation{
+		sql: sql,
+		args: []interface{}{ created },
+	})
 }
 
 func (b *postgresBatch) DeleteUserByCreatedAndGender(created time.Time, gender int64) {
-	panic("not implemented")
+	sql := bytes.NewBuffer(nil)
+	sql.WriteString("delete from Users where created=$1 and gender=$2")
+	b.operations = append(b.operations, &postgresBatchOperation{
+		sql: sql,
+		args: []interface{}{ created, gender },
+	})
 }
 
 func (b *postgresBatch) DeleteUserByCreatedAndGenderAndBirthdate(created time.Time, gender int64, birthdate time.Time) {
-	panic("not implemented")
+	sql := bytes.NewBuffer(nil)
+	sql.WriteString("delete from Users where created=$1 and gender=$2 and birthdate=$3")
+	b.operations = append(b.operations, &postgresBatchOperation{
+		sql: sql,
+		args: []interface{}{ created, gender, birthdate },
+	})
 }
 
-func (b *postgresBatch) DeleteUserByID(id int64) {
-	panic("not implemented")
+
+/* // MULTI-statement batchs (not fully supported by cockroachdb yet)
+
+type postgresBatch struct {
+	db *sql.DB
+	sql bytes.Buffer
+	statementCount int
+	args []interface{}
+	saveObjects []loadVarResetable
 }
+
+func (b *postgresBatch) String() string{
+	return b.sql.String()
+}
+
+func (b *postgresBatch) Execute(ctx context.Context) error {
+	if b.statementCount>0 {
+		sql := b.sql.String()
+		ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
+		defer done()
+		
+		if _, err := b.db.ExecContext(ctx, sql, b.args...); err != nil {
+			return logkit.Error(ctx, "SQL Error",logkit.Err(err), logkit.String("sql",sql))
+		}
+		for _, obj := range b.saveObjects {
+			obj.resetLoadVars()
+		}
+	}
+
+	return nil
+}
+
+
+
+func (b *postgresBatch) SaveUser(user *User){
+	sql, args := getSaveUserSQL(user, len(b.args)+1)
+	if sql != "" {
+		if b.statementCount > 0 {
+			b.sql.WriteString(";\n")
+		}
+		b.sql.WriteString(sql)
+		b.args = append(b.args, args...)
+		b.saveObjects = append(b.saveObjects, user)
+		b.statementCount++
+	}
+}
+
+func (b *postgresBatch) InsertUser(birthdate time.Time, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string){
+	if b.statementCount > 0 {
+		b.sql.WriteString(";\n")
+	}
+	b.sql.WriteString("insert into Users(birthdate, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id) values (")
+	b.sql.WriteString("$")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+1))
+	b.sql.WriteString(", $")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+2))
+	b.sql.WriteString(", $")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+3))
+	b.sql.WriteString(", $")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+4))
+	b.sql.WriteString(", $")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+5))
+	b.sql.WriteString(", $")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+6))
+	b.sql.WriteString(", $")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+7))
+	b.sql.WriteString(", $")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+8))
+	b.sql.WriteString(", $")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+9))
+	b.sql.WriteString(")")
+	b.args = append(b.args, birthdate, gender, created, lastSeen, interest, displayName, avatar, email, facebookUserID)
+	b.statementCount++
+}
+
+
+func (b *postgresBatch) DeleteUserByID(id int64) {
+	if b.statementCount > 0 {
+		b.sql.WriteString(";\n")
+	}
+	b.sql.WriteString("delete from Users where ")
+	b.sql.WriteString("id=$")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+1))
+	b.args = append(b.args, id)
+	b.statementCount++
+}
+
+func (b *postgresBatch) DeleteUserByEmail(email *string) {
+	if b.statementCount > 0 {
+		b.sql.WriteString(";\n")
+	}
+	b.sql.WriteString("delete from Users where ")
+	b.sql.WriteString("email=$")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+1))
+	b.args = append(b.args, email)
+	b.statementCount++
+}
+
+func (b *postgresBatch) DeleteUserByFacebookUserID(facebookUserID *string) {
+	if b.statementCount > 0 {
+		b.sql.WriteString(";\n")
+	}
+	b.sql.WriteString("delete from Users where ")
+	b.sql.WriteString("facebook_user_id=$")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+1))
+	b.args = append(b.args, facebookUserID)
+	b.statementCount++
+}
+
+func (b *postgresBatch) DeleteUserByFacebookUserIDAndAvatar(facebookUserID *string, avatar string) {
+	if b.statementCount > 0 {
+		b.sql.WriteString(";\n")
+	}
+	b.sql.WriteString("delete from Users where ")
+	b.sql.WriteString("facebook_user_id=$")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+1))
+	b.sql.WriteString(" and avatar=$")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+2))
+	b.args = append(b.args, facebookUserID, avatar)
+	b.statementCount++
+}
+
+func (b *postgresBatch) DeleteUserByAvatar(avatar string) {
+	if b.statementCount > 0 {
+		b.sql.WriteString(";\n")
+	}
+	b.sql.WriteString("delete from Users where ")
+	b.sql.WriteString("avatar=$")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+1))
+	b.args = append(b.args, avatar)
+	b.statementCount++
+}
+
+func (b *postgresBatch) DeleteUserByCreated(created time.Time) {
+	if b.statementCount > 0 {
+		b.sql.WriteString(";\n")
+	}
+	b.sql.WriteString("delete from Users where ")
+	b.sql.WriteString("created=$")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+1))
+	b.args = append(b.args, created)
+	b.statementCount++
+}
+
+func (b *postgresBatch) DeleteUserByCreatedAndGender(created time.Time, gender int64) {
+	if b.statementCount > 0 {
+		b.sql.WriteString(";\n")
+	}
+	b.sql.WriteString("delete from Users where ")
+	b.sql.WriteString("created=$")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+1))
+	b.sql.WriteString(" and gender=$")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+2))
+	b.args = append(b.args, created, gender)
+	b.statementCount++
+}
+
+func (b *postgresBatch) DeleteUserByCreatedAndGenderAndBirthdate(created time.Time, gender int64, birthdate time.Time) {
+	if b.statementCount > 0 {
+		b.sql.WriteString(";\n")
+	}
+	b.sql.WriteString("delete from Users where ")
+	b.sql.WriteString("created=$")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+1))
+	b.sql.WriteString(" and gender=$")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+2))
+	b.sql.WriteString(" and birthdate=$")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+3))
+	b.args = append(b.args, created, gender, birthdate)
+	b.statementCount++
+}
+
+
+*/

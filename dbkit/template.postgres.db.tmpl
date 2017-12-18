@@ -1,24 +1,202 @@
 type postgresBatch struct {
+	db *sql.DB
+	operations []*postgresBatchOperation
+	//sql bytes.Buffer
+	//statementCount int
+	//args []interface{}
+}
+
+type postgresBatchOperation struct{
+	key string
+	sql *bytes.Buffer
+	args []interface{}
+	saveObject loadVarResetable
 }
 
 func (b *postgresBatch) String() string{
-	panic("not implemented")
+	sql := bytes.NewBuffer(nil);
+	for i, op := range b.operations {
+		if i > 0 {
+			sql.WriteString(";\n");
+		}
+		sql.WriteString(op.sql.String())
+	}
+	return sql.String()
 }
 
 func (b *postgresBatch) Execute(ctx context.Context) error {
-	panic("not implemented")
+	if len(b.operations) > 0 {
+		ctx, done := logkit.Operation(ctx,"pg.sql", logkit.Stringer("sql",b))
+		defer done()
+		for _, op := range b.operations {
+			sql := op.sql.String()
+			if _, err := b.db.ExecContext(ctx, sql, op.args...); err != nil {
+				return logkit.Error(ctx, "SQL Error",logkit.Err(err), logkit.String("sql",sql))
+			}
+			if op.saveObject != nil {
+				op.saveObject.resetLoadVars()
+			}
+		}
+	}
+
+	return nil
 }
+
+func (b *postgresBatch) ExecuteCockroachDB(ctx context.Context, noUpdateConflict bool, returningNothing bool) error {
+	if len(b.operations) > 0 {
+		ctx, done := logkit.Operation(ctx,"pg.sql", logkit.Stringer("sql",b))
+		defer done()
+		for _, op := range b.operations {
+			if noUpdateConflict {
+				op.sql.WriteString(" ON CONFLICT DO NOTHING")
+			}
+			if returningNothing {
+				op.sql.WriteString(" RETURNING NOTHING")
+			}
+			sql := op.sql.String()
+			if _, err := b.db.ExecContext(ctx, sql, op.args...); err != nil {
+				return logkit.Error(ctx, "SQL Error",logkit.Err(err), logkit.String("sql",sql))
+			}
+			if op.saveObject != nil {
+				op.saveObject.resetLoadVars()
+			}
+		}
+	}
+
+	return nil
+}
+
+
 
 {{range $.Schema.Tables}}
 func (b *postgresBatch) Save{{.StructName}}({{.LowerStructName}} *{{.StructName}}){
-	panic("not implemented")
+	sql, args := getSave{{.StructName}}SQL({{.LowerStructName}}, 1)
+	if sql != "" {
+		sb := bytes.NewBuffer(nil)
+		sb.WriteString(sql) //TODO: smarter?
+		b.operations = append(b.operations, &postgresBatchOperation{
+			sql: sb,
+			args: args,
+			saveObject: {{.LowerStructName}},
+		})
+	}
 }
 
 func (b *postgresBatch) Insert{{.StructName}}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}){
-	panic("not implemented")
+	key := "insert_{{.StructName}}"
+	var op *postgresBatchOperation
+	for _, o := range b.operations {
+		if o.key == key {
+			op = o;
+			break
+		}
+	}
+	if op == nil {
+		sql := bytes.NewBuffer(nil)
+		sql.WriteString("insert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values ")
+
+		op = &postgresBatchOperation{
+			key: key,
+			sql: sql,
+		}
+		b.operations = append(b.operations, op)
+	}
+
+	if len(op.args)> 0 {
+		op.sql.WriteString(",")
+	}
+	op.sql.WriteString("(")
+	for i:=0; i!= {{len .NonAutoIDColumns}};i++ {
+		if i >0 {
+			op.sql.WriteString(",")
+		}
+		op.sql.WriteString("$")
+		op.sql.WriteString(strconv.Itoa(1+i+len(op.args)))
+	}
+	op.sql.WriteString(")")
+	op.args = append(op.args, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}}{{end}})
 }
+
 {{ range .IndexCombinations }}
 func (b *postgresBatch) Delete{{.Table.StructName}}By{{.Name}}({{.FuncArgs}}) {
-	panic("not implemented")
+	sql := bytes.NewBuffer(nil)
+	sql.WriteString("delete from {{ .Table.DBTableName }} where {{range $i, $c := .Columns}}{{if $i}} and {{end}}{{$c.DBName}}=${{$i | plusone}}{{end}}")
+	b.operations = append(b.operations, &postgresBatchOperation{
+		sql: sql,
+		args: []interface{}{ {{.CallArgs}} },
+	})
 }
 {{end}}{{end}}
+
+/* // MULTI-statement batchs (not fully supported by cockroachdb yet)
+
+type postgresBatch struct {
+	db *sql.DB
+	sql bytes.Buffer
+	statementCount int
+	args []interface{}
+	saveObjects []loadVarResetable
+}
+
+func (b *postgresBatch) String() string{
+	return b.sql.String()
+}
+
+func (b *postgresBatch) Execute(ctx context.Context) error {
+	if b.statementCount>0 {
+		sql := b.sql.String()
+		ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
+		defer done()
+		
+		if _, err := b.db.ExecContext(ctx, sql, b.args...); err != nil {
+			return logkit.Error(ctx, "SQL Error",logkit.Err(err), logkit.String("sql",sql))
+		}
+		for _, obj := range b.saveObjects {
+			obj.resetLoadVars()
+		}
+	}
+
+	return nil
+}
+
+
+{{range $.Schema.Tables}}
+func (b *postgresBatch) Save{{.StructName}}({{.LowerStructName}} *{{.StructName}}){
+	sql, args := getSave{{.StructName}}SQL({{.LowerStructName}}, len(b.args)+1)
+	if sql != "" {
+		if b.statementCount > 0 {
+			b.sql.WriteString(";\n")
+		}
+		b.sql.WriteString(sql)
+		b.args = append(b.args, args...)
+		b.saveObjects = append(b.saveObjects, {{.LowerStructName}})
+		b.statementCount++
+	}
+}
+
+func (b *postgresBatch) Insert{{.StructName}}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}){
+	if b.statementCount > 0 {
+		b.sql.WriteString(";\n")
+	}
+	b.sql.WriteString("insert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values (")
+	{{range $i, $c := .NonAutoIDColumns}}b.sql.WriteString("{{if $i}}, {{end}}$")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+{{$i | plusone}}))
+	{{end}}b.sql.WriteString(")")
+	b.args = append(b.args, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}}{{end}})
+	b.statementCount++
+}
+
+{{ range .IndexCombinations }}
+func (b *postgresBatch) Delete{{.Table.StructName}}By{{.Name}}({{.FuncArgs}}) {
+	if b.statementCount > 0 {
+		b.sql.WriteString(";\n")
+	}
+	b.sql.WriteString("delete from {{ .Table.DBTableName }} where ")
+	{{range $i, $c := .Columns}}b.sql.WriteString("{{if $i}} and {{end}}{{$c.DBName}}=$")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+{{$i | plusone}}))
+	{{end}}b.args = append(b.args, {{.CallArgs}})
+	b.statementCount++
+}
+{{end}}{{end}}
+
+*/

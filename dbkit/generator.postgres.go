@@ -18,6 +18,9 @@ func (p *postgresGenerator) validate(s *Schema) []error {
 func (p *postgresGenerator) dbImports(schema *Schema) []string {
 	imports := make([]string, 0, 0)
 	imports = append(imports, "database/sql")
+	imports = append(imports, "github.com/oliverkofoed/gokit/logkit")
+	imports = append(imports, "bytes")
+	imports = append(imports, "strconv")
 	imports = append(imports, "_github.com/lib/pq")
 	for _, t := range schema.Tables {
 		for _, col := range t.Columns {
