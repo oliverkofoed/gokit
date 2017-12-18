@@ -25,14 +25,25 @@ func Complete(c *web.Context, form interface{}, texts *Text) bool {
 		texts = &DefaultText
 	}
 
-	// bind all fields
+	// find all fields
 	numFields := v.NumField()
+	anyUploadFields := false
 	fields := make([]Field, 0, numFields)
 	for i := 0; i < numFields; i++ {
 		if field, ok := (v.Field(i).Addr().Interface()).(Field); ok {
-			field.Bind(c, texts)
 			fields = append(fields, field)
+			if _, ok := field.(*FileField); ok {
+				anyUploadFields = true
+			}
 		}
+	}
+	if anyUploadFields {
+		c.Request.ParseMultipartForm(1024 * 500)
+	}
+
+	// bind all fieldsk
+	for _, field := range fields {
+		field.Bind(c, texts)
 	}
 
 	// check all fields are valid

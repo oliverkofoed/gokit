@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"math/rand"
 	"mime"
 	"net/http"
 	"os"
@@ -18,6 +19,12 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/tdewolff/minify"
+	"github.com/tdewolff/minify/css"
+	"github.com/tdewolff/minify/html"
+	"github.com/tdewolff/minify/js"
+	"github.com/tdewolff/minify/svg"
 )
 
 type Preprocessor func(assets *Assets, path string, content []byte) (result []byte, err error)
@@ -77,6 +84,78 @@ func NewAssets(baseURL string) Assets {
 	assets.AddPreprocessor(".css", AssetSourceMapPreprocessor)
 
 	return assets
+}
+
+func (f *Assets) AddMinifyPreprocessors(minifyCSS, minifyJavascript, minifySVG, minifyHTML, minifyTmpl bool) {
+	m := minify.New()
+	minifier := func(mimeType string) func(assets *Assets, path string, content []byte) ([]byte, error) {
+		return func(assets *Assets, path string, content []byte) ([]byte, error) {
+			minified, err := m.Bytes(mimeType, content)
+			if err != nil {
+				return nil, err
+			}
+			return minified, nil
+		}
+	}
+	if minifyJavascript {
+		m.AddFunc("text/javascript", js.Minify)
+		f.AddPreprocessor(".js", minifier("text/javascript"))
+	}
+	if minifySVG {
+		m.AddFunc("image/svg+xml", svg.Minify)
+		f.AddPreprocessor(".svg", minifier("image/svg+xml"))
+	}
+	if minifyCSS {
+		m.Add("text/css", &css.Minifier{
+			Decimals: -1,
+		})
+		f.AddPreprocessor(".css", minifier("text/css"))
+	}
+	if minifyHTML {
+		m.Add("text/html", &html.Minifier{
+			KeepDefaultAttrVals: true,
+			KeepDocumentTags:    true,
+			KeepEndTags:         true,
+		})
+		f.AddPreprocessor(".htm", minifier("text/html"))
+		f.AddPreprocessor(".html", minifier("text/html"))
+	}
+	if minifyTmpl {
+		// special case for golang templates
+		randomIDRunes := []rune("abcdefghijklmnopqrstuvwxyz")
+		golangTagRegexp := regexp.MustCompile("{{[^}]+}}")
+		placeholdertag := regexp.MustCompile("placeholder[a-z]+?placeholder")
+
+		f.AddPreprocessor(".tmpl", func(assets *Assets, path string, content []byte) ([]byte, error) {
+			store := make(map[string][]byte)
+
+			// replace golang template tags with placeholders
+			content = golangTagRegexp.ReplaceAllFunc(content, func(input []byte) []byte {
+				b := make([]rune, 20)
+				for i := range b {
+					b[i] = randomIDRunes[rand.Intn(len(randomIDRunes))]
+				}
+				id := "placeholder" + string(b) + "placeholder"
+				store[id] = input
+				return []byte(id)
+			})
+
+			minified, err := m.Bytes("text/html", content)
+			if err != nil {
+				return nil, err
+			}
+
+			// replaceplaceholders with golang tags
+			minified = placeholdertag.ReplaceAllFunc(minified, func(input []byte) []byte {
+				if tag, found := store[string(input)]; found {
+					return tag
+				}
+				return input
+			})
+
+			return minified, nil
+		})
+	}
 }
 
 func (f *Assets) SetTemplateFunc(name string, templateFunc interface{}) {
@@ -225,6 +304,25 @@ func (f *Assets) Serve(url string, w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.Write(file.Content)
 	}
+}
+
+func (f *Assets) RenderTemplateString(templatePathArr []string, data interface{}) (string, error) {
+	return f.RenderNamedTemplateString(templatePathArr, templatePathArr[len(templatePathArr)-1], data)
+}
+
+func (f *Assets) RenderNamedTemplateString(templatePathArr []string, name string, data interface{}) (string, error) {
+	t, err := f.GetTemplate(templatePathArr)
+
+	if err != nil {
+		return "", err
+	}
+
+	buf := bytes.NewBuffer(nil)
+	err = t.ExecuteTemplate(buf, name, data)
+	if err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
 
 func (f *Assets) RenderTemplate(templatePathArr []string, w http.ResponseWriter, data interface{}) error {

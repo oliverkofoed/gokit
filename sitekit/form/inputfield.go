@@ -2,6 +2,7 @@ package form
 
 import (
 	"bytes"
+	"fmt"
 	"html"
 	"html/template"
 	"net/mail"
@@ -128,7 +129,7 @@ func (t *InputField) Render(buffer *bytes.Buffer) {
 	buffer.WriteString("\"")
 	if t.MaxLength > 0 {
 		buffer.WriteString(" maxlength=\"")
-		buffer.WriteString(string(t.MaxLength))
+		buffer.WriteString(fmt.Sprintf("%v", t.MaxLength))
 		buffer.WriteString("\"")
 	}
 	if t.Placeholder != "" {
