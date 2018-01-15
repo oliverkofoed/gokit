@@ -117,6 +117,41 @@ func (b *postgresBatch) Insert{{.StructName}}({{range $i, $c := .NonAutoIDColumn
 	op.args = append(op.args, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}}{{end}})
 }
 
+func (b *postgresBatch) Upsert{{.StructName}}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}){
+	key := "upsert_{{.StructName}}"
+	var op *postgresBatchOperation
+	for _, o := range b.operations {
+		if o.key == key {
+			op = o;
+			break
+		}
+	}
+	if op == nil {
+		sql := bytes.NewBuffer(nil)
+		sql.WriteString("upsert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values ")
+
+		op = &postgresBatchOperation{
+			key: key,
+			sql: sql,
+		}
+		b.operations = append(b.operations, op)
+	}
+
+	if len(op.args)> 0 {
+		op.sql.WriteString(",")
+	}
+	op.sql.WriteString("(")
+	for i:=0; i!= {{len .NonAutoIDColumns}};i++ {
+		if i >0 {
+			op.sql.WriteString(",")
+		}
+		op.sql.WriteString("$")
+		op.sql.WriteString(strconv.Itoa(1+i+len(op.args)))
+	}
+	op.sql.WriteString(")")
+	op.args = append(op.args, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}}{{end}})
+}
+
 {{ range .IndexCombinations }}
 func (b *postgresBatch) Delete{{.Table.StructName}}By{{.Name}}({{.FuncArgs}}) {
 	sql := bytes.NewBuffer(nil)

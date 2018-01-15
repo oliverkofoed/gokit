@@ -62,6 +62,9 @@ type Batch interface {
 	{{range $_, $n := $.Generators}}{{if eq $n "cassandra"}}
 	Insert{{$t.StructName}}TTL(ttl int64, {{range $i, $c := $t.NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}})
 	{{end}}{{end}}
+	{{range $_, $n := $.Generators}}{{if eq $n "postgres"}}
+	Upsert{{$t.StructName}}({{range $i, $c := $t.NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}})
+	{{end}}{{end}}
 	Insert{{$t.StructName}}({{range $i, $c := $t.NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}) {{ range .IndexCombinations }}
 	Delete{{.Table.StructName}}By{{.Name}}({{.FuncArgs}}){{end}}
 	Save{{$t.StructName}}({{$t.LowerStructName}} *{{$t.StructName}}){{end}}
