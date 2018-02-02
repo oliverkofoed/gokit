@@ -174,9 +174,9 @@ func (c *Context) ServerError(err string, code int) {
 	}
 }
 
-// RequesterIP trys to get the requesterIP by inspecting
-// common headers and the ip of the remote client
-func (c *Context) RequesterIP() net.IP {
+// ClientIP trys to get the ip of the client by inspecting
+// common headers and the ip of remote endpoint of the tcp connection
+func (c *Context) ClientIP() net.IP {
 	ip := ""
 	if header := c.Request.Header.Get("CF-Connecting-IP"); header != "" {
 		ip = header
