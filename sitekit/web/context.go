@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"runtime/debug"
 
@@ -171,4 +172,27 @@ func (c *Context) ServerError(err string, code int) {
 	} else {
 		http.Error(c, err, code)
 	}
+}
+
+// RequesterIP trys to get the requesterIP by inspecting
+// common headers and the ip of the remote client
+func (c *Context) RequesterIP() net.IP {
+	ip := ""
+	if header := c.Request.Header.Get("CF-Connecting-IP"); header != "" {
+		ip = header
+	} else if header := c.Request.Header.Get("X-Forwarded-For"); header != "" {
+		ip = header
+	} else {
+		remoteIP, _, err := net.SplitHostPort(c.Request.RemoteAddr)
+		if err != nil {
+			return []byte{}
+		}
+		ip = remoteIP
+	}
+
+	userIP := net.ParseIP(ip)
+	if userIP == nil {
+		return net.IP{}
+	}
+	return userIP
 }
