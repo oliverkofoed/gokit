@@ -27,6 +27,9 @@ func (p *postgresGenerator) dbImports(schema *Schema) []string {
 			if col.Type == DataTypeTime || col.Type == DataTypeDate {
 				imports = append(imports, "time")
 			}
+			if col.Type == DataTypeUUID {
+				imports = append(imports, "github.com/satori/go.uuid")
+			}
 		}
 	}
 	return imports
@@ -40,6 +43,11 @@ func (p *postgresGenerator) imports(t *Table) []string {
 	imports = append(imports, "database/sql")
 	imports = append(imports, "github.com/oliverkofoed/gokit/logkit")
 	imports = append(imports, "_github.com/lib/pq")
+	for _, col := range t.Columns {
+		if col.Type == DataTypeUUID {
+			imports = append(imports, "github.com/satori/go.uuid")
+		}
+	}
 	return imports
 }
 

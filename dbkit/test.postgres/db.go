@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/oliverkofoed/gokit/logkit"
+	"github.com/satori/go.uuid"
 	"strconv"
 	"time"
 )
@@ -46,8 +47,12 @@ type Batch interface {
 	Execute(ctx context.Context) error
 	
 	
-	InsertUser(birthdate time.Time, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string) 
+	
+	UpsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string)
+	
+	InsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string) 
 	DeleteUserByID(id int64)
+	DeleteUserByAnotherID(anotherID uuid.UUID)
 	DeleteUserByEmail(email *string)
 	DeleteUserByFacebookUserID(facebookUserID *string)
 	DeleteUserByFacebookUserIDAndAvatar(facebookUserID *string, avatar string)
@@ -157,6 +162,31 @@ func (b *postgresBatch) Execute(ctx context.Context) error {
 	return nil
 }
 
+func (b *postgresBatch) ExecuteCockroachDB(ctx context.Context, noUpdateConflict bool, returningNothing bool) error {
+	if len(b.operations) > 0 {
+		ctx, done := logkit.Operation(ctx,"pg.sql", logkit.Stringer("sql",b))
+		defer done()
+		for _, op := range b.operations {
+			if noUpdateConflict {
+				op.sql.WriteString(" ON CONFLICT DO NOTHING")
+			}
+			if returningNothing {
+				op.sql.WriteString(" RETURNING NOTHING")
+			}
+			sql := op.sql.String()
+			if _, err := b.db.ExecContext(ctx, sql, op.args...); err != nil {
+				return logkit.Error(ctx, "SQL Error",logkit.Err(err), logkit.String("sql",sql))
+			}
+			if op.saveObject != nil {
+				op.saveObject.resetLoadVars()
+			}
+		}
+	}
+
+	return nil
+}
+
+
 
 
 func (b *postgresBatch) SaveUser(user *User){
@@ -172,7 +202,7 @@ func (b *postgresBatch) SaveUser(user *User){
 	}
 }
 
-func (b *postgresBatch) InsertUser(birthdate time.Time, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string){
+func (b *postgresBatch) InsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string){
 	key := "insert_User"
 	var op *postgresBatchOperation
 	for _, o := range b.operations {
@@ -183,7 +213,7 @@ func (b *postgresBatch) InsertUser(birthdate time.Time, gender int64, created ti
 	}
 	if op == nil {
 		sql := bytes.NewBuffer(nil)
-		sql.WriteString("insert into Users(birthdate, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id) values ")
+		sql.WriteString("insert into Users(birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id) values ")
 
 		op = &postgresBatchOperation{
 			key: key,
@@ -196,7 +226,7 @@ func (b *postgresBatch) InsertUser(birthdate time.Time, gender int64, created ti
 		op.sql.WriteString(",")
 	}
 	op.sql.WriteString("(")
-	for i:=0; i!= 9;i++ {
+	for i:=0; i!= 10;i++ {
 		if i >0 {
 			op.sql.WriteString(",")
 		}
@@ -204,7 +234,42 @@ func (b *postgresBatch) InsertUser(birthdate time.Time, gender int64, created ti
 		op.sql.WriteString(strconv.Itoa(1+i+len(op.args)))
 	}
 	op.sql.WriteString(")")
-	op.args = append(op.args, birthdate, gender, created, lastSeen, interest, displayName, avatar, email, facebookUserID)
+	op.args = append(op.args, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, facebookUserID)
+}
+
+func (b *postgresBatch) UpsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string){
+	key := "upsert_User"
+	var op *postgresBatchOperation
+	for _, o := range b.operations {
+		if o.key == key {
+			op = o;
+			break
+		}
+	}
+	if op == nil {
+		sql := bytes.NewBuffer(nil)
+		sql.WriteString("upsert into Users(birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id) values ")
+
+		op = &postgresBatchOperation{
+			key: key,
+			sql: sql,
+		}
+		b.operations = append(b.operations, op)
+	}
+
+	if len(op.args)> 0 {
+		op.sql.WriteString(",")
+	}
+	op.sql.WriteString("(")
+	for i:=0; i!= 10;i++ {
+		if i >0 {
+			op.sql.WriteString(",")
+		}
+		op.sql.WriteString("$")
+		op.sql.WriteString(strconv.Itoa(1+i+len(op.args)))
+	}
+	op.sql.WriteString(")")
+	op.args = append(op.args, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, facebookUserID)
 }
 
 
@@ -214,6 +279,15 @@ func (b *postgresBatch) DeleteUserByID(id int64) {
 	b.operations = append(b.operations, &postgresBatchOperation{
 		sql: sql,
 		args: []interface{}{ id },
+	})
+}
+
+func (b *postgresBatch) DeleteUserByAnotherID(anotherID uuid.UUID) {
+	sql := bytes.NewBuffer(nil)
+	sql.WriteString("delete from Users where another_id=$1")
+	b.operations = append(b.operations, &postgresBatchOperation{
+		sql: sql,
+		args: []interface{}{ anotherID },
 	})
 }
 
@@ -327,11 +401,11 @@ func (b *postgresBatch) SaveUser(user *User){
 	}
 }
 
-func (b *postgresBatch) InsertUser(birthdate time.Time, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string){
+func (b *postgresBatch) InsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string){
 	if b.statementCount > 0 {
 		b.sql.WriteString(";\n")
 	}
-	b.sql.WriteString("insert into Users(birthdate, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id) values (")
+	b.sql.WriteString("insert into Users(birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id) values (")
 	b.sql.WriteString("$")
 	b.sql.WriteString(strconv.Itoa(len(b.args)+1))
 	b.sql.WriteString(", $")
@@ -350,8 +424,10 @@ func (b *postgresBatch) InsertUser(birthdate time.Time, gender int64, created ti
 	b.sql.WriteString(strconv.Itoa(len(b.args)+8))
 	b.sql.WriteString(", $")
 	b.sql.WriteString(strconv.Itoa(len(b.args)+9))
+	b.sql.WriteString(", $")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+10))
 	b.sql.WriteString(")")
-	b.args = append(b.args, birthdate, gender, created, lastSeen, interest, displayName, avatar, email, facebookUserID)
+	b.args = append(b.args, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, facebookUserID)
 	b.statementCount++
 }
 
@@ -364,6 +440,17 @@ func (b *postgresBatch) DeleteUserByID(id int64) {
 	b.sql.WriteString("id=$")
 	b.sql.WriteString(strconv.Itoa(len(b.args)+1))
 	b.args = append(b.args, id)
+	b.statementCount++
+}
+
+func (b *postgresBatch) DeleteUserByAnotherID(anotherID uuid.UUID) {
+	if b.statementCount > 0 {
+		b.sql.WriteString(";\n")
+	}
+	b.sql.WriteString("delete from Users where ")
+	b.sql.WriteString("another_id=$")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+1))
+	b.args = append(b.args, anotherID)
 	b.statementCount++
 }
 

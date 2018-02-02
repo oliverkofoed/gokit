@@ -2,6 +2,17 @@ type {{ .GoLowerTableName }}PostgresDriver struct {
 	db *sql.DB
 }
 
+func (d *{{ .GoLowerTableName }}PostgresDriver) execute(ctx context.Context, query string, args ...interface{}) error {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",query))
+	defer done()
+
+	_, err := d.db.ExecContext(ctx,query,args...);
+	return err
+}
+
 func (d *{{ .GoLowerTableName }}PostgresDriver) insert(ctx context.Context, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}) (*{{ .StructName }}, error) {
 	if ctx == nil {
 		ctx = context.Background()
@@ -129,10 +140,10 @@ func getSave{{.StructName}}SQL(item *{{ .StructName }}, argOffset int) (string, 
 
 	// where clause
 	sb.WriteString(" where")
-	{{ range .PrimaryIndex.Columns }}
-	sb.WriteString(" {{.DBName}}=$")
+	{{ range $i, $v := .PrimaryIndex.Columns }}
+	sb.WriteString("{{if gt $i 0}} and{{end}} {{$v.DBName}}=$")
 	sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
-	args = append(args, item.{{.GoName}})
+	args = append(args, item.{{$v.GoName}})
 	{{ end }}
 
 	return sb.String(), args

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/oliverkofoed/gokit/dbkit"
+	uuid "github.com/satori/go.uuid"
 )
 
 func noerr(err error) {
@@ -32,15 +33,17 @@ func testUsers(db *DB, t *testing.T) {
 	db.Users.DeleteByFacebookUserID(nil, nil)
 	db.Users.DeleteByFacebookUserID(nil, dbkit.NullableString(""))
 
-	// Create
-	u, err := db.Users.Insert(ctx, time.Now(), 0, time.Now(), time.Now(), 0, "Oliver", "abcdef", nil, dbkit.NullableString(""))
+	uid, err := uuid.NewV4()
 	noerr(err)
-	//fmt.Println(u)
+
+	// Create
+	u, err := db.Users.Insert(ctx, time.Now(), uid, 0, time.Now(), time.Now(), 0, "Oliver", "abcdef", nil, dbkit.NullableString(""))
+	noerr(err)
 
 	// Read-Load
 	u, err = db.Users.Load(ctx, "ID=$1", u.ID)
+	fmt.Println(uid, u.AnotherID)
 	noerr(err)
-	//fmt.Println(u)
 
 	// Update
 	u.DisplayName = "bobby"
@@ -74,9 +77,9 @@ func testUsers(db *DB, t *testing.T) {
 
 	// batch test
 	batch := db.NewBatch()
-	batch.InsertUser(time.Now(), 0, time.Now(), time.Now(), 0, "b1", "abcdef", nil, nil)
-	batch.InsertUser(time.Now(), 0, time.Now(), time.Now(), 0, "b2", "abcdef", nil, nil)
-	batch.InsertUser(time.Now(), 0, time.Now(), time.Now(), 0, "b3", "abcdef", nil, nil)
+	batch.InsertUser(time.Now(), uid, 0, time.Now(), time.Now(), 0, "b1", "abcdef", nil, nil)
+	batch.InsertUser(time.Now(), uid, 0, time.Now(), time.Now(), 0, "b2", "abcdef", nil, nil)
+	batch.InsertUser(time.Now(), uid, 0, time.Now(), time.Now(), 0, "b3", "abcdef", nil, nil)
 	u.DisplayName = "bobbyboy"
 	batch.SaveUser(u)
 	err = batch.Execute(ctx)

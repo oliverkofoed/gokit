@@ -176,6 +176,9 @@ func runTemplate(templateName string, buf *bytes.Buffer, data interface{}) {
 			if column.Type == DataTypeBytes { //|| column.Type == DataTypeTimeUUID {
 				return "!bytes.Equal(" + currentPrefix + column.GoName + "," + loadedPrefix + column.GoName + ")"
 			}
+			if column.Type == DataTypeUUID {
+				return "!bytes.Equal(" + currentPrefix + column.GoName + ".Bytes()," + loadedPrefix + column.GoName + ".Bytes())"
+			}
 
 			return currentPrefix + column.GoName + " != " + loadedPrefix + column.GoName
 			//return input + 1

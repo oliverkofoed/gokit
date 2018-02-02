@@ -46,6 +46,7 @@ func connected(conn net.Conn, onMessage MessageHandler, onDisconnect Disconnecte
 func (c *Connection) RemoteAddr() net.Addr {
 	return c.conn.RemoteAddr()
 }
+
 func (c *Connection) readLoop() {
 	buf := make([]byte, 0, 512)
 	off := 0

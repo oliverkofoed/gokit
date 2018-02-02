@@ -7,6 +7,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/oliverkofoed/gokit/logkit"
+	"github.com/satori/go.uuid"
 	"strconv"
 	"time"
 )
@@ -16,9 +17,14 @@ type UsersTable struct {
 	driver usersDriver
 }
 
+// Execute runs a raw comand against the database
+func (t UsersTable) Execute(ctx context.Context, command string, args ...interface{}) error{
+	return t.driver.execute(ctx, command, args...)
+}
+
 // Insert creates a record in the Users table
-func (t UsersTable) Insert(ctx context.Context, birthdate time.Time, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string) (*User, error) {
-	return t.driver.insert(ctx, birthdate, gender, created, lastSeen, interest, displayName, avatar, email, facebookUserID)
+func (t UsersTable) Insert(ctx context.Context, birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string) (*User, error) {
+	return t.driver.insert(ctx, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, facebookUserID)
 }
 
 // Load a single record from the Users table based on the given query
@@ -44,6 +50,21 @@ func (t UsersTable) FindByID(id int64) *UserQuery {
 // DeleteByID deletes records the Users table based on the given values
 func (t UsersTable) DeleteByID(ctx context.Context, id int64) error {
 	return t.driver.deleteByID(ctx,id)
+}
+
+// LoadByAnotherID loads a single record from the Users table based on the given values
+func (t UsersTable) LoadByAnotherID(ctx context.Context, anotherID uuid.UUID) (*User, error) {
+	return t.driver.loadByAnotherID(ctx, anotherID)
+}
+
+// FindByAnotherID finds records the Users table based on the given values
+func (t UsersTable) FindByAnotherID(anotherID uuid.UUID) *UserQuery {
+	return t.driver.findByAnotherID(anotherID)
+}
+
+// DeleteByAnotherID deletes records the Users table based on the given values
+func (t UsersTable) DeleteByAnotherID(ctx context.Context, anotherID uuid.UUID) error {
+	return t.driver.deleteByAnotherID(ctx,anotherID)
 }
 
 // LoadByEmail loads a single record from the Users table based on the given values
@@ -161,6 +182,7 @@ type User struct {
 	driver usersDriver
 	ID      int64
 	Birthdate      time.Time
+	AnotherID      uuid.UUID
 	Gender      int64
 	Created      time.Time
 	LastSeen      time.Time
@@ -172,6 +194,7 @@ type User struct {
 	
 	loadID      int64
 	loadBirthdate      time.Time
+	loadAnotherID      uuid.UUID
 	loadGender      int64
 	loadCreated      time.Time
 	loadLastSeen      time.Time
@@ -242,7 +265,8 @@ func (q *UserQuery) Each(ctx context.Context, reuseItem bool, action func(*User)
 }
 
 type usersDriver interface {
-	insert(ctx context.Context,birthdate time.Time, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string) (*User, error)
+	execute(ctx context.Context,query string, args ...interface{}) error
+	insert(ctx context.Context,birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string) (*User, error)
 	load(ctx context.Context,query string, args ...interface{}) (*User, error)
 	delete(ctx context.Context,query string, args ...interface{}) error
 	save(ctx context.Context,user *User) error
@@ -253,6 +277,9 @@ type usersDriver interface {
 	loadByID(ctx context.Context,id int64) (*User, error)
 	findByID(id int64) *UserQuery
 	deleteByID(ctx context.Context,id int64) error
+	loadByAnotherID(ctx context.Context,anotherID uuid.UUID) (*User, error)
+	findByAnotherID(anotherID uuid.UUID) *UserQuery
+	deleteByAnotherID(ctx context.Context,anotherID uuid.UUID) error
 	loadByEmail(ctx context.Context,email *string) (*User, error)
 	findByEmail(email *string) *UserQuery
 	deleteByEmail(ctx context.Context,email *string) error
@@ -283,17 +310,28 @@ type usersPostgresDriver struct {
 	db *sql.DB
 }
 
-func (d *usersPostgresDriver) insert(ctx context.Context, birthdate time.Time, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string) (*User, error) {
+func (d *usersPostgresDriver) execute(ctx context.Context, query string, args ...interface{}) error {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",query))
+	defer done()
+
+	_, err := d.db.ExecContext(ctx,query,args...);
+	return err
+}
+
+func (d *usersPostgresDriver) insert(ctx context.Context, birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string) (*User, error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
 	
-	sql := "insert into Users(birthdate, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id) values ($1, $2, $3, $4, $5, $6, $7, $8, $9) returning id"
+	sql := "insert into Users(birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) returning id"
 	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
 	defer done()
 	var newID int64
-	err := d.db.QueryRowContext(ctx,sql, birthdate, gender, created, lastSeen, interest, displayName, avatar, email, facebookUserID).Scan(&newID)
+	err := d.db.QueryRowContext(ctx,sql, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, facebookUserID).Scan(&newID)
 	
 	if err != nil {
 		return nil, err
@@ -306,6 +344,7 @@ func (d *usersPostgresDriver) insert(ctx context.Context, birthdate time.Time, g
 		loadID: newID,
 		
 		Birthdate:      birthdate,
+		AnotherID:      anotherID,
 		Gender:      gender,
 		Created:      created,
 		LastSeen:      lastSeen,
@@ -316,6 +355,7 @@ func (d *usersPostgresDriver) insert(ctx context.Context, birthdate time.Time, g
 		FacebookUserID:      facebookUserID,
 		
 		loadBirthdate:      birthdate,
+		loadAnotherID:      anotherID,
 		loadGender:      gender,
 		loadCreated:      created,
 		loadLastSeen:      lastSeen,
@@ -332,7 +372,7 @@ func (d *usersPostgresDriver) load(ctx context.Context, query string, args ...in
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	sql := "SELECT id, birthdate, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id from Users where "+query
+	sql := "SELECT id, birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id from Users where "+query
 	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
 	defer done()
 	rows, err := d.db.QueryContext(ctx,sql, args...)
@@ -368,13 +408,14 @@ func (d *usersPostgresDriver) delete(ctx context.Context, query string, args ...
 }
 
 func (d *usersPostgresDriver) scan(item *User, rows *sql.Rows) error {
-	err := rows.Scan(&item.ID, &item.Birthdate, &item.Gender, &item.Created, &item.LastSeen, &item.Interest, &item.DisplayName, &item.Avatar, &item.Email, &item.FacebookUserID)
+	err := rows.Scan(&item.ID, &item.Birthdate, &item.AnotherID, &item.Gender, &item.Created, &item.LastSeen, &item.Interest, &item.DisplayName, &item.Avatar, &item.Email, &item.FacebookUserID)
 	if err != nil {
 		return err
 	}
 	item.driver = d
 	item.loadID = item.ID
 	item.loadBirthdate = item.Birthdate
+	item.loadAnotherID = item.AnotherID
 	item.loadGender = item.Gender
 	item.loadCreated = item.Created
 	item.loadLastSeen = item.LastSeen
@@ -411,7 +452,7 @@ func (d *usersPostgresDriver) save(ctx context.Context, item *User) error {
 func getSaveUserSQL(item *User, argOffset int) (string, []interface{}) {
 	var sb bytes.Buffer
 	sb.WriteString("update Users set ")
-	args := make([]interface{}, 0, 10 )
+	args := make([]interface{}, 0, 11 )
 
 	
 	if item.ID != item.loadID { 
@@ -430,6 +471,15 @@ func getSaveUserSQL(item *User, argOffset int) (string, []interface{}) {
 		sb.WriteString("birthdate=$")
 		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
 		args = append(args, item.Birthdate)
+	}
+	
+	if !bytes.Equal(item.AnotherID.Bytes(),item.loadAnotherID.Bytes()) { 
+		if len(args) != 0 {
+			sb.WriteString(", ")
+		}
+		sb.WriteString("another_id=$")
+		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
+		args = append(args, item.AnotherID)
 	}
 	
 	if item.Gender != item.loadGender { 
@@ -523,6 +573,7 @@ func getSaveUserSQL(item *User, argOffset int) (string, []interface{}) {
 func (i *User) resetLoadVars(){
 	i.loadID = i.ID
 	i.loadBirthdate = i.Birthdate
+	i.loadAnotherID = i.AnotherID
 	i.loadGender = i.Gender
 	i.loadCreated = i.Created
 	i.loadLastSeen = i.LastSeen
@@ -619,7 +670,7 @@ func (d *usersPostgresDriver) queryEach(ctx context.Context, query *UserQuery, r
 func (d *usersPostgresDriver) querySQL(query *UserQuery) string {
 	var sb bytes.Buffer
 
-	sb.WriteString("Select id, birthdate, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id from Users")
+	sb.WriteString("Select id, birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id from Users")
 
 	if query.whereQuery != "" {
 		sb.WriteString(" WHERE ")
@@ -661,6 +712,20 @@ func (d *usersPostgresDriver) findByID(id int64) *UserQuery {
 
 func (d *usersPostgresDriver) deleteByID(ctx context.Context, id int64) error {
 	return d.delete(ctx,"id=$1", id)
+}
+
+func (d *usersPostgresDriver) loadByAnotherID(ctx context.Context, anotherID uuid.UUID) (*User, error) {
+	return d.load(ctx,"another_id=$1", anotherID)
+}
+
+func (d *usersPostgresDriver) findByAnotherID(anotherID uuid.UUID) *UserQuery {
+	q :=&UserQuery{driver: d}
+	q.Where("another_id=$1", anotherID)
+	return q
+}
+
+func (d *usersPostgresDriver) deleteByAnotherID(ctx context.Context, anotherID uuid.UUID) error {
+	return d.delete(ctx,"another_id=$1", anotherID)
 }
 
 func (d *usersPostgresDriver) loadByEmail(ctx context.Context, email *string) (*User, error) {

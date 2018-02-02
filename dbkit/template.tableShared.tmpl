@@ -3,6 +3,11 @@ type {{ .GoTableName }}Table struct {
 	driver {{ .GoLowerTableName }}Driver
 }
 
+// Execute runs a raw comand against the database
+func (t {{ .GoTableName }}Table) Execute(ctx context.Context, command string, args ...interface{}) error{
+	return t.driver.execute(ctx, command, args...)
+}
+
 // Insert creates a record in the {{ .GoTableName }} table
 func (t {{ .GoTableName }}Table) Insert(ctx context.Context, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}) (*{{ .StructName }}, error) {
 	return t.driver.insert(ctx, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}}{{end}})
@@ -106,6 +111,7 @@ func (q *{{ .StructName }}Query) Each(ctx context.Context, reuseItem bool, actio
 }
 
 type {{ .GoLowerTableName }}Driver interface {
+	execute(ctx context.Context,query string, args ...interface{}) error
 	insert(ctx context.Context,{{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}) (*{{ .StructName }}, error)
 	load(ctx context.Context,query string, args ...interface{}) (*{{ .StructName }}, error)
 	delete(ctx context.Context,query string, args ...interface{}) error

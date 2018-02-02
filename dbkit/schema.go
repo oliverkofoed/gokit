@@ -242,6 +242,8 @@ func (c *Column) GoType() string {
 		return prefix + "int32"
 	case DataTypeTimeUUID:
 		return "gocql.UUID"
+	case DataTypeUUID:
+		return "uuid.UUID"
 	default:
 		panic(fmt.Sprintf("don't know go type for: %v", c.Type))
 	}
