@@ -66,6 +66,10 @@ func (t *XSRFField) HTML() template.HTML {
 	return template.HTML(buffer.String())
 }
 
+func (t *XSRFField) SetAttribute(name, value string) {
+
+}
+
 func (t *XSRFField) RowHTML() template.HTML {
 	return t.HTML()
 }
