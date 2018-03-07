@@ -43,6 +43,7 @@ func TestPostgres(t *testing.T) {
 			CONSTRAINT "primary" PRIMARY KEY (id),
 			INDEX interest(avatar),
 			INDEX another(another_id),
+			INDEX anotherandgender(another_id, gender),
 			INDEX interestix( created, gender, birthdate),
 			UNIQUE INDEX by_email (email),
 			UNIQUE INDEX by_facebook_user_id (facebook_user_id, avatar)

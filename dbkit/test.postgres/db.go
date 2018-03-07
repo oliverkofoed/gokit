@@ -53,6 +53,7 @@ type Batch interface {
 	InsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string) 
 	DeleteUserByID(id int64)
 	DeleteUserByAnotherID(anotherID uuid.UUID)
+	DeleteUserByAnotherIDAndGender(anotherID uuid.UUID, gender int64)
 	DeleteUserByEmail(email *string)
 	DeleteUserByFacebookUserID(facebookUserID *string)
 	DeleteUserByFacebookUserIDAndAvatar(facebookUserID *string, avatar string)
@@ -291,6 +292,15 @@ func (b *postgresBatch) DeleteUserByAnotherID(anotherID uuid.UUID) {
 	})
 }
 
+func (b *postgresBatch) DeleteUserByAnotherIDAndGender(anotherID uuid.UUID, gender int64) {
+	sql := bytes.NewBuffer(nil)
+	sql.WriteString("delete from Users where another_id=$1 and gender=$2")
+	b.operations = append(b.operations, &postgresBatchOperation{
+		sql: sql,
+		args: []interface{}{ anotherID, gender },
+	})
+}
+
 func (b *postgresBatch) DeleteUserByEmail(email *string) {
 	sql := bytes.NewBuffer(nil)
 	sql.WriteString("delete from Users where email=$1")
@@ -451,6 +461,19 @@ func (b *postgresBatch) DeleteUserByAnotherID(anotherID uuid.UUID) {
 	b.sql.WriteString("another_id=$")
 	b.sql.WriteString(strconv.Itoa(len(b.args)+1))
 	b.args = append(b.args, anotherID)
+	b.statementCount++
+}
+
+func (b *postgresBatch) DeleteUserByAnotherIDAndGender(anotherID uuid.UUID, gender int64) {
+	if b.statementCount > 0 {
+		b.sql.WriteString(";\n")
+	}
+	b.sql.WriteString("delete from Users where ")
+	b.sql.WriteString("another_id=$")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+1))
+	b.sql.WriteString(" and gender=$")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+2))
+	b.args = append(b.args, anotherID, gender)
 	b.statementCount++
 }
 

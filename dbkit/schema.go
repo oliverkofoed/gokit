@@ -153,11 +153,16 @@ type IndexCombination struct {
 
 // IndexCombinations builds a list of column combinations suitable for index lookups.
 func (t *Table) IndexCombinations() []*IndexCombination {
+	used := make(map[string]bool)
 	arr := make([]*IndexCombination, 0, 0)
 	for _, key := range sortedKeys(t.Indexes) {
 		index := t.Indexes[key]
 		for ix := range index.Columns {
-			arr = append(arr, makeIndexCombination(index.Columns[:ix+1], *t))
+			combination := makeIndexCombination(index.Columns[:ix+1], *t)
+			if _, found := used[combination.Name]; !found {
+				arr = append(arr, combination)
+				used[combination.Name] = true
+			}
 		}
 	}
 

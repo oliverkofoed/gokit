@@ -67,6 +67,21 @@ func (t UsersTable) DeleteByAnotherID(ctx context.Context, anotherID uuid.UUID) 
 	return t.driver.deleteByAnotherID(ctx,anotherID)
 }
 
+// LoadByAnotherIDAndGender loads a single record from the Users table based on the given values
+func (t UsersTable) LoadByAnotherIDAndGender(ctx context.Context, anotherID uuid.UUID, gender int64) (*User, error) {
+	return t.driver.loadByAnotherIDAndGender(ctx, anotherID, gender)
+}
+
+// FindByAnotherIDAndGender finds records the Users table based on the given values
+func (t UsersTable) FindByAnotherIDAndGender(anotherID uuid.UUID, gender int64) *UserQuery {
+	return t.driver.findByAnotherIDAndGender(anotherID, gender)
+}
+
+// DeleteByAnotherIDAndGender deletes records the Users table based on the given values
+func (t UsersTable) DeleteByAnotherIDAndGender(ctx context.Context, anotherID uuid.UUID, gender int64) error {
+	return t.driver.deleteByAnotherIDAndGender(ctx,anotherID, gender)
+}
+
 // LoadByEmail loads a single record from the Users table based on the given values
 func (t UsersTable) LoadByEmail(ctx context.Context, email *string) (*User, error) {
 	return t.driver.loadByEmail(ctx, email)
@@ -280,6 +295,9 @@ type usersDriver interface {
 	loadByAnotherID(ctx context.Context,anotherID uuid.UUID) (*User, error)
 	findByAnotherID(anotherID uuid.UUID) *UserQuery
 	deleteByAnotherID(ctx context.Context,anotherID uuid.UUID) error
+	loadByAnotherIDAndGender(ctx context.Context,anotherID uuid.UUID, gender int64) (*User, error)
+	findByAnotherIDAndGender(anotherID uuid.UUID, gender int64) *UserQuery
+	deleteByAnotherIDAndGender(ctx context.Context,anotherID uuid.UUID, gender int64) error
 	loadByEmail(ctx context.Context,email *string) (*User, error)
 	findByEmail(email *string) *UserQuery
 	deleteByEmail(ctx context.Context,email *string) error
@@ -726,6 +744,20 @@ func (d *usersPostgresDriver) findByAnotherID(anotherID uuid.UUID) *UserQuery {
 
 func (d *usersPostgresDriver) deleteByAnotherID(ctx context.Context, anotherID uuid.UUID) error {
 	return d.delete(ctx,"another_id=$1", anotherID)
+}
+
+func (d *usersPostgresDriver) loadByAnotherIDAndGender(ctx context.Context, anotherID uuid.UUID, gender int64) (*User, error) {
+	return d.load(ctx,"another_id=$1 and gender=$2", anotherID, gender)
+}
+
+func (d *usersPostgresDriver) findByAnotherIDAndGender(anotherID uuid.UUID, gender int64) *UserQuery {
+	q :=&UserQuery{driver: d}
+	q.Where("another_id=$1 and gender=$2", anotherID, gender)
+	return q
+}
+
+func (d *usersPostgresDriver) deleteByAnotherIDAndGender(ctx context.Context, anotherID uuid.UUID, gender int64) error {
+	return d.delete(ctx,"another_id=$1 and gender=$2", anotherID, gender)
 }
 
 func (d *usersPostgresDriver) loadByEmail(ctx context.Context, email *string) (*User, error) {
