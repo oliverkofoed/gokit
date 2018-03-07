@@ -28,6 +28,7 @@ type Site struct {
 	Assets                Assets
 	NotFound              Route
 	ServerError           Route
+	PanicHandler          func(c *Context, err interface{}) bool
 	router                httprouter.Router
 	RedirectTrailingSlash bool
 	middlewareChain       Action
@@ -155,9 +156,17 @@ func (s *Site) runRoute(route *Route, w http.ResponseWriter, req *http.Request, 
 	}
 	defer done()
 
+	// create context
+	c := CreateContext(ctx, s, route, w, req, params)
+
 	// catch panics
 	defer func() {
 		if err := recover(); err != nil {
+			if s.PanicHandler != nil {
+				if s.PanicHandler(c, err) {
+					return
+				}
+			}
 			logkit.Error(ctx, fmt.Sprintf("%v", err), logkit.String("stack", stackToPanic(debug.Stack(), 4)))
 			if s.ServerError.Action != nil {
 				w.WriteHeader(500)
@@ -167,9 +176,6 @@ func (s *Site) runRoute(route *Route, w http.ResponseWriter, req *http.Request, 
 			}
 		}
 	}()
-
-	// create context
-	c := CreateContext(ctx, s, route, w, req, params)
 
 	// run the middleware chain.
 	s.middlewareChain(c)
