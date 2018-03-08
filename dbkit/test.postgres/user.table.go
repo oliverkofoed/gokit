@@ -554,7 +554,7 @@ func getSaveUserSQL(item *User, argOffset int) (string, []interface{}) {
 		args = append(args, item.Avatar)
 	}
 	
-	if item.Email != item.loadEmail { 
+	if item.Email != item.loadEmail && !(item.Email != nil && item.loadEmail != nil && *item.Email == *item.loadEmail) { 
 		if len(args) != 0 {
 			sb.WriteString(", ")
 		}
@@ -563,7 +563,7 @@ func getSaveUserSQL(item *User, argOffset int) (string, []interface{}) {
 		args = append(args, item.Email)
 	}
 	
-	if item.FacebookUserID != item.loadFacebookUserID { 
+	if item.FacebookUserID != item.loadFacebookUserID && !(item.FacebookUserID != nil && item.loadFacebookUserID != nil && *item.FacebookUserID == *item.loadFacebookUserID) { 
 		if len(args) != 0 {
 			sb.WriteString(", ")
 		}

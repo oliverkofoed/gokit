@@ -173,15 +173,25 @@ func runTemplate(templateName string, buf *bytes.Buffer, data interface{}) {
 	t := template.Must(template.New("tmpl").Funcs(template.FuncMap{
 		"plusone": func(input int) int { return input + 1 },
 		"changed": func(column *Column, currentPrefix, loadedPrefix string) string {
+			current := currentPrefix + column.GoName
+			loaded := loadedPrefix + column.GoName
 			if column.Type == DataTypeBytes { //|| column.Type == DataTypeTimeUUID {
 				return "!bytes.Equal(" + currentPrefix + column.GoName + "," + loadedPrefix + column.GoName + ")"
 			}
 			if column.Type == DataTypeUUID {
 				return "!bytes.Equal(" + currentPrefix + column.GoName + ".Bytes()," + loadedPrefix + column.GoName + ".Bytes())"
 			}
+			if column.Type == DataTypeTime {
+				if column.Nullable {
+					return current + " != " + loaded + " && !(" + current + " != nil && " + loaded + " != nil && " + current + ".Equal(*" + loaded + "))"
+				}
+				return "!" + current + ".Equal(" + loaded + ")"
+			}
 
-			return currentPrefix + column.GoName + " != " + loadedPrefix + column.GoName
-			//return input + 1
+			if column.Nullable {
+				return current + " != " + loaded + " && !(" + current + " != nil && " + loaded + " != nil && *" + current + " == *" + loaded + ")"
+			}
+			return current + " != " + loaded
 		},
 	}).Parse(string(templateBytes)))
 
