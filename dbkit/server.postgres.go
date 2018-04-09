@@ -84,7 +84,7 @@ func (p *Postgres) GetSchema(packageName string, log func(msg string, args ...in
 	//log("database is %v", *dbName)
 
 	// 1. get tables
-	query = "select table_name from information_schema.tables  where table_schema='" + *dbName + "'"
+	query = "select table_name from information_schema.tables  where table_catalog='" + *dbName + "' and table_schema = 'public'"
 	errTemplate = "Could not load tables from " + *dbName + " with query %v. error: %v"
 	rows, err = p.db.Query(query)
 	if err != nil {
@@ -106,7 +106,7 @@ func (p *Postgres) GetSchema(packageName string, log func(msg string, args ...in
 	}
 
 	// 2. get the columns
-	query = "select table_name, column_name, column_default, is_nullable, data_type from information_schema.columns where table_schema = '" + *dbName + "' order by table_name, ordinal_position asc"
+	query = "select table_name, column_name, column_default, is_nullable, data_type from information_schema.columns where table_catalog = '" + *dbName + "' and table_schema='public' order by table_name, ordinal_position asc"
 	errTemplate = "Could not load columns from " + *dbName + " with query %v. error: %v"
 	rows, err = p.db.Query(query)
 	if err != nil {
@@ -161,7 +161,7 @@ func (p *Postgres) GetSchema(packageName string, log func(msg string, args ...in
 	}
 
 	// 4. get indexes
-	query = "select ixs.tablename, ixs.indexname, a.attname from pg_indexes ixs, pg_class c, pg_attribute a where ixs.schemaname = '" + *dbName + "' AND c.oid = ixs.crdb_oid AND a.attrelid = c.oid order by ixs.tablename, ixs.indexname, a.attnum"
+	query = "select ixs.tablename, ixs.indexname, a.attname from pg_indexes ixs, pg_class c, pg_attribute a where ixs.schemaname = 'public' AND c.oid = ixs.crdb_oid AND a.attrelid = c.oid order by ixs.tablename, ixs.indexname, a.attnum"
 
 	//query = "select table_name, constraint_name, column_name  from information_schema.key_column_usage where table_schema = '" + *dbName + "' order by table_name, ordinal_position asc"
 	//query = "select table_name, index_name, column_name from information_schema.statistics where index_schema='" + *dbName + "' order by table_name, index_name, seq_in_index asc"
