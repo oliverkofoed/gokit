@@ -13,28 +13,17 @@ func Complete(c *web.Context, form interface{}, texts *Text) bool {
 		return false
 	}
 
-	// ensure we got the right type passed in.
-	v := reflect.ValueOf(form)
-	if v.Kind() != reflect.Ptr {
-		panic("The form argument must be a pointer value.")
-	}
-	v = reflect.Indirect(v)
-
 	// default texts
 	if texts == nil {
 		texts = &DefaultText
 	}
 
 	// find all fields
-	numFields := v.NumField()
+	fields := GetFields(form)
 	anyUploadFields := false
-	fields := make([]Field, 0, numFields)
-	for i := 0; i < numFields; i++ {
-		if field, ok := (v.Field(i).Addr().Interface()).(Field); ok {
-			fields = append(fields, field)
-			if _, ok := field.(*FileField); ok {
-				anyUploadFields = true
-			}
+	for _, field := range fields {
+		if _, ok := field.(*FileField); ok {
+			anyUploadFields = true
 		}
 	}
 	if anyUploadFields {
@@ -54,4 +43,25 @@ func Complete(c *web.Context, form interface{}, texts *Text) bool {
 		}
 	}
 	return true
+}
+
+// GetFields reflects over the form and finds the Fields
+func GetFields(form interface{}) []Field {
+	// ensure we got the right type passed in.
+	v := reflect.ValueOf(form)
+	if v.Kind() != reflect.Ptr {
+		panic("The form argument must be a pointer value.")
+	}
+	v = reflect.Indirect(v)
+
+	// find all fields
+	numFields := v.NumField()
+	fields := make([]Field, 0, numFields)
+	for i := 0; i < numFields; i++ {
+		if field, ok := (v.Field(i).Addr().Interface()).(Field); ok {
+			fields = append(fields, field)
+		}
+	}
+
+	return fields
 }

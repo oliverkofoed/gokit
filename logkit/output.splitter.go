@@ -1,14 +1,14 @@
 package logkit
 
-type SplitterFilter struct {
+type SplitterOutput struct {
 	targets []Output
 }
 
-func NewSplitterFilter(targets ...Output) Output {
-	return &SplitterFilter{targets: targets}
+func NewSplitterOutput(targets ...Output) Output {
+	return &SplitterOutput{targets: targets}
 }
 
-func (d *SplitterFilter) Event(evt Event) {
+func (d *SplitterOutput) Event(evt Event) {
 	for _, target := range d.targets {
 		target.Event(evt)
 	}

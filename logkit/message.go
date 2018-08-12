@@ -47,6 +47,7 @@ const (
 	FieldTypeErr
 	FieldTypeStringer
 	FieldTypeBool
+	FieldTypeInterface
 )
 
 type Field struct {
@@ -55,6 +56,10 @@ type Field struct {
 	Integer   int64
 	Str       string
 	Value     interface{}
+}
+
+func Interface(key string, value interface{}) Field {
+	return Field{FieldType: FieldTypeInterface, Key: key, Value: value}
 }
 
 func String(key string, value string) Field {

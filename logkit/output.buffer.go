@@ -20,7 +20,10 @@ func (d *outputBuffer) Event(evt Event) {
 	d.buffered = append(d.buffered, evt)
 
 	if evt.Type == EventTypeCompleteOperation && evt.Operation.output == d && (evt.Operation.parent == nil || evt.Operation.parent.output != d) {
-		new := d.filter(d.buffered)
+		new := d.buffered
+		if d.filter != nil {
+			new = d.filter(d.buffered)
+		}
 		if d.buffered != nil {
 			for _, e := range new {
 				d.parent.Event(e)

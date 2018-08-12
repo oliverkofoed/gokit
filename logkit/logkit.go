@@ -61,7 +61,7 @@ func Error(ctx context.Context, msg string, args ...Field) error {
 }
 
 // DefaultOuput is the default Output for all logging
-var DefaultOutput Output = &ConsoleOutput{
+var DefaultOutput Output = &WriterOutput{
 	output: os.Stdout,
 	colors: isatty.IsTerminal(os.Stdout.Fd()),
 }
