@@ -15,6 +15,13 @@ func (b *cassandraBatch) String() string{
 	return buf.String()
 }
 
+func (b *cassandraBatch) ExecuteP(ctx context.Context) {
+	err := b.Execute(ctx)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+}
+
 func (b *cassandraBatch) Execute(ctx context.Context) error {
 	if len(b.cqlBatch.Entries)>0 {
 		ctx, done := logkit.Operation(ctx,"cassandra.cql", logkit.Stringer("cql",b))

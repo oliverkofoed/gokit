@@ -13,7 +13,6 @@ import (
 
 // Generate generates table and driver files for the schema
 func (s *Schema) Generate(dir string, generatorNames ...string) []error {
-
 	// find generators
 	generators, errs := getGenerators(generatorNames)
 	if len(errs) > 0 {

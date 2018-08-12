@@ -3,9 +3,26 @@ type {{ .GoTableName }}Table struct {
 	driver {{ .GoLowerTableName }}Driver
 }
 
+// ExecuteP runs a raw comand against the database and panics on errors
+func (t {{ .GoTableName }}Table) ExecuteP(ctx context.Context, command string, args ...interface{}) {
+	err := t.driver.execute(ctx, command, args...)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+}
+
 // Execute runs a raw comand against the database
 func (t {{ .GoTableName }}Table) Execute(ctx context.Context, command string, args ...interface{}) error{
 	return t.driver.execute(ctx, command, args...)
+}
+
+// InsertP creates a record in the {{ .GoTableName }} table and panics on errors
+func (t {{ .GoTableName }}Table) InsertP(ctx context.Context, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}) *{{ .StructName }} {
+	v, err := t.driver.insert(ctx, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}}{{end}})
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return v
 }
 
 // Insert creates a record in the {{ .GoTableName }} table
@@ -13,9 +30,26 @@ func (t {{ .GoTableName }}Table) Insert(ctx context.Context, {{range $i, $c := .
 	return t.driver.insert(ctx, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}}{{end}})
 }
 
+// LoadP a single record from the {{ .GoTableName }} table based on the given query and panics on error
+func (t {{ .GoTableName }}Table) LoadP(ctx context.Context, query string, args ...interface{}) *{{ .StructName }} {
+	v, err := t.driver.load(ctx, query, args...)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return v
+}
+
 // Load a single record from the {{ .GoTableName }} table based on the given query
 func (t {{ .GoTableName }}Table) Load(ctx context.Context, query string, args ...interface{}) (*{{ .StructName }}, error) {
 	return t.driver.load(ctx, query, args...)
+}
+
+// DeleteP deletes records from the {{ .GoTableName }} table based on the given query and panics on error
+func (t {{ .GoTableName }}Table) DeleteP(ctx context.Context, query string, args ...interface{}) {
+	err := t.driver.delete(ctx, query, args...)
+	if err != nil {
+		panic(panicWrap(err))
+	}
 }
 
 // Delete deletes records from the {{ .GoTableName }} table based on the given query
@@ -23,6 +57,15 @@ func (t {{ .GoTableName }}Table) Delete(ctx context.Context, query string, args 
 	return t.driver.delete(ctx, query, args...)
 }
 {{ range .IndexCombinations }}
+// LoadBy{{.Name}}P loads a single record from the {{ .Table.GoTableName }} table based on the given values and panics on error
+func (t {{ .Table.GoTableName }}Table) LoadBy{{.Name}}P(ctx context.Context, {{.FuncArgs}}) *{{ .Table.StructName }} {
+	v, err := t.driver.loadBy{{.Name}}(ctx, {{.CallArgs}})
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return v
+}
+
 // LoadBy{{.Name}} loads a single record from the {{ .Table.GoTableName }} table based on the given values
 func (t {{ .Table.GoTableName }}Table) LoadBy{{.Name}}(ctx context.Context, {{.FuncArgs}}) (*{{ .Table.StructName }}, error) {
 	return t.driver.loadBy{{.Name}}(ctx, {{.CallArgs}})
@@ -33,7 +76,15 @@ func (t {{ .Table.GoTableName }}Table) FindBy{{.Name}}({{.FuncArgs}}) *{{ .Table
 	return t.driver.findBy{{.Name}}({{.CallArgs}})
 }
 
-// DeleteBy{{.Name}} deletes records the {{ .Table.GoTableName }} table based on the given values
+// DeleteBy{{.Name}} deletes records the {{ .Table.GoTableName }} table based on the given values and panics on error
+func (t {{ .Table.GoTableName }}Table) DeleteByP{{.Name}}(ctx context.Context, {{.FuncArgs}}) {
+	err := t.driver.deleteBy{{.Name}}(ctx,{{.CallArgs}})
+	if err != nil {
+		panic(panicWrap(err))
+	}
+}
+
+// DeleteBy{{.Name}}P deletes records the {{ .Table.GoTableName }} table based on the given values
 func (t {{ .Table.GoTableName }}Table) DeleteBy{{.Name}}(ctx context.Context, {{.FuncArgs}}) error {
 	return t.driver.deleteBy{{.Name}}(ctx,{{.CallArgs}})
 }
@@ -50,6 +101,14 @@ type {{ .StructName }} struct {
 	{{ end }}
 	{{ range .Columns }}load{{.GoName}}      {{.GoType}}
 	{{ end }}
+}
+
+// SaveP saves any changes to the row and panics on error
+func (i *{{ .StructName }}) SaveP(ctx context.Context) {
+	err := i.driver.save(ctx,i)
+	if err != nil {
+		panic(panicWrap(err))
+	}
 }
 
 // Save saves any changes to the row
@@ -95,14 +154,40 @@ func (q *{{ .StructName }}Query) Where(where string, args ...interface{}) *{{ .S
 	return q
 }
 
+// FirstP returns the first item found by the query and panics on error
+func (q *{{ .StructName }}Query) FirstP(ctx context.Context) *{{ .StructName }} {
+	v, err := q.driver.queryFirst(ctx,q)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return v
+}
+
 // First returns the first item found by the query
 func (q *{{ .StructName }}Query) First(ctx context.Context) ( *{{ .StructName }}, error) {
 	return q.driver.queryFirst(ctx,q)
 }
 
+// SliceP returns a slice with all the matched item (warning: can use lots of memory) and panics on error
+func (q *{{ .StructName }}Query) SliceP(ctx context.Context,expectedSliceSize int) []*{{ .StructName }} {
+	v, err := q.driver.querySlice(ctx,q, expectedSliceSize)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return v
+}
+
 // Slice returns a slice with all the matched item (warning: can use lots of memory)
 func (q *{{ .StructName }}Query) Slice(ctx context.Context,expectedSliceSize int) ([]*{{ .StructName }}, error) {
 	return q.driver.querySlice(ctx,q, expectedSliceSize)
+}
+
+// EachP returns a slice with all the matched item (warning: can use lots of memory) and panics on error
+func (q *{{ .StructName }}Query) EachP(ctx context.Context, reuseItem bool, action func(*{{ .StructName }}) error) {
+	err := q.driver.queryEach(ctx, q, reuseItem, action)
+	if err != nil {
+		panic(panicWrap(err))
+	}
 }
 
 // Each returns a slice with all the matched item (warning: can use lots of memory)

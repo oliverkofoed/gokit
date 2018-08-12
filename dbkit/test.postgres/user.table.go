@@ -17,9 +17,26 @@ type UsersTable struct {
 	driver usersDriver
 }
 
+// ExecuteP runs a raw comand against the database and panics on errors
+func (t UsersTable) ExecuteP(ctx context.Context, command string, args ...interface{}) {
+	err := t.driver.execute(ctx, command, args...)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+}
+
 // Execute runs a raw comand against the database
 func (t UsersTable) Execute(ctx context.Context, command string, args ...interface{}) error{
 	return t.driver.execute(ctx, command, args...)
+}
+
+// InsertP creates a record in the Users table and panics on errors
+func (t UsersTable) InsertP(ctx context.Context, birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string) *User {
+	v, err := t.driver.insert(ctx, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, facebookUserID)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return v
 }
 
 // Insert creates a record in the Users table
@@ -27,14 +44,40 @@ func (t UsersTable) Insert(ctx context.Context, birthdate time.Time, anotherID u
 	return t.driver.insert(ctx, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, facebookUserID)
 }
 
+// LoadP a single record from the Users table based on the given query and panics on error
+func (t UsersTable) LoadP(ctx context.Context, query string, args ...interface{}) *User {
+	v, err := t.driver.load(ctx, query, args...)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return v
+}
+
 // Load a single record from the Users table based on the given query
 func (t UsersTable) Load(ctx context.Context, query string, args ...interface{}) (*User, error) {
 	return t.driver.load(ctx, query, args...)
 }
 
+// DeleteP deletes records from the Users table based on the given query and panics on error
+func (t UsersTable) DeleteP(ctx context.Context, query string, args ...interface{}) {
+	err := t.driver.delete(ctx, query, args...)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+}
+
 // Delete deletes records from the Users table based on the given query
 func (t UsersTable) Delete(ctx context.Context, query string, args ...interface{}) error {
 	return t.driver.delete(ctx, query, args...)
+}
+
+// LoadByIDP loads a single record from the Users table based on the given values and panics on error
+func (t UsersTable) LoadByIDP(ctx context.Context, id int64) *User {
+	v, err := t.driver.loadByID(ctx, id)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return v
 }
 
 // LoadByID loads a single record from the Users table based on the given values
@@ -47,9 +90,26 @@ func (t UsersTable) FindByID(id int64) *UserQuery {
 	return t.driver.findByID(id)
 }
 
-// DeleteByID deletes records the Users table based on the given values
+// DeleteByID deletes records the Users table based on the given values and panics on error
+func (t UsersTable) DeleteByPID(ctx context.Context, id int64) {
+	err := t.driver.deleteByID(ctx,id)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+}
+
+// DeleteByIDP deletes records the Users table based on the given values
 func (t UsersTable) DeleteByID(ctx context.Context, id int64) error {
 	return t.driver.deleteByID(ctx,id)
+}
+
+// LoadByAnotherIDP loads a single record from the Users table based on the given values and panics on error
+func (t UsersTable) LoadByAnotherIDP(ctx context.Context, anotherID uuid.UUID) *User {
+	v, err := t.driver.loadByAnotherID(ctx, anotherID)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return v
 }
 
 // LoadByAnotherID loads a single record from the Users table based on the given values
@@ -62,9 +122,26 @@ func (t UsersTable) FindByAnotherID(anotherID uuid.UUID) *UserQuery {
 	return t.driver.findByAnotherID(anotherID)
 }
 
-// DeleteByAnotherID deletes records the Users table based on the given values
+// DeleteByAnotherID deletes records the Users table based on the given values and panics on error
+func (t UsersTable) DeleteByPAnotherID(ctx context.Context, anotherID uuid.UUID) {
+	err := t.driver.deleteByAnotherID(ctx,anotherID)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+}
+
+// DeleteByAnotherIDP deletes records the Users table based on the given values
 func (t UsersTable) DeleteByAnotherID(ctx context.Context, anotherID uuid.UUID) error {
 	return t.driver.deleteByAnotherID(ctx,anotherID)
+}
+
+// LoadByAnotherIDAndGenderP loads a single record from the Users table based on the given values and panics on error
+func (t UsersTable) LoadByAnotherIDAndGenderP(ctx context.Context, anotherID uuid.UUID, gender int64) *User {
+	v, err := t.driver.loadByAnotherIDAndGender(ctx, anotherID, gender)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return v
 }
 
 // LoadByAnotherIDAndGender loads a single record from the Users table based on the given values
@@ -77,9 +154,26 @@ func (t UsersTable) FindByAnotherIDAndGender(anotherID uuid.UUID, gender int64) 
 	return t.driver.findByAnotherIDAndGender(anotherID, gender)
 }
 
-// DeleteByAnotherIDAndGender deletes records the Users table based on the given values
+// DeleteByAnotherIDAndGender deletes records the Users table based on the given values and panics on error
+func (t UsersTable) DeleteByPAnotherIDAndGender(ctx context.Context, anotherID uuid.UUID, gender int64) {
+	err := t.driver.deleteByAnotherIDAndGender(ctx,anotherID, gender)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+}
+
+// DeleteByAnotherIDAndGenderP deletes records the Users table based on the given values
 func (t UsersTable) DeleteByAnotherIDAndGender(ctx context.Context, anotherID uuid.UUID, gender int64) error {
 	return t.driver.deleteByAnotherIDAndGender(ctx,anotherID, gender)
+}
+
+// LoadByEmailP loads a single record from the Users table based on the given values and panics on error
+func (t UsersTable) LoadByEmailP(ctx context.Context, email *string) *User {
+	v, err := t.driver.loadByEmail(ctx, email)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return v
 }
 
 // LoadByEmail loads a single record from the Users table based on the given values
@@ -92,9 +186,26 @@ func (t UsersTable) FindByEmail(email *string) *UserQuery {
 	return t.driver.findByEmail(email)
 }
 
-// DeleteByEmail deletes records the Users table based on the given values
+// DeleteByEmail deletes records the Users table based on the given values and panics on error
+func (t UsersTable) DeleteByPEmail(ctx context.Context, email *string) {
+	err := t.driver.deleteByEmail(ctx,email)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+}
+
+// DeleteByEmailP deletes records the Users table based on the given values
 func (t UsersTable) DeleteByEmail(ctx context.Context, email *string) error {
 	return t.driver.deleteByEmail(ctx,email)
+}
+
+// LoadByFacebookUserIDP loads a single record from the Users table based on the given values and panics on error
+func (t UsersTable) LoadByFacebookUserIDP(ctx context.Context, facebookUserID *string) *User {
+	v, err := t.driver.loadByFacebookUserID(ctx, facebookUserID)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return v
 }
 
 // LoadByFacebookUserID loads a single record from the Users table based on the given values
@@ -107,9 +218,26 @@ func (t UsersTable) FindByFacebookUserID(facebookUserID *string) *UserQuery {
 	return t.driver.findByFacebookUserID(facebookUserID)
 }
 
-// DeleteByFacebookUserID deletes records the Users table based on the given values
+// DeleteByFacebookUserID deletes records the Users table based on the given values and panics on error
+func (t UsersTable) DeleteByPFacebookUserID(ctx context.Context, facebookUserID *string) {
+	err := t.driver.deleteByFacebookUserID(ctx,facebookUserID)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+}
+
+// DeleteByFacebookUserIDP deletes records the Users table based on the given values
 func (t UsersTable) DeleteByFacebookUserID(ctx context.Context, facebookUserID *string) error {
 	return t.driver.deleteByFacebookUserID(ctx,facebookUserID)
+}
+
+// LoadByFacebookUserIDAndAvatarP loads a single record from the Users table based on the given values and panics on error
+func (t UsersTable) LoadByFacebookUserIDAndAvatarP(ctx context.Context, facebookUserID *string, avatar string) *User {
+	v, err := t.driver.loadByFacebookUserIDAndAvatar(ctx, facebookUserID, avatar)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return v
 }
 
 // LoadByFacebookUserIDAndAvatar loads a single record from the Users table based on the given values
@@ -122,9 +250,26 @@ func (t UsersTable) FindByFacebookUserIDAndAvatar(facebookUserID *string, avatar
 	return t.driver.findByFacebookUserIDAndAvatar(facebookUserID, avatar)
 }
 
-// DeleteByFacebookUserIDAndAvatar deletes records the Users table based on the given values
+// DeleteByFacebookUserIDAndAvatar deletes records the Users table based on the given values and panics on error
+func (t UsersTable) DeleteByPFacebookUserIDAndAvatar(ctx context.Context, facebookUserID *string, avatar string) {
+	err := t.driver.deleteByFacebookUserIDAndAvatar(ctx,facebookUserID, avatar)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+}
+
+// DeleteByFacebookUserIDAndAvatarP deletes records the Users table based on the given values
 func (t UsersTable) DeleteByFacebookUserIDAndAvatar(ctx context.Context, facebookUserID *string, avatar string) error {
 	return t.driver.deleteByFacebookUserIDAndAvatar(ctx,facebookUserID, avatar)
+}
+
+// LoadByAvatarP loads a single record from the Users table based on the given values and panics on error
+func (t UsersTable) LoadByAvatarP(ctx context.Context, avatar string) *User {
+	v, err := t.driver.loadByAvatar(ctx, avatar)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return v
 }
 
 // LoadByAvatar loads a single record from the Users table based on the given values
@@ -137,9 +282,26 @@ func (t UsersTable) FindByAvatar(avatar string) *UserQuery {
 	return t.driver.findByAvatar(avatar)
 }
 
-// DeleteByAvatar deletes records the Users table based on the given values
+// DeleteByAvatar deletes records the Users table based on the given values and panics on error
+func (t UsersTable) DeleteByPAvatar(ctx context.Context, avatar string) {
+	err := t.driver.deleteByAvatar(ctx,avatar)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+}
+
+// DeleteByAvatarP deletes records the Users table based on the given values
 func (t UsersTable) DeleteByAvatar(ctx context.Context, avatar string) error {
 	return t.driver.deleteByAvatar(ctx,avatar)
+}
+
+// LoadByCreatedP loads a single record from the Users table based on the given values and panics on error
+func (t UsersTable) LoadByCreatedP(ctx context.Context, created time.Time) *User {
+	v, err := t.driver.loadByCreated(ctx, created)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return v
 }
 
 // LoadByCreated loads a single record from the Users table based on the given values
@@ -152,9 +314,26 @@ func (t UsersTable) FindByCreated(created time.Time) *UserQuery {
 	return t.driver.findByCreated(created)
 }
 
-// DeleteByCreated deletes records the Users table based on the given values
+// DeleteByCreated deletes records the Users table based on the given values and panics on error
+func (t UsersTable) DeleteByPCreated(ctx context.Context, created time.Time) {
+	err := t.driver.deleteByCreated(ctx,created)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+}
+
+// DeleteByCreatedP deletes records the Users table based on the given values
 func (t UsersTable) DeleteByCreated(ctx context.Context, created time.Time) error {
 	return t.driver.deleteByCreated(ctx,created)
+}
+
+// LoadByCreatedAndGenderP loads a single record from the Users table based on the given values and panics on error
+func (t UsersTable) LoadByCreatedAndGenderP(ctx context.Context, created time.Time, gender int64) *User {
+	v, err := t.driver.loadByCreatedAndGender(ctx, created, gender)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return v
 }
 
 // LoadByCreatedAndGender loads a single record from the Users table based on the given values
@@ -167,9 +346,26 @@ func (t UsersTable) FindByCreatedAndGender(created time.Time, gender int64) *Use
 	return t.driver.findByCreatedAndGender(created, gender)
 }
 
-// DeleteByCreatedAndGender deletes records the Users table based on the given values
+// DeleteByCreatedAndGender deletes records the Users table based on the given values and panics on error
+func (t UsersTable) DeleteByPCreatedAndGender(ctx context.Context, created time.Time, gender int64) {
+	err := t.driver.deleteByCreatedAndGender(ctx,created, gender)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+}
+
+// DeleteByCreatedAndGenderP deletes records the Users table based on the given values
 func (t UsersTable) DeleteByCreatedAndGender(ctx context.Context, created time.Time, gender int64) error {
 	return t.driver.deleteByCreatedAndGender(ctx,created, gender)
+}
+
+// LoadByCreatedAndGenderAndBirthdateP loads a single record from the Users table based on the given values and panics on error
+func (t UsersTable) LoadByCreatedAndGenderAndBirthdateP(ctx context.Context, created time.Time, gender int64, birthdate time.Time) *User {
+	v, err := t.driver.loadByCreatedAndGenderAndBirthdate(ctx, created, gender, birthdate)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return v
 }
 
 // LoadByCreatedAndGenderAndBirthdate loads a single record from the Users table based on the given values
@@ -182,7 +378,15 @@ func (t UsersTable) FindByCreatedAndGenderAndBirthdate(created time.Time, gender
 	return t.driver.findByCreatedAndGenderAndBirthdate(created, gender, birthdate)
 }
 
-// DeleteByCreatedAndGenderAndBirthdate deletes records the Users table based on the given values
+// DeleteByCreatedAndGenderAndBirthdate deletes records the Users table based on the given values and panics on error
+func (t UsersTable) DeleteByPCreatedAndGenderAndBirthdate(ctx context.Context, created time.Time, gender int64, birthdate time.Time) {
+	err := t.driver.deleteByCreatedAndGenderAndBirthdate(ctx,created, gender, birthdate)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+}
+
+// DeleteByCreatedAndGenderAndBirthdateP deletes records the Users table based on the given values
 func (t UsersTable) DeleteByCreatedAndGenderAndBirthdate(ctx context.Context, created time.Time, gender int64, birthdate time.Time) error {
 	return t.driver.deleteByCreatedAndGenderAndBirthdate(ctx,created, gender, birthdate)
 }
@@ -219,6 +423,14 @@ type User struct {
 	loadEmail      *string
 	loadFacebookUserID      *string
 	
+}
+
+// SaveP saves any changes to the row and panics on error
+func (i *User) SaveP(ctx context.Context) {
+	err := i.driver.save(ctx,i)
+	if err != nil {
+		panic(panicWrap(err))
+	}
 }
 
 // Save saves any changes to the row
@@ -264,14 +476,40 @@ func (q *UserQuery) Where(where string, args ...interface{}) *UserQuery {
 	return q
 }
 
+// FirstP returns the first item found by the query and panics on error
+func (q *UserQuery) FirstP(ctx context.Context) *User {
+	v, err := q.driver.queryFirst(ctx,q)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return v
+}
+
 // First returns the first item found by the query
 func (q *UserQuery) First(ctx context.Context) ( *User, error) {
 	return q.driver.queryFirst(ctx,q)
 }
 
+// SliceP returns a slice with all the matched item (warning: can use lots of memory) and panics on error
+func (q *UserQuery) SliceP(ctx context.Context,expectedSliceSize int) []*User {
+	v, err := q.driver.querySlice(ctx,q, expectedSliceSize)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return v
+}
+
 // Slice returns a slice with all the matched item (warning: can use lots of memory)
 func (q *UserQuery) Slice(ctx context.Context,expectedSliceSize int) ([]*User, error) {
 	return q.driver.querySlice(ctx,q, expectedSliceSize)
+}
+
+// EachP returns a slice with all the matched item (warning: can use lots of memory) and panics on error
+func (q *UserQuery) EachP(ctx context.Context, reuseItem bool, action func(*User) error) {
+	err := q.driver.queryEach(ctx, q, reuseItem, action)
+	if err != nil {
+		panic(panicWrap(err))
+	}
 }
 
 // Each returns a slice with all the matched item (warning: can use lots of memory)
