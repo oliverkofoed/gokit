@@ -40,6 +40,7 @@ func (p *postgresGenerator) imports(t *Table) []string {
 	imports = append(imports, "context")
 	imports = append(imports, "bytes")
 	imports = append(imports, "strconv")
+	imports = append(imports, "fmt")
 	imports = append(imports, "database/sql")
 	imports = append(imports, "github.com/oliverkofoed/gokit/logkit")
 	imports = append(imports, "_github.com/lib/pq")
