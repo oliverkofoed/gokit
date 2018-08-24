@@ -16,7 +16,7 @@ import (
 // DB is the main access point to the database
 type DB struct {
 	newBatch func() Batch
-	Users UsersTable
+	Users *UsersTable
 }
 
 // NewDB creates a new DB pointer to access a database
@@ -30,10 +30,14 @@ func NewDB(driverName, dataSourceName string) (*DB, error) {
 				return nil, err
 			}
 
-			return &DB{
+			result := &DB{
 				newBatch:func() Batch{return &postgresBatch{db:db}},
-				Users: UsersTable{driver: &usersPostgresDriver{db: db}},
-			}, nil
+				Users: &UsersTable{driver: &usersPostgresDriver{db: db}},
+			}
+			result.Users.driver.(*usersPostgresDriver).table = result.Users
+			
+
+			return result, nil
 			
 	
 		default:

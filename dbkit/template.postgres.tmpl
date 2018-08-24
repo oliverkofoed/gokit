@@ -1,4 +1,5 @@
 type {{ .GoLowerTableName }}PostgresDriver struct {
+	table *{{ .GoTableName }}Table
 	db *sql.DB
 }
 
@@ -18,6 +19,21 @@ func (d *{{ .GoLowerTableName }}PostgresDriver) insert(ctx context.Context, {{ra
 		ctx = context.Background()
 	}
 
+	item := {{ .StructName }}{
+		driver:      d,
+		{{ range .NonAutoIDColumns }}{{.GoName}}:      {{.GoLowerName}},
+		{{ end }}
+		{{ range .NonAutoIDColumns }}load{{.GoName}}:      {{.GoLowerName}},
+		{{ end }}
+	}
+
+	if d.table.BeforeInsert != nil {
+		err := d.table.BeforeInsert(ctx, &item)
+		if err != nil {
+			return nil, fmt.Errorf("BeforeInsert error: %v", err)
+		}
+	}
+
 	{{ if .AutoIDColumn }}
 	sql := "insert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values ({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}${{$i | plusone}}{{end}}) returning id"
 	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
@@ -34,17 +50,16 @@ func (d *{{ .GoLowerTableName }}PostgresDriver) insert(ctx context.Context, {{ra
 		return nil, err
 	}
 
-	return &{{ .StructName }}{
-		driver:      d,
-		{{ if .AutoIDColumn }}
-		{{.AutoIDColumn.GoName}}: newID,
-		load{{.AutoIDColumn.GoName}}: newID,
-		{{ end }}
-		{{ range .NonAutoIDColumns }}{{.GoName}}:      {{.GoLowerName}},
-		{{ end }}
-		{{ range .NonAutoIDColumns }}load{{.GoName}}:      {{.GoLowerName}},
-		{{ end }}
-	}, nil
+	{{ if .AutoIDColumn }}
+	item.{{.AutoIDColumn.GoName}} = newID
+	item.load{{.AutoIDColumn.GoName}} = newID
+	{{ end }}
+
+	if d.table.AfterInsert != nil {
+		d.table.AfterInsert(ctx, &item)
+	}
+
+	return &item, nil
 }
 
 func (d *{{ .GoLowerTableName }}PostgresDriver) load(ctx context.Context, query string, args ...interface{}) (*{{ .StructName }}, error) {
@@ -98,6 +113,13 @@ func (d *{{ .GoLowerTableName }}PostgresDriver) scan(item *{{ .StructName }}, ro
 }
 
 func (d *{{ .GoLowerTableName }}PostgresDriver) save(ctx context.Context, item *{{ .StructName }}) error {
+	if d.table.BeforeUpdate != nil {
+		err := d.table.BeforeUpdate(ctx, item)
+		if err != nil {
+			return fmt.Errorf("BeforeSave error: %v", err)
+		}
+	}
+
 	sql, args := getSave{{.StructName}}SQL(item,1)
 
 	// nothing changed
@@ -115,6 +137,11 @@ func (d *{{ .GoLowerTableName }}PostgresDriver) save(ctx context.Context, item *
 
 	// reset load variables.
 	item.resetLoadVars()
+
+	if d.table.AfterUpdate != nil {
+		d.table.AfterUpdate(ctx, item)
+	}
+
 	return nil
 }
 

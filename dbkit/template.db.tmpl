@@ -5,7 +5,7 @@ package {{.Schema.PackageName}}
 // DB is the main access point to the database
 type DB struct {
 	newBatch func() Batch
-{{range .Schema.Tables}}	{{.GoTableName}} {{.GoTableName}}Table
+{{range .Schema.Tables}}	{{.GoTableName}} *{{.GoTableName}}Table
 {{end}}}
 
 // NewDB creates a new DB pointer to access a database
@@ -32,10 +32,14 @@ func NewDB(driverName, dataSourceName string) (*DB, error) {
 				return nil, err
 			}
 
-			return &DB{
+			result :=  &DB{
 				newBatch:func() Batch{return &cassandraBatch{db:db, cqlBatch: gocql.NewBatch(gocql.LoggedBatch)}},
-			{{range $.Schema.Tables}}	{{.GoTableName}}: {{.GoTableName}}Table{driver: &{{.GoLowerTableName}}CassandraDriver{db: db}},
-			{{end}}}, nil
+			{{range $.Schema.Tables}}	{{.GoTableName}}: &{{.GoTableName}}Table{driver: &{{.GoLowerTableName}}CassandraDriver{db: db}},
+			{{end}}}
+			{{range $.Schema.Tables}}result.{{.GoTableName}}.driver.(*{{.GoLowerTableName}}CassandraDriver).table = result.{{.GoTableName}}
+			{{end}}
+			
+			return result, nil
 		{{else}}
 		case "postgres":
 			db, err := sql.Open(driverName, dataSourceName)
@@ -43,10 +47,14 @@ func NewDB(driverName, dataSourceName string) (*DB, error) {
 				return nil, err
 			}
 
-			return &DB{
+			result := &DB{
 				newBatch:func() Batch{return &postgresBatch{db:db}},
-			{{range $.Schema.Tables}}	{{.GoTableName}}: {{.GoTableName}}Table{driver: &{{.GoLowerTableName}}PostgresDriver{db: db}},
-			{{end}}}, nil
+			{{range $.Schema.Tables}}	{{.GoTableName}}: &{{.GoTableName}}Table{driver: &{{.GoLowerTableName}}PostgresDriver{db: db}},
+			{{end}}}
+			{{range $.Schema.Tables}}result.{{.GoTableName}}.driver.(*{{.GoLowerTableName}}PostgresDriver).table = result.{{.GoTableName}}
+			{{end}}
+
+			return result, nil
 			{{end}}
 	{{end}}
 		default:

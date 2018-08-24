@@ -38,6 +38,7 @@ func testUsers(db *DB, t *testing.T) {
 
 	// Create
 	u, err := db.Users.Insert(ctx, time.Now(), uid, 0, time.Now(), time.Now(), 0, "Oliver", "abcdef", nil, dbkit.NullableString(""))
+	fmt.Println(u)
 	noerr(err)
 
 	// Read-Load

@@ -83,10 +83,10 @@ func (b *postgresBatch) Save{{.StructName}}({{.LowerStructName}} *{{.StructName}
 }
 
 func (b *postgresBatch) Insert{{.StructName}}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}){
-	key := "insert_{{.StructName}}"
+	operationKey := "insert_{{.StructName}}"
 	var op *postgresBatchOperation
 	for _, o := range b.operations {
-		if o.key == key {
+		if o.key == operationKey {
 			op = o;
 			break
 		}
@@ -96,7 +96,7 @@ func (b *postgresBatch) Insert{{.StructName}}({{range $i, $c := .NonAutoIDColumn
 		sql.WriteString("insert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values ")
 
 		op = &postgresBatchOperation{
-			key: key,
+			key: operationKey,
 			sql: sql,
 		}
 		b.operations = append(b.operations, op)
@@ -118,10 +118,10 @@ func (b *postgresBatch) Insert{{.StructName}}({{range $i, $c := .NonAutoIDColumn
 }
 
 func (b *postgresBatch) Upsert{{.StructName}}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}){
-	key := "upsert_{{.StructName}}"
+	operationKey := "upsert_{{.StructName}}"
 	var op *postgresBatchOperation
 	for _, o := range b.operations {
-		if o.key == key {
+		if o.key == operationKey {
 			op = o;
 			break
 		}
@@ -131,7 +131,7 @@ func (b *postgresBatch) Upsert{{.StructName}}({{range $i, $c := .NonAutoIDColumn
 		sql.WriteString("upsert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values ")
 
 		op = &postgresBatchOperation{
-			key: key,
+			key: operationKey,
 			sql: sql,
 		}
 		b.operations = append(b.operations, op)
