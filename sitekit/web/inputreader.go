@@ -50,6 +50,21 @@ func (f formInputReader) Bool(name string, fallback bool) bool {
 	return fallback
 }
 
+func (f formInputReader) Int64(name string, min, max, fallback int64) int64 {
+	if v := f.get(name); v != "" {
+		i, err := strconv.ParseInt(v, 10, 64)
+		if err != nil {
+			return fallback
+		}
+
+		iInt := int64(i)
+		if iInt >= min && iInt <= max {
+			return iInt
+		}
+	}
+
+	return fallback
+}
 func (f formInputReader) Int(name string, min, max, fallback int) int {
 	if v := f.get(name); v != "" {
 		i, err := strconv.ParseInt(v, 10, 0)

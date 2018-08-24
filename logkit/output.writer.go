@@ -17,13 +17,17 @@ var (
 	termGray    = []byte("\033[90m")
 )
 
-type ConsoleOutput struct {
+type WriterOutput struct {
 	sync.RWMutex
 	output io.Writer
 	colors bool
 }
 
-func (d *ConsoleOutput) Event(evt Event) {
+func NewWriterOutput(output io.Writer, terminalColors bool) Output {
+	return &WriterOutput{output: output, colors: terminalColors}
+}
+
+func (d *WriterOutput) Event(evt Event) {
 	switch evt.Type {
 	case EventTypeBeginOperation:
 		d.Lock()
@@ -64,7 +68,7 @@ func (d *ConsoleOutput) Event(evt Event) {
 	}
 }
 
-func (d *ConsoleOutput) writePrefix(operation *Context) {
+func (d *WriterOutput) writePrefix(operation *Context) {
 	if d.colors {
 		d.output.Write(termBold)
 		d.writePath(operation)
@@ -74,7 +78,7 @@ func (d *ConsoleOutput) writePrefix(operation *Context) {
 	}
 }
 
-func (d *ConsoleOutput) writePath(operation *Context) {
+func (d *WriterOutput) writePath(operation *Context) {
 	if operation.parent != nil && operation.parent.name != "" {
 		d.writePath(operation.parent)
 		io.WriteString(d.output, "→")

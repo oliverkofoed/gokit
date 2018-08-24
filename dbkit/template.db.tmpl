@@ -63,6 +63,19 @@ func NewDB(driverName, dataSourceName string) (*DB, error) {
 
 }
 
+// ------------------
+
+{{range .Schema.Tables}}
+// {{.GoTableName}} is shared main {{.GoTableName}}Table for easy access without passing a *DB instance around
+var	{{.GoTableName}} {{.GoTableName}}Table
+{{end}}
+// SetMainDB sets all the shared main variables for easy access
+func SetMainDB(db *DB){
+{{range .Schema.Tables}}	{{.GoTableName}} = db.{{.GoTableName}}
+{{end}}}
+
+// ------------------
+
 type Batch interface {
 	String() string
 	Execute(ctx context.Context) error
@@ -86,3 +99,8 @@ func (db *DB) NewBatch() Batch{
 type loadVarResetable interface{
 	resetLoadVars()
 }
+
+func panicWrap(err error) error {
+	return err
+}
+

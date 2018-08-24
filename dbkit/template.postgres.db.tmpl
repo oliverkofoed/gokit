@@ -24,6 +24,13 @@ func (b *postgresBatch) String() string{
 	return sql.String()
 }
 
+func (b *postgresBatch) ExecuteP(ctx context.Context) {
+	err := b.Execute(ctx)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+}
+
 func (b *postgresBatch) Execute(ctx context.Context) error {
 	if len(b.operations) > 0 {
 		ctx, done := logkit.Operation(ctx,"pg.sql", logkit.Stringer("sql",b))
@@ -40,6 +47,13 @@ func (b *postgresBatch) Execute(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (b *postgresBatch) ExecuteCockroachDBP(ctx context.Context, noUpdateConflict bool, returningNothing bool) {
+	err := b.ExecuteCockroachDB(ctx, noUpdateConflict, returningNothing)
+	if err != nil {
+		panic(panicWrap(err))
+	}
 }
 
 func (b *postgresBatch) ExecuteCockroachDB(ctx context.Context, noUpdateConflict bool, returningNothing bool) error {

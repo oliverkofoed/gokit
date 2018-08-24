@@ -41,6 +41,7 @@ func (u *UploadedFile) Bytes() []byte {
 	if err != nil {
 		panic(err)
 	}
+	u.File.Seek(0, io.SeekStart)
 	return content
 }
 

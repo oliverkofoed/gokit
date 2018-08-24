@@ -46,6 +46,19 @@ func NewDB(driverName, dataSourceName string) (*DB, error) {
 
 }
 
+// ------------------
+
+
+// Users is shared main UsersTable for easy access without passing a *DB instance around
+var	Users UsersTable
+
+// SetMainDB sets all the shared main variables for easy access
+func SetMainDB(db *DB){
+	Users = db.Users
+}
+
+// ------------------
+
 type Batch interface {
 	String() string
 	Execute(ctx context.Context) error
@@ -76,6 +89,11 @@ func (db *DB) NewBatch() Batch{
 type loadVarResetable interface{
 	resetLoadVars()
 }
+
+func panicWrap(err error) error {
+	return err
+}
+
 func (db *DB) NewLoader() *Loader {
 	return &Loader{db: db}
 }
@@ -149,6 +167,13 @@ func (b *postgresBatch) String() string{
 	return sql.String()
 }
 
+func (b *postgresBatch) ExecuteP(ctx context.Context) {
+	err := b.Execute(ctx)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+}
+
 func (b *postgresBatch) Execute(ctx context.Context) error {
 	if len(b.operations) > 0 {
 		ctx, done := logkit.Operation(ctx,"pg.sql", logkit.Stringer("sql",b))
@@ -165,6 +190,13 @@ func (b *postgresBatch) Execute(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (b *postgresBatch) ExecuteCockroachDBP(ctx context.Context, noUpdateConflict bool, returningNothing bool) {
+	err := b.ExecuteCockroachDB(ctx, noUpdateConflict, returningNothing)
+	if err != nil {
+		panic(panicWrap(err))
+	}
 }
 
 func (b *postgresBatch) ExecuteCockroachDB(ctx context.Context, noUpdateConflict bool, returningNothing bool) error {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
 
 	"encoding/hex"
 )
@@ -44,7 +45,7 @@ func printValues(w io.Writer, fields []Field) {
 		case FieldTypeStringer:
 			io.WriteString(w, field.Value.(fmt.Stringer).String())
 		case FieldTypeDuration:
-			fmt.Fprintf(w, "%v", field.Integer)
+			fmt.Fprintf(w, "%v", time.Duration(field.Integer))
 		case FieldTypeTime:
 			fmt.Fprintf(w, "%v", field.Value)
 		case FieldTypeErr:
@@ -56,6 +57,8 @@ func printValues(w io.Writer, fields []Field) {
 			} else {
 				io.WriteString(w, "false")
 			}
+		case FieldTypeInterface:
+			fmt.Fprintf(w, "%v", field.Value)
 		default:
 			panic(fmt.Sprintf("unknown field type: %v", field.FieldType))
 		}
