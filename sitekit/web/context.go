@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"runtime/debug"
+	"strconv"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/oliverkofoed/gokit/logkit"
@@ -62,6 +63,10 @@ func (c *Context) GetData(key string) (interface{}, bool) {
 
 func (c *Context) RouteArg(name string) string {
 	return c.params.ByName(name)
+}
+
+func (c *Context) RouteArgInt64(name string) (int64, error) {
+	return strconv.ParseInt(c.params.ByName(name), 10, 64)
 }
 
 func (c *Context) Header() http.Header {
