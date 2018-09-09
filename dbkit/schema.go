@@ -82,6 +82,14 @@ func NewSchema(packageName string) *Schema {
 	}
 }
 
+// ExtraField represents an extra go field added to the
+// generated struct for a given table
+type ExtraField struct {
+	Name       string
+	GoTypeName string
+	Import     string
+}
+
 // Table represents a table in a database schema
 type Table struct {
 	DBTableName string
@@ -92,6 +100,7 @@ type Table struct {
 	StructName      string
 	LowerStructName string
 	Columns         []*Column
+	ExtraFields     []*ExtraField
 	Indexes         map[string]*Index
 	PrimaryIndex    *Index
 }

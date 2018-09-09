@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var extrafields []string
+
 func Main() {
 	main()
 }
@@ -17,6 +19,8 @@ func Main() {
 func main() {
 	// build corbra-command tree
 	DbkitCmd.AddCommand(DbkitGenerateCommand)
+
+	DbkitGenerateCommand.PersistentFlags().StringArrayVar(&extrafields, "extrafields", []string{}, "path to an extrafields file")
 
 	// run dogo
 	DbkitCmd.SilenceErrors = true
@@ -69,6 +73,15 @@ var DbkitGenerateCommand = &cobra.Command{
 				return err
 			}
 
+			for _, filename := range extrafields {
+				err := s.ReadExtraFieldsFile(filename, func(msg string, args ...interface{}) {
+					fmt.Printf(msg+"\n", args...)
+				})
+				if err != nil {
+					return err
+				}
+			}
+
 			errs := s.Generate(dir, "postgres")
 			if len(errs) > 0 {
 				return &multiErr{errors: errs}
@@ -84,6 +97,15 @@ var DbkitGenerateCommand = &cobra.Command{
 			})
 			if err != nil {
 				return err
+			}
+
+			for _, filename := range extrafields {
+				err := s.ReadExtraFieldsFile(filename, func(msg string, args ...interface{}) {
+					fmt.Printf(msg+"\n", args...)
+				})
+				if err != nil {
+					return err
+				}
 			}
 
 			errs := s.Generate(dir, "cassandra")

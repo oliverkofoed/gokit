@@ -36,6 +36,11 @@ func (s *Schema) Generate(dir string, generatorNames ...string) []error {
 		imports["bytes"] = true
 		imports["strconv"] = true
 		extractImports(imports, table.Columns)
+		for _, field := range table.ExtraFields {
+			if field.Import != "" {
+				imports[field.Import] = true
+			}
+		}
 		for _, generator := range generators {
 			for _, i := range generator.imports(table) {
 				imports[i] = true

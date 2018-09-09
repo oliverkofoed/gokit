@@ -56,6 +56,11 @@ func TestPostgres(t *testing.T) {
 	})
 	testkit.NoError(t, err)
 
+	err = s.ReadExtraFieldsFile("test.postgres/extrafields.dbkit", func(msg string, args ...interface{}) {
+		fmt.Printf(msg+"\n", args...)
+	})
+	testkit.NoError(t, err)
+
 	errs := s.Generate("./test.postgres", "postgres")
 	if len(errs) > 0 {
 		t.Error(errs)

@@ -7,6 +7,17 @@ type {{ .GoTableName }}Table struct {
 	driver {{ .GoLowerTableName }}Driver
 }
 
+// {{.StructName}} represents a row in the {{ .GoTableName }} table
+type {{ .StructName }} struct {
+	driver {{ .GoLowerTableName }}Driver
+	{{ range .Columns }}{{.GoName}}      {{.GoType}}
+	{{ end }}
+	{{ range .Columns }}load{{.GoName}}      {{.GoType}}
+	{{ end }}
+	{{ range .ExtraFields }}{{.Name}} {{.GoTypeName}}
+	{{ end }}
+}
+
 // ExecuteP runs a raw comand against the database and panics on errors
 func (t {{ .GoTableName }}Table) ExecuteP(ctx context.Context, command string, args ...interface{}) {
 	err := t.driver.execute(ctx, command, args...)
@@ -96,15 +107,6 @@ func (t {{ .Table.GoTableName }}Table) DeleteBy{{.Name}}(ctx context.Context, {{
 // Query creates a query for records in the {{ .GoTableName }} table by id
 func (t {{ .GoTableName }}Table) Query() *{{ .StructName }}Query {
 	return &{{ .StructName }}Query{driver: t.driver}
-}
-
-// {{.StructName}} represents a row in the {{ .GoTableName }} table
-type {{ .StructName }} struct {
-	driver {{ .GoLowerTableName }}Driver
-	{{ range .Columns }}{{.GoName}}      {{.GoType}}
-	{{ end }}
-	{{ range .Columns }}load{{.GoName}}      {{.GoType}}
-	{{ end }}
 }
 
 // SaveP saves any changes to the row and panics on error

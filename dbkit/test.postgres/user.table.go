@@ -22,6 +22,38 @@ type UsersTable struct {
 	driver usersDriver
 }
 
+// User represents a row in the Users table
+type User struct {
+	driver usersDriver
+	ID      int64
+	Birthdate      time.Time
+	AnotherID      uuid.UUID
+	Gender      int64
+	Created      time.Time
+	LastSeen      time.Time
+	Interest      int64
+	DisplayName      string
+	Avatar      string
+	Email      *string
+	FacebookUserID      *string
+	
+	loadID      int64
+	loadBirthdate      time.Time
+	loadAnotherID      uuid.UUID
+	loadGender      int64
+	loadCreated      time.Time
+	loadLastSeen      time.Time
+	loadInterest      int64
+	loadDisplayName      string
+	loadAvatar      string
+	loadEmail      *string
+	loadFacebookUserID      *string
+	
+	integerValue * 	  int64
+	booleanvalue bool
+	
+}
+
 // ExecuteP runs a raw comand against the database and panics on errors
 func (t UsersTable) ExecuteP(ctx context.Context, command string, args ...interface{}) {
 	err := t.driver.execute(ctx, command, args...)
@@ -399,35 +431,6 @@ func (t UsersTable) DeleteByCreatedAndGenderAndBirthdate(ctx context.Context, cr
 // Query creates a query for records in the Users table by id
 func (t UsersTable) Query() *UserQuery {
 	return &UserQuery{driver: t.driver}
-}
-
-// User represents a row in the Users table
-type User struct {
-	driver usersDriver
-	ID      int64
-	Birthdate      time.Time
-	AnotherID      uuid.UUID
-	Gender      int64
-	Created      time.Time
-	LastSeen      time.Time
-	Interest      int64
-	DisplayName      string
-	Avatar      string
-	Email      *string
-	FacebookUserID      *string
-	
-	loadID      int64
-	loadBirthdate      time.Time
-	loadAnotherID      uuid.UUID
-	loadGender      int64
-	loadCreated      time.Time
-	loadLastSeen      time.Time
-	loadInterest      int64
-	loadDisplayName      string
-	loadAvatar      string
-	loadEmail      *string
-	loadFacebookUserID      *string
-	
 }
 
 // SaveP saves any changes to the row and panics on error

@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+var Main *DB
+
 // DB is the main access point to the database
 type DB struct {
 	newBatch func() Batch
@@ -45,19 +47,6 @@ func NewDB(driverName, dataSourceName string) (*DB, error) {
 	}
 
 }
-
-// ------------------
-
-
-// Users is shared main UsersTable for easy access without passing a *DB instance around
-var	Users UsersTable
-
-// SetMainDB sets all the shared main variables for easy access
-func SetMainDB(db *DB){
-	Users = db.Users
-}
-
-// ------------------
 
 type Batch interface {
 	String() string
@@ -121,6 +110,12 @@ func (l *Loader) MarkUserForLoad(id int64) {
 
 func (l *Loader) GetUser(id int64) *User {
 	return l.valuesUser[id]
+}
+
+func (l *Loader) LoadP(ctx context.Context) {
+	if err := l.Load(ctx); err != nil {
+		panic(err)
+	}
 }
 
 func (l *Loader) Load(ctx context.Context) error { 
@@ -240,10 +235,10 @@ func (b *postgresBatch) SaveUser(user *User){
 }
 
 func (b *postgresBatch) InsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string){
-	key := "insert_User"
+	operationKey := "insert_User"
 	var op *postgresBatchOperation
 	for _, o := range b.operations {
-		if o.key == key {
+		if o.key == operationKey {
 			op = o;
 			break
 		}
@@ -253,7 +248,7 @@ func (b *postgresBatch) InsertUser(birthdate time.Time, anotherID uuid.UUID, gen
 		sql.WriteString("insert into Users(birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id) values ")
 
 		op = &postgresBatchOperation{
-			key: key,
+			key: operationKey,
 			sql: sql,
 		}
 		b.operations = append(b.operations, op)
@@ -275,10 +270,10 @@ func (b *postgresBatch) InsertUser(birthdate time.Time, anotherID uuid.UUID, gen
 }
 
 func (b *postgresBatch) UpsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string){
-	key := "upsert_User"
+	operationKey := "upsert_User"
 	var op *postgresBatchOperation
 	for _, o := range b.operations {
-		if o.key == key {
+		if o.key == operationKey {
 			op = o;
 			break
 		}
@@ -288,7 +283,7 @@ func (b *postgresBatch) UpsertUser(birthdate time.Time, anotherID uuid.UUID, gen
 		sql.WriteString("upsert into Users(birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id) values ")
 
 		op = &postgresBatchOperation{
-			key: key,
+			key: operationKey,
 			sql: sql,
 		}
 		b.operations = append(b.operations, op)
