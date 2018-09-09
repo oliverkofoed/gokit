@@ -31,6 +31,12 @@ func (l *Loader) Get{{.StructName}}({{.PrimaryIndex.LoaderKeyFuncArgs}}) *{{.Str
 	return l.values{{.StructName}}[{{.PrimaryIndex.LoaderKeyFuncValue}}]
 }
 {{end}}
+func (l *Loader) LoadP(ctx context.Context) {
+	if err := l.Load(ctx); err != nil {
+		panic(err)
+	}
+}
+
 func (l *Loader) Load(ctx context.Context) error { {{range .Tables}}
 	if len(l.ids{{.StructName}})>0 {
 		if l.values{{.StructName}} == nil {
