@@ -30,6 +30,8 @@ const (
 	DataTypeTimeUUID
 	// DataTypeTimeUUID is a UUID value
 	DataTypeUUID
+	// DataTypeJSON is a JSON value
+	DataTypeJSON
 )
 
 // Schema represents a database schema
@@ -258,6 +260,8 @@ func (c *Column) GoType() string {
 		return "gocql.UUID"
 	case DataTypeUUID:
 		return "uuid.UUID"
+	case DataTypeJSON:
+		return "json.RawMessage"
 	default:
 		panic(fmt.Sprintf("don't know go type for: %v", c.Type))
 	}

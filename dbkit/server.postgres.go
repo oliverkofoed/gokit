@@ -152,6 +152,8 @@ func (p *Postgres) GetSchema(packageName string, log func(msg string, args ...in
 		case "UUID":
 			t.AddColumn(columnName, goColumnName, DataTypeUUID, nullable)
 			break
+		case "JSON":
+			t.AddColumn(columnName, goColumnName, DataTypeJSON, nullable)
 		default:
 			return nil, fmt.Errorf("unknown column data type: %v", dataType)
 		}
