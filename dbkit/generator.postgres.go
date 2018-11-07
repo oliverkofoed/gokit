@@ -30,6 +30,9 @@ func (p *postgresGenerator) dbImports(schema *Schema) []string {
 			if col.Type == DataTypeUUID {
 				imports = append(imports, "github.com/satori/go.uuid")
 			}
+			if col.Type == DataTypeJSON {
+				imports = append(imports, "encoding/json")
+			}
 		}
 	}
 	return imports
@@ -47,6 +50,9 @@ func (p *postgresGenerator) imports(t *Table) []string {
 	for _, col := range t.Columns {
 		if col.Type == DataTypeUUID {
 			imports = append(imports, "github.com/satori/go.uuid")
+		}
+		if col.Type == DataTypeJSON {
+			imports = append(imports, "encoding/json")
 		}
 	}
 	return imports
