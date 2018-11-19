@@ -127,7 +127,7 @@ func (p *Postgres) GetSchema(packageName string, log func(msg string, args ...in
 
 		t := s.Tables[table]
 		switch dataType {
-		case "INT":
+		case "INT", "BIGINT":
 			if defaultValue != nil && *defaultValue == "unique_rowid()" {
 				t.AddColumn(columnName, goColumnName, DataTypeAutoID, nullable)
 			} else {
