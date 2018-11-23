@@ -12,7 +12,7 @@ import (
 //go:generate go-bindata -o templates.go -pkg dbkit template.db.tmpl template.loader.tmpl template.postgres.tmpl template.postgres.db.tmpl template.tableShared.tmpl template.cassandra.tmpl template.cassandra.db.tmpl
 
 // Generate generates table and driver files for the schema
-func (s *Schema) Generate(dir string, generatorNames ...string) []error {
+func (s *Schema) Generate(dir string, logging bool, generatorNames ...string) []error {
 	// find generators
 	generators, errs := getGenerators(generatorNames)
 	if len(errs) > 0 {
@@ -29,6 +29,8 @@ func (s *Schema) Generate(dir string, generatorNames ...string) []error {
 	//errors := make([]error, 0, 0)
 	var buf bytes.Buffer
 	for _, table := range s.Tables {
+		table.Logging = logging
+
 		buf.WriteString("package " + s.PackageName + "\n\n")
 
 		// build a map of imports
@@ -101,10 +103,12 @@ func (s *Schema) Generate(dir string, generatorNames ...string) []error {
 		Schema     *Schema
 		Generators []string
 		Imports    string
+		Logging    bool
 	}{
 		Schema:     s,
 		Generators: generatorNames,
 		Imports:    importsCode(dbImports),
+		Logging:    logging,
 	})
 	runTemplate("template.loader.tmpl", &buf, s)
 
@@ -114,10 +118,12 @@ func (s *Schema) Generate(dir string, generatorNames ...string) []error {
 			Schema *Schema
 			//Generators []string
 			Imports string
+			Logging bool
 		}{
 			Schema: s,
 			//Generators: generatorNames,
 			Imports: importsCode(dbImports),
+			Logging: logging,
 		})
 
 	}

@@ -105,6 +105,8 @@ type Table struct {
 	ExtraFields     []*ExtraField
 	Indexes         map[string]*Index
 	PrimaryIndex    *Index
+
+	Logging bool
 }
 
 // Validate returns a list of validation errors from the table

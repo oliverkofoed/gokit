@@ -7,8 +7,10 @@ func (d *{{ .GoLowerTableName }}PostgresDriver) execute(ctx context.Context, que
 	if ctx == nil {
 		ctx = context.Background()
 	}
+	{{ if .Logging -}}
 	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",query))
 	defer done()
+	{{- end }}
 
 	_, err := d.db.ExecContext(ctx,query,args...);
 	return err
@@ -36,14 +38,18 @@ func (d *{{ .GoLowerTableName }}PostgresDriver) insert(ctx context.Context, {{ra
 
 	{{ if .AutoIDColumn }}
 	sql := "insert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values ({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}${{$i | plusone}}{{end}}) returning id"
+	{{ if .Logging -}}
 	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
 	defer done()
+	{{- end }}
 	var newID int64
 	err := d.db.QueryRowContext(ctx,sql{{range .NonAutoIDColumns}}, {{.GoLowerName}}{{end}}).Scan(&newID)
 	{{else}}
 	sql := "insert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values ({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}${{$i | plusone}}{{end}})"
+	{{ if .Logging -}}
 	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
 	defer done()
+	{{- end }}
 	_, err := d.db.ExecContext(ctx,sql{{range .NonAutoIDColumns}}, {{.GoLowerName}}{{end}})
 	{{end}}
 	if err != nil {
@@ -67,8 +73,10 @@ func (d *{{ .GoLowerTableName }}PostgresDriver) load(ctx context.Context, query 
 		ctx = context.Background()
 	}
 	sql := "SELECT {{range $i, $c := .Columns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}} from {{ .DBTableName }} where "+query
+	{{ if .Logging -}}
 	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
 	defer done()
+	{{- end }}
 	rows, err := d.db.QueryContext(ctx,sql, args...)
 	if err != nil {
 		return nil, err
@@ -94,8 +102,10 @@ func (d *{{ .GoLowerTableName }}PostgresDriver) delete(ctx context.Context, quer
 		ctx = context.Background()
 	}
 	sql := "delete from {{.DBTableName}} where "+query
+	{{ if .Logging -}}
 	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
 	defer done()
+	{{- end }}
 
 	_, err := d.db.ExecContext(ctx,sql,args...);
 	return err
@@ -128,8 +138,10 @@ func (d *{{ .GoLowerTableName }}PostgresDriver) save(ctx context.Context, item *
 	}
 
 	// execute
+	{{ if .Logging -}}
 	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
 	defer done()
+	{{- end }}
 
 	if _, err := d.db.Exec(sql, args...); err != nil {
 		return logkit.Error(ctx, "SQL Error", logkit.String("sql",sql), logkit.Err(err))
@@ -183,8 +195,10 @@ func (i *{{.StructName}}) resetLoadVars(){
 
 func (d *{{ .GoLowerTableName }}PostgresDriver) queryFirst(ctx context.Context, query *{{ .StructName }}Query) (*{{ .StructName }}, error) {
 	sql := d.querySQL(query)
+	{{ if .Logging -}}
 	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
 	defer done()
+	{{- end }}
 	rows, err := d.db.Query(sql, query.args...)
 	if err != nil {
 		return nil, err
@@ -207,8 +221,10 @@ func (d *{{ .GoLowerTableName }}PostgresDriver) queryFirst(ctx context.Context, 
 
 func (d *{{ .GoLowerTableName }}PostgresDriver) querySlice(ctx context.Context, query *{{ .StructName }}Query, expectedSliceSize int) ([]*{{ .StructName }}, error) {
 	sql := d.querySQL(query)
+	{{ if .Logging -}}
 	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
 	defer done()
+	{{- end }}
 
 	rows, err := d.db.Query(sql, query.args...)
 	if err != nil {
@@ -233,8 +249,10 @@ func (d *{{ .GoLowerTableName }}PostgresDriver) querySlice(ctx context.Context, 
 
 func (d *{{ .GoLowerTableName }}PostgresDriver) queryEach(ctx context.Context, query *{{ .StructName }}Query, reuseItem bool, action func(*{{ .StructName }}) error) error {
 	sql := d.querySQL(query)
+	{{ if .Logging -}}
 	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
 	defer done()
+	{{- end }}
 
 	rows, err := d.db.Query(sql, query.args...)
 	if err != nil {

@@ -11,6 +11,7 @@ import (
 )
 
 var extrafields []string
+var logging bool
 
 func Main() {
 	main()
@@ -21,6 +22,7 @@ func main() {
 	DbkitCmd.AddCommand(DbkitGenerateCommand)
 
 	DbkitGenerateCommand.PersistentFlags().StringArrayVar(&extrafields, "extrafields", []string{}, "path to an extrafields file")
+	DbkitGenerateCommand.PersistentFlags().BoolVar(&logging, "logging", false, "sql query logging")
 
 	// run dogo
 	DbkitCmd.SilenceErrors = true
@@ -82,7 +84,7 @@ var DbkitGenerateCommand = &cobra.Command{
 				}
 			}
 
-			errs := s.Generate(dir, "postgres")
+			errs := s.Generate(dir, logging, "postgres")
 			if len(errs) > 0 {
 				return &multiErr{errors: errs}
 			}
@@ -108,7 +110,7 @@ var DbkitGenerateCommand = &cobra.Command{
 				}
 			}
 
-			errs := s.Generate(dir, "cassandra")
+			errs := s.Generate(dir, logging, "cassandra")
 			if len(errs) > 0 {
 				return &multiErr{errors: errs}
 			}
