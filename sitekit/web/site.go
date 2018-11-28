@@ -47,7 +47,14 @@ func NewSite(development bool, assetPath string) *Site {
 	}})
 
 	site.middlewareChain = func(c *Context) {
-		c.Route.Action(c)
+		switch {
+		case c.Route.Handler != nil:
+			c.Route.Handler.ServeHTTP(c.w, c.Request)
+		case c.Route.HttpRouterHandle != nil:
+			c.Route.HttpRouterHandle(c.w, c.Request, c.params)
+		default:
+			c.Route.Action(c)
+		}
 	}
 
 	return &site
@@ -58,11 +65,13 @@ func (s *Site) ListenAndServe(addr string) error {
 }
 
 type Route struct {
-	Path           string
-	Action         Action
-	Template       string
-	MasterTemplate string
-	NoGZip         bool
+	Path             string
+	Action           Action
+	Handler          http.Handler
+	HttpRouterHandle httprouter.Handle
+	Template         string
+	MasterTemplate   string
+	NoGZip           bool
 }
 
 type compressorResponseWriter struct {
@@ -96,6 +105,10 @@ func (s *Site) AddMiddleware(middleware Middleware) {
 }
 
 func (s *Site) AddRoute(route Route) {
+	if route.Action == nil && route.Handler == nil && route.HttpRouterHandle == nil {
+		panic("AddRoute expects a Route with either Action, Handler or HttpRouterHandle defined")
+	}
+
 	s.router.Handle("GET", route.Path, func(w http.ResponseWriter, req *http.Request, params httprouter.Params) {
 		s.runRoute(&route, w, req, params, false)
 	})
