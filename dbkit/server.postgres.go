@@ -126,8 +126,8 @@ func (p *Postgres) GetSchema(packageName string, log func(msg string, args ...in
 		goColumnName := p.goname(columnName)
 
 		t := s.Tables[table]
-		switch dataType {
-		case "INT", "BIGINT":
+		switch strings.ToUpper(dataType) {
+		case "INT", "INTEGER", "INT2", "INT4", "INT8", "INT64", "BIGINT":
 			if defaultValue != nil && *defaultValue == "unique_rowid()" {
 				t.AddColumn(columnName, goColumnName, DataTypeAutoID, nullable)
 			} else {
@@ -140,19 +140,19 @@ func (p *Postgres) GetSchema(packageName string, log func(msg string, args ...in
 		case "DATE":
 			t.AddColumn(columnName, goColumnName, DataTypeDate, nullable)
 			break
-		case "STRING":
+		case "TEXT", "STRING", "VARCHAR":
 			t.AddColumn(columnName, goColumnName, DataTypeString, nullable)
 			break
-		case "BYTES":
+		case "BYTES", "BYTEA":
 			t.AddColumn(columnName, goColumnName, DataTypeBytes, nullable)
 			break
-		case "BOOL":
+		case "BOOL", "BOOLEAN":
 			t.AddColumn(columnName, goColumnName, DataTypeBool, nullable)
 			break
 		case "UUID":
 			t.AddColumn(columnName, goColumnName, DataTypeUUID, nullable)
 			break
-		case "JSON":
+		case "JSON", "JSONB":
 			t.AddColumn(columnName, goColumnName, DataTypeJSON, nullable)
 		default:
 			return nil, fmt.Errorf("unknown column data type: %v", dataType)
