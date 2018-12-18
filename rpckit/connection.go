@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"sync"
+	"sync/atomic"
 )
 
 type ConnectionHandler func(c *Connection)
@@ -15,9 +15,12 @@ type MessageHandler func(c *Connection, msg *Message)
 
 type DisconnectedHandler func(c *Connection, err error)
 
+// connId is a runtime connection counter
+var connId uint64
+
 type Connection struct {
-	sync.Mutex
-	connected    bool
+	id           uint64
+	closed       int32
 	conn         net.Conn
 	onMessage    MessageHandler
 	onDisconnect DisconnectedHandler
@@ -34,7 +37,8 @@ func NewConnection(network, address string, onMessage MessageHandler, onDisconne
 
 func connected(conn net.Conn, onMessage MessageHandler, onDisconnect DisconnectedHandler) *Connection {
 	c := &Connection{
-		connected:    true,
+		id:           atomic.AddUint64(&connId, 1),
+		closed:       0,
 		conn:         conn,
 		onMessage:    onMessage,
 		onDisconnect: onDisconnect,
@@ -123,24 +127,28 @@ func (c *Connection) Send(msg *Message) error {
 	return nil
 }
 
-func (c *Connection) Close() {
+// Close closes the connection
+func (c *Connection) Close() error {
 	c.end(nil)
+	return nil
 }
 
+// end will only be called once
 func (c *Connection) end(err error) {
-	c.Lock()
-	defer c.Unlock()
-	if c.connected {
-		c.connected = false
-
+	if atomic.CompareAndSwapInt32(&c.closed, 0, 1) {
 		c.conn.Close()
 
 		d := c.onDisconnect
+
 		if d != nil {
 			c.onDisconnect = nil
 			d(c, err)
 		}
 	}
+}
+
+func (c *Connection) String() string {
+	return fmt.Sprintf("Connection(%d)", atomic.LoadUint64(&c.id))
 }
 
 func makeSlice(n int) []byte {
