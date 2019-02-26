@@ -44,7 +44,7 @@ func (m *Message) Bytes() []byte {
 }
 
 func (m *Message) WriteInt(v uint64) {
-	m.grow(9)
+	m.grow(10)
 	//i := 0
 	for v >= 0x80 {
 		m.buf[m.len] = byte(v) | 0x80
