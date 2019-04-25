@@ -48,7 +48,7 @@ func TestCassandra(t *testing.T) {
 	})
 	testkit.NoError(t, err)
 
-	errs := s.Generate("./test.cassandra", "cassandra")
+	errs := s.Generate("./test.cassandra", true, "cassandra")
 	if len(errs) > 0 {
 		t.Error(errs)
 		t.FailNow()

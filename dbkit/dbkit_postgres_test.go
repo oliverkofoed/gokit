@@ -61,7 +61,7 @@ func TestPostgres(t *testing.T) {
 	})
 	testkit.NoError(t, err)
 
-	errs := s.Generate("./test.postgres", "postgres")
+	errs := s.Generate("./test.postgres", true, "postgres")
 	if len(errs) > 0 {
 		t.Error(errs)
 		t.FailNow()
