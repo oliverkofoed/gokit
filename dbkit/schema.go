@@ -16,6 +16,8 @@ const (
 	DataTypeInt64
 	// DataTypeInt32 is a 32bit integer value
 	DataTypeInt32
+	// DataTypeFloat64 is a 64bit floating-point number
+	DataTypeFloat64
 	// DataTypeString is a string value
 	DataTypeString
 	// DataTypeTime is a time value (date+time)
@@ -246,6 +248,8 @@ func (c *Column) GoType() string {
 		return prefix + "int64"
 	case DataTypeInt64:
 		return prefix + "int64"
+	case DataTypeFloat64:
+		return prefix + "float64"
 	case DataTypeString:
 		return prefix + "string"
 	case DataTypeTime:

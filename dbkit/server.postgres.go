@@ -133,29 +133,24 @@ func (p *Postgres) GetSchema(packageName string, log func(msg string, args ...in
 			} else {
 				t.AddColumn(columnName, goColumnName, DataTypeInt64, nullable)
 			}
-			break
 		case "TIMESTAMP", "TIMESTAMPTZ", "TIMESTAMP WITH TIME ZONE":
 			t.AddColumn(columnName, goColumnName, DataTypeTime, nullable)
-			break
 		case "DATE":
 			t.AddColumn(columnName, goColumnName, DataTypeDate, nullable)
-			break
-		case "TEXT", "STRING", "VARCHAR":
+		case "TEXT", "STRING", "VARCHAR", "CHARACTER VARYING":
 			t.AddColumn(columnName, goColumnName, DataTypeString, nullable)
-			break
 		case "BYTES", "BYTEA":
 			t.AddColumn(columnName, goColumnName, DataTypeBytes, nullable)
-			break
+		case "DOUBLE PRECISION":
+			t.AddColumn(columnName, goColumnName, DataTypeFloat64, nullable)
 		case "BOOL", "BOOLEAN":
 			t.AddColumn(columnName, goColumnName, DataTypeBool, nullable)
-			break
 		case "UUID":
 			t.AddColumn(columnName, goColumnName, DataTypeUUID, nullable)
-			break
 		case "JSON", "JSONB":
 			t.AddColumn(columnName, goColumnName, DataTypeJSON, nullable)
 		default:
-			return nil, fmt.Errorf("unknown column data type: %v", dataType)
+			return nil, fmt.Errorf("unknown column data type for column: '%s' type: '%v'", columnName, dataType)
 		}
 	}
 	if err := rows.Err(); err != nil {
