@@ -2,6 +2,7 @@ package dbkit_tests
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -30,21 +31,23 @@ func testUsers(db *DB, t *testing.T) {
 
 	//email := "oliver@mail.com"
 	db.Users.DeleteByEmail(nil, nil)
-	db.Users.DeleteByFacebookUserID(nil, nil)
-	db.Users.DeleteByFacebookUserID(nil, dbkit.NullableString(""))
+	db.Users.DeleteByFacebookUserID(nil, dbkit.NullableString("fbid"))
 
 	uid, err := uuid.NewV4()
 	noerr(err)
 
 	// Create
-	u, err := db.Users.Insert(ctx, time.Now(), uid, 0, time.Now(), time.Now(), 0, "Oliver", "abcdef", nil, dbkit.NullableString(""))
+	u, err := db.Users.Insert(ctx, time.Now(), uid, 0, time.Now(), time.Now(), 0, "Oliver", "abcdef", nil, dbkit.NullableString("fbid"), json.RawMessage("{}"))
 	fmt.Println(u)
 	noerr(err)
 
 	// Read-Load
 	u, err = db.Users.Load(ctx, "ID=$1", u.ID)
-	fmt.Println(uid, u.AnotherID)
+	fmt.Println(uid, u)
+	//fmt.Println(uid, u.AnotherID)
 	noerr(err)
+
+	fmt.Println("...", u.ArbData)
 
 	// Update
 	u.DisplayName = "bobby"
@@ -78,9 +81,9 @@ func testUsers(db *DB, t *testing.T) {
 
 	// batch test
 	batch := db.NewBatch()
-	batch.InsertUser(time.Now(), uid, 0, time.Now(), time.Now(), 0, "b1", "abcdef", nil, nil)
-	batch.InsertUser(time.Now(), uid, 0, time.Now(), time.Now(), 0, "b2", "abcdef", nil, nil)
-	batch.InsertUser(time.Now(), uid, 0, time.Now(), time.Now(), 0, "b3", "abcdef", nil, nil)
+	batch.InsertUser(time.Now(), uid, 0, time.Now(), time.Now(), 0, "b1", "abcdef", nil, nil, json.RawMessage("{}"))
+	batch.InsertUser(time.Now(), uid, 0, time.Now(), time.Now(), 0, "b2", "abcdef", nil, nil, json.RawMessage("{}"))
+	batch.InsertUser(time.Now(), uid, 0, time.Now(), time.Now(), 0, "b3", "abcdef", nil, nil, json.RawMessage("{}"))
 	u.DisplayName = "bobbyboy"
 	batch.SaveUser(u)
 	err = batch.Execute(ctx)

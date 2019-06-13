@@ -40,6 +40,7 @@ func TestPostgres(t *testing.T) {
 			avatar TEXT NOT NULL,
 			email TEXT NULL,
 			facebook_user_id TEXT NULL,
+			arb_data JSONB,
 			CONSTRAINT "primary" PRIMARY KEY (id),
 			INDEX interest(avatar),
 			INDEX another(another_id),

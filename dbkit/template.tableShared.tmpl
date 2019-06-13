@@ -92,7 +92,7 @@ func (t {{ .Table.GoTableName }}Table) FindBy{{.Name}}({{.FuncArgs}}) *{{ .Table
 }
 
 // DeleteBy{{.Name}} deletes records the {{ .Table.GoTableName }} table based on the given values and panics on error
-func (t {{ .Table.GoTableName }}Table) DeleteByP{{.Name}}(ctx context.Context, {{.FuncArgs}}) {
+func (t {{ .Table.GoTableName }}Table) DeleteBy{{.Name}}P(ctx context.Context, {{.FuncArgs}}) {
 	err := t.driver.deleteBy{{.Name}}(ctx,{{.CallArgs}})
 	if err != nil {
 		panic(panicWrap(err))
