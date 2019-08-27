@@ -147,12 +147,12 @@ func (d *{{ .GoLowerTableName }}PostgresDriver) save(ctx context.Context, item *
 		return logkit.Error(ctx, "SQL Error", logkit.String("sql",sql), logkit.Err(err))
 	}
 
-	// reset load variables.
-	item.resetLoadVars()
-
 	if d.table.AfterUpdate != nil {
 		d.table.AfterUpdate(ctx, item)
 	}
+
+	// reset load variables.
+	item.resetLoadVars()
 
 	return nil
 }
