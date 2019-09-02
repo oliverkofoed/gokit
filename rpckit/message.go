@@ -65,6 +65,15 @@ func (m *Message) WriteString(v string) {
 	m.len += stringLength
 }
 
+func (m *Message) WriteBytes(v []byte) {
+	byteLength := len(v)
+	m.WriteInt(uint64(byteLength))
+
+	m.grow(byteLength)
+	copy(m.buf[m.len:], v)
+	m.len += byteLength
+}
+
 func (m *Message) grow(needed int) {
 	if m.len+needed > len(m.buf) {
 		// Not enough space anywhere, we need to allocate.
