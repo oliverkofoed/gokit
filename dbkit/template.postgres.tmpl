@@ -37,7 +37,7 @@ func (d *{{ .GoLowerTableName }}PostgresDriver) insert(ctx context.Context, {{ra
 	}
 
 	{{ if .AutoIDColumn }}
-	sql := "insert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values ({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}${{$i | plusone}}{{end}}) returning id"
+	sql := "insert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values ({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}${{$i | plusone}}{{end}}) returning {{.AutoIDColumn.DBName}}"
 	{{ if .Logging -}}
 	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
 	defer done()
@@ -163,7 +163,7 @@ func getSave{{.StructName}}SQL(item *{{ .StructName }}, argOffset int) (string, 
 	args := make([]interface{}, 0, {{ .Columns | len }} )
 
 	{{ range .Columns }}
-	if {{changed . "item." "item.load"}} { 
+	if {{changed . "item." "item.load"}} {
 		if len(args) != 0 {
 			sb.WriteString(", ")
 		}
