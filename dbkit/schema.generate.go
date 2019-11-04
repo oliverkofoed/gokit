@@ -36,6 +36,7 @@ func (s *Schema) Generate(dir string, logging bool, generatorNames ...string) []
 		// build a map of imports
 		imports := make(map[string]bool)
 		imports["bytes"] = true
+		imports["errors"] = true
 		imports["strconv"] = true
 		extractImports(imports, table.Columns)
 		for _, field := range table.ExtraFields {

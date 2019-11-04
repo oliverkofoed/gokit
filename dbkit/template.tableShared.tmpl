@@ -155,6 +155,9 @@ func (q *{{ .StructName }}Query) SortDescendingBy(column string) *{{ .StructName
 
 // Where changes the where clause of the query
 func (q *{{ .StructName }}Query) Where(where string, args ...interface{}) *{{ .StructName }}Query {
+	if q.whereQuery != "" {
+		panic(errors.New("Cannot set where clause when where clause already exists."))
+	}
 	q.whereQuery = where
 	q.args = args //TODO: check if already have args, then add instead of set.
 	return q
