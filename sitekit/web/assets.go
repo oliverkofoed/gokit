@@ -27,6 +27,12 @@ import (
 	"github.com/tdewolff/minify/svg"
 )
 
+// SingleServerSite can be set to true if you know you're never going to
+// deploy to a cluster of multiple web servers (like during development).
+// This will make startup faster as assets can be procssed ad-hoc instead of
+// all up front.
+var SingleServerSite = false
+
 type Preprocessor func(assets *Assets, path string, content []byte) (result []byte, err error)
 
 type Assets struct {
@@ -200,13 +206,16 @@ func (f *Assets) ClearPreprocessors(extension string) {
 }
 
 func (f *Assets) AddFile(file string, virtualPath string) {
-	f.lock.Lock()
-	defer f.lock.Unlock()
+	ff := &File{path: file}
 
-	f.entries[virtualPath] = &File{
-		path: file,
-	}
+	f.lock.Lock()
+	f.entries[virtualPath] = ff
 	f.version++
+	f.lock.Unlock()
+
+	if !SingleServerSite {
+		f.setContent(ff, virtualPath)
+	}
 }
 
 func (f *Assets) Get(virtualPath string) (*File, error) {
@@ -218,55 +227,63 @@ func (f *Assets) Get(virtualPath string) (*File, error) {
 	}
 
 	if file.Content == nil {
-		// read file content
-		fileContent, err := ioutil.ReadFile(file.path)
+		err := f.setContent(file, virtualPath)
 		if err != nil {
 			return nil, err
 		}
-
-		// figure out content type
-		extension := filepath.Ext(file.path)
-		file.ContentType = mime.TypeByExtension(extension)
-		if file.ContentType == "" {
-			file.ContentType = http.DetectContentType(fileContent)
-		}
-
-		// preprocess content
-		f.lock.RLock()
-		preprocessors := f.preprocessors[extension]
-		f.lock.RUnlock()
-		if preprocessors != nil {
-			for _, processor := range preprocessors {
-				newContent, err := processor(f, virtualPath, fileContent)
-				if err != nil {
-					return nil, err
-				}
-
-				fileContent = newContent
-			}
-		}
-
-		// gzip content
-		var buffer bytes.Buffer
-		compressor := gzip.NewWriter(&buffer)
-		compressor.Write(fileContent)
-		compressor.Close()
-		file.ContentGZipped = buffer.Bytes()
-
-		// sha1 the content.
-		h := sha1.New()
-		h.Write(fileContent)
-		file.Hash = h.Sum(nil)
-		file.HashString = hex.EncodeToString(file.Hash)
-		f.lock.Lock()
-		f.byChecksum[file.HashString] = file
-		f.lock.Unlock()
-
-		// set the content (this is done last to minimize the chance of two goroutines in this if-statement)
-		file.Content = fileContent
 	}
 
 	return file, nil
+}
+
+func (f *Assets) setContent(file *File, virtualPath string) error {
+	// read file content
+	fileContent, err := ioutil.ReadFile(file.path)
+	if err != nil {
+		return err
+	}
+
+	// figure out content type
+	extension := filepath.Ext(file.path)
+	file.ContentType = mime.TypeByExtension(extension)
+	if file.ContentType == "" {
+		file.ContentType = http.DetectContentType(fileContent)
+	}
+
+	// preprocess content
+	f.lock.RLock()
+	preprocessors := f.preprocessors[extension]
+	f.lock.RUnlock()
+	if preprocessors != nil {
+		for _, processor := range preprocessors {
+			newContent, err := processor(f, virtualPath, fileContent)
+			if err != nil {
+				return err
+			}
+
+			fileContent = newContent
+		}
+	}
+
+	// gzip content
+	var buffer bytes.Buffer
+	compressor := gzip.NewWriter(&buffer)
+	compressor.Write(fileContent)
+	compressor.Close()
+	file.ContentGZipped = buffer.Bytes()
+
+	// sha1 the content.
+	h := sha1.New()
+	h.Write(fileContent)
+	file.Hash = h.Sum(nil)
+	file.HashString = hex.EncodeToString(file.Hash)
+	f.lock.Lock()
+	f.byChecksum[file.HashString] = file
+	f.lock.Unlock()
+
+	// set the content (this is done last to minimize the chance of two goroutines in this if-statement)
+	file.Content = fileContent
+	return nil
 }
 
 func (f *Assets) GetUrl(virtualPath string) (string, error) { //todo: returns /a/<checksum> w/ forever expires.
