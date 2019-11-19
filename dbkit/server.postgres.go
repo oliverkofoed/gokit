@@ -133,7 +133,7 @@ func (p *Postgres) GetSchema(packageName string, log func(msg string, args ...in
 			} else {
 				t.AddColumn(columnName, goColumnName, DataTypeInt64, nullable)
 			}
-		case "TIMESTAMP", "TIMESTAMPTZ", "TIMESTAMP WITH TIME ZONE":
+		case "TIMESTAMP", "TIMESTAMPTZ", "TIMESTAMP WITH TIME ZONE", "TIMESTAMP WITHOUT TIME ZONE":
 			t.AddColumn(columnName, goColumnName, DataTypeTime, nullable)
 		case "DATE":
 			t.AddColumn(columnName, goColumnName, DataTypeDate, nullable)
