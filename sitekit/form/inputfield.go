@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/oliverkofoed/gokit/sitekit/web"
 )
@@ -22,6 +23,7 @@ const (
 	InputTypePassword
 	InputTypeEmail
 	InputTypeWebsite
+	InputTypeDate
 )
 
 type InputField struct {
@@ -85,6 +87,10 @@ func (t *InputField) Bind(c *web.Context, texts *Text) {
 				}
 			}
 			t.Value = adr.String()
+		case InputTypeDate:
+			if _, err := time.Parse("2006-01-02", t.Value); err != nil {
+				t.Error = texts.ErrorInvalidDate
+			}
 		}
 
 		// matching for built in types.
@@ -118,6 +124,8 @@ func (t *InputField) Render(buffer *bytes.Buffer) {
 		addType(buffer, "email")
 	case InputTypeWebsite:
 		addType(buffer, "text")
+	case InputTypeDate:
+		addType(buffer, "date")
 	default:
 		addType(buffer, "text")
 	}

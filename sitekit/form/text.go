@@ -7,6 +7,7 @@ type Text struct {
 	ErrorTooShort       string
 	ErrorInvalidEmail   string
 	ErrorInvalidWebsite string
+	ErrorInvalidDate    string
 }
 
 // DefaultText is the default texts used by the package
@@ -16,4 +17,5 @@ var DefaultText = Text{
 	ErrorTooShort:       "This value is too short",
 	ErrorInvalidEmail:   "This is not a valid e-mail address",
 	ErrorInvalidWebsite: "This is not a valid website address",
+	ErrorInvalidDate:    "This is not a valid date (expected YYYY-MM-DD)",
 }
