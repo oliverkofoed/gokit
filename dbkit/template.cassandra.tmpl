@@ -100,7 +100,7 @@ func cassandraScan{{.StructName}}(d *{{.GoLowerTableName}}CassandraDriver, iter 
 
 func (d *{{ .GoLowerTableName }}CassandraDriver) save(ctx context.Context, item *{{ .StructName }}) error {
 	cql, args := getSave{{.StructName}}CQL(item)
-	
+
 	// nothings changed
 	if cql == "" {
 		return nil
@@ -125,7 +125,7 @@ func getSave{{.StructName}}CQL(item *{{ .StructName }}) (string, []interface{}) 
 	args := make([]interface{}, 0, {{ .Columns | len }} )
 
 	{{ range .Columns }}
-	if {{changed . "item." "item.load"}} { 
+	if {{changed . "item." "item.load"}} {
 		if len(args) != 0 {
 			sb.WriteString(", ")
 		}
@@ -211,7 +211,7 @@ func (d *{{ .GoLowerTableName }}CassandraDriver) queryEach(ctx context.Context, 
 			{{ range .Columns }}item.load{{.GoName}} = item.{{.GoName}}
 			{{ end }}
 			if err := action(item); err != nil {
-				iter.Close(); 
+				iter.Close();
 				return err
 			}
 		}else{
@@ -253,6 +253,10 @@ func (d *{{ .GoLowerTableName }}CassandraDriver) queryCQL(query *{{ .StructName 
 	if query.limit > 0 {
 		sb.WriteString(" LIMIT ")
 		sb.WriteString(strconv.FormatInt(int64(query.limit), 10))
+	}
+	if query.offset > 0 {
+		sb.WriteString(" OFFSET ")
+		sb.WriteString(strconv.FormatInt(int64(query.offset), 10))
 	}
 
 	return sb.String()
