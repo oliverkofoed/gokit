@@ -309,6 +309,10 @@ func (d *{{ .GoLowerTableName }}PostgresDriver) querySQL(query *{{ .StructName }
 		sb.WriteString(" LIMIT ")
 		sb.WriteString(strconv.FormatInt(int64(query.limit), 10))
 	}
+	if query.offset > 0 {
+		sb.WriteString(" OFFSET ")
+		sb.WriteString(strconv.FormatInt(int64(query.offset), 10))
+	}
 
 	return sb.String()
 }
