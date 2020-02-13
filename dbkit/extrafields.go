@@ -1,23 +1,27 @@
 package dbkit
 
 import (
+	"bufio"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"regexp"
-	"strings"
 )
 
 func (s *Schema) ReadExtraFieldsFile(filename string, log func(msg string, args ...interface{})) error {
-	// read the entire file
-	content, err := ioutil.ReadFile(filename)
+	file, err := os.Open(filename)
 	if err != nil {
 		return err
 	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
 
 	// parse file
 	anyError := false
-	lines := strings.Split(string(content), "\n")
-	for _, line := range lines {
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "" {
+			continue
+		}
 		tableName, property, gotype, importname, err := parseExtraFieldLine(line)
 		if err != nil {
 			log("Error: invalid extrafields file '%v': %v", filename, err.Error())
@@ -47,11 +51,11 @@ func (s *Schema) ReadExtraFieldsFile(filename string, log func(msg string, args 
 	if anyError {
 		return fmt.Errorf("Errors parsing extrafields file: %v", filename)
 	}
-	return nil
+	return scanner.Err()
 }
 
 var extraFieldParseErrorTmpl = "Error parsing extrafields from line: '%v'. Expected format is 'table.propertype gotype optional-import', like 'User.IsAwesome bool' or 'User.projects *projectsStore' or 'Stats.Counters *counters.Counter github.com/someuser/counters'"
-var extraFieldParser = regexp.MustCompile("^\\s?(\\w+)\\.(\\w+)\\s*(\\*?\\s*[\\w|\\.]+)(\\s+([\\w|\\.|\\/]+))?")
+var extraFieldParser = regexp.MustCompile(`^\s?(\w+)\.(\w+)\s*(\*?\s*[\w\*\[\]\(\)|\.]+)(\s+([\w|\.|\/]+))?`)
 
 func parseExtraFieldLine(line string) (table string, property string, gotype string, importname string, err error) {
 	matches := extraFieldParser.FindStringSubmatch(line)
