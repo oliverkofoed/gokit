@@ -31,7 +31,7 @@ func (m Event) String() string {
 func (m Event) Error() string {
 	var buf bytes.Buffer
 	buf.WriteString(m.Message)
-	printValues(&buf, m.Fields)
+	PrintValues(&buf, m.Fields)
 	return buf.String()
 }
 

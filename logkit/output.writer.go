@@ -33,10 +33,10 @@ func (d *WriterOutput) Event(evt Event) {
 		d.Lock()
 		defer d.Unlock()
 		d.writePrefix(evt.Operation)
-		printValues(d.output, evt.Operation.fields)
+		PrintValues(d.output, evt.Operation.Fields)
 		io.WriteString(d.output, "\n")
 	case EventTypeCompleteOperation:
-		t := evt.Operation.end.Sub(evt.Operation.start)
+		t := evt.Operation.End.Sub(evt.Operation.Start)
 		if t > time.Millisecond*20 {
 			d.writePrefix(evt.Operation)
 			d.Lock()
@@ -56,14 +56,14 @@ func (d *WriterOutput) Event(evt Event) {
 			d.output.Write(termReset)
 			colorOutput(d.output, evt.Type)
 		}
-		if evt.Operation.parent != nil {
+		if evt.Operation.Parent != nil {
 			io.WriteString(d.output, ": ")
 		}
 		io.WriteString(d.output, evt.Message)
 		if d.colors {
 			d.output.Write(termReset)
 		}
-		printValues(d.output, evt.Fields)
+		PrintValues(d.output, evt.Fields)
 		io.WriteString(d.output, "\n")
 	}
 }
@@ -79,9 +79,9 @@ func (d *WriterOutput) writePrefix(operation *Context) {
 }
 
 func (d *WriterOutput) writePath(operation *Context) {
-	if operation.parent != nil && operation.parent.name != "" {
-		d.writePath(operation.parent)
+	if operation.Parent != nil && operation.Parent.Name != "" {
+		d.writePath(operation.Parent)
 		io.WriteString(d.output, "→")
 	}
-	io.WriteString(d.output, operation.name)
+	io.WriteString(d.output, operation.Name)
 }

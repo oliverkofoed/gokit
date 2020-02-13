@@ -11,17 +11,17 @@ import (
 // Context implements context.Context and adds some convinience logging methods like ctx.Info("Msg")
 type Context struct {
 	context.Context
-	fields []Field
-	output Output
-	parent *Context
-	name   string
-	start  time.Time
-	end    time.Time
+	Fields []Field
+	Output Output
+	Parent *Context
+	Name   string
+	Start  time.Time
+	End    time.Time
 }
 
 func (c *Context) event(e Event) Event {
-	if c.output != nil {
-		c.output.Event(e)
+	if c.Output != nil {
+		c.Output.Event(e)
 	} else {
 		DefaultOutput.Event(e)
 	}
@@ -67,9 +67,9 @@ var DefaultOutput Output = &WriterOutput{
 }
 
 var defaultOperation = &Context{
-	name:   "",
-	parent: nil,
-	output: nil,
+	Name:   "",
+	Parent: nil,
+	Output: nil,
 }
 
 type operationValueKeyType byte
@@ -105,14 +105,14 @@ func operation(ctx context.Context, name string, newOutput Output, fields ...Fie
 	parent := findContext(ctx)
 
 	c := &Context{
-		parent: parent,
-		output: parent.output,
-		name:   name,
-		fields: fields,
-		start:  time.Now(),
+		Parent: parent,
+		Output: parent.Output,
+		Name:   name,
+		Fields: fields,
+		Start:  time.Now(),
 	}
 	if newOutput != nil {
-		c.output = newOutput
+		c.Output = newOutput
 	}
 
 	childContext, done := context.WithCancel(ctx)
@@ -126,7 +126,7 @@ func operation(ctx context.Context, name string, newOutput Output, fields ...Fie
 		if d := childContext.Done(); d != nil {
 			<-d
 		}
-		c.end = time.Now()
+		c.End = time.Now()
 
 		c.event(Event{Type: EventTypeCompleteOperation, Operation: c, Fields: fields})
 	}

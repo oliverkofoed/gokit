@@ -16,5 +16,6 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/tdewolff/minify v2.3.6+incompatible
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
+	github.com/tdewolff/test v1.0.6 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 )

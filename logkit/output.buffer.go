@@ -19,7 +19,7 @@ func (d *outputBuffer) Event(evt Event) {
 	//TODO: needs a lock or other sync method
 	d.buffered = append(d.buffered, evt)
 
-	if evt.Type == EventTypeCompleteOperation && evt.Operation.output == d && (evt.Operation.parent == nil || evt.Operation.parent.output != d) {
+	if evt.Type == EventTypeCompleteOperation && evt.Operation.Output == d && (evt.Operation.Parent == nil || evt.Operation.Parent.Output != d) {
 		new := d.buffered
 		if d.filter != nil {
 			new = d.filter(d.buffered)

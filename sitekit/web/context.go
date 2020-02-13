@@ -77,6 +77,12 @@ func (c *Context) Write(data []byte) (int, error) {
 	return c.w.Write(data)
 }
 
+func (c *Context) Flush() {
+	if f, ok := c.w.(http.Flusher); ok {
+		f.Flush()
+	}
+}
+
 func (c *Context) WriteString(value string) (int, error) {
 	return io.WriteString(c.w, value)
 }
