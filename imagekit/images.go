@@ -32,6 +32,14 @@ func Fit(imageBytes []byte, width, height int, maxBytes int) ([]byte, string, er
 	})
 }
 
+// Fill creates an image with the specified dimensions and fills it with the scaled source image.
+// To achieve the correct aspect ratio without stretching, the source image will be cropped.
+func Fill(imageBytes []byte, width, height int, maxBytes int, anchor imaging.Anchor) ([]byte, string, error) {
+	return process(imageBytes, maxBytes, func(image image.Image) image.Image {
+		return imaging.Fill(image, width, height, anchor, imaging.MitchellNetravali)
+	})
+}
+
 // FitRect scales the given dimensiosn to fit inside the maxWidth-maxHeight box.
 func FitRect(width, height int, maxWidth, maxHeight int) (newWidth, newHeight int) {
 	srcAspectRatio := float64(width) / float64(height)
