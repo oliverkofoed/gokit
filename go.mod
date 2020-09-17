@@ -13,9 +13,12 @@ require (
 	github.com/lib/pq v1.3.0
 	github.com/mattn/go-isatty v0.0.11
 	github.com/satori/go.uuid v1.2.0
+	github.com/soheilhy/cmux v0.1.4
 	github.com/spf13/cobra v0.0.5
 	github.com/tdewolff/minify v2.3.6+incompatible
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/tdewolff/test v1.0.6 // indirect
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/net v0.0.0-20200904194848-62affa334b73 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 )
