@@ -125,3 +125,21 @@ func (m *Message) ReadInt() (uint64, error) {
 		s += 7
 	}
 }
+
+
+func (m *Message) ReadFloat64() (float64, error) {
+	if m.pos+8 > m.len {
+		m.LastError = io.EOF
+		return 0, io.EOF
+	}
+
+	b := m.buf[m.pos : m.pos+8]
+	m.pos += 8
+	var value float64
+	buf := bytes.NewReader(b)
+	err := binary.Read(buf, binary.LittleEndian, &value)
+	if err != nil {
+		return 0, err
+	}
+	return value, err
+}
