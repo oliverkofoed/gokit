@@ -127,7 +127,6 @@ func (m *Message) ReadInt() (uint64, error) {
 	}
 }
 
-
 func (m *Message) ReadFloat64() (float64, error) {
 	if m.pos+8 > m.len {
 		m.LastError = io.EOF
@@ -138,7 +137,7 @@ func (m *Message) ReadFloat64() (float64, error) {
 	m.pos += 8
 	var value float64
 	buf := bytes.NewReader(b)
-	err := binary.Read(buf, binary.LittleEndian, &value)
+	err := binary.Read(buf, binary.BigEndian, &value)
 	if err != nil {
 		return 0, err
 	}
