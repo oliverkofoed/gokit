@@ -1,6 +1,7 @@
 package rpckit
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"io"
