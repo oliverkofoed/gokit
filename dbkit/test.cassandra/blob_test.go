@@ -7,7 +7,6 @@ import (
 
 	"bytes"
 
-	"github.com/oliverkofoed/gokit/dev"
 	"github.com/oliverkofoed/gokit/testkit"
 )
 

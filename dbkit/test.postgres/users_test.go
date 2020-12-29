@@ -33,8 +33,7 @@ func testUsers(db *DB, t *testing.T) {
 	db.Users.DeleteByEmail(nil, nil)
 	db.Users.DeleteByFacebookUserID(nil, dbkit.NullableString("fbid"))
 
-	uid, err := uuid.NewV4()
-	noerr(err)
+	uid := uuid.NewV4()
 
 	// Create
 	u, err := db.Users.Insert(ctx, time.Now(), uid, 0, time.Now(), time.Now(), 0, "Oliver", "abcdef", nil, dbkit.NullableString("fbid"), json.RawMessage("{}"))
