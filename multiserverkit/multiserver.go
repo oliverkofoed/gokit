@@ -21,6 +21,7 @@ type MultiServer struct {
 	TlsConfig              *tls.Config
 	GetSite                func(domain string) *web.Site
 	HandleTCP              func(conn net.Conn)
+	HandleGRPC             func(lis net.Listener)
 	BasicHttpAuthenticator func(req *http.Request, username string, password string) (bool, string)
 }
 
@@ -78,6 +79,9 @@ func (s *MultiServer) Listen(ctx context.Context, listen string, useTls bool) {
 	}
 
 	m := cmux.New(l)
+	if s.HandleGRPC != nil {
+		go s.HandleGRPC(m.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc")))
+	}
 	go s.handleHttp(m.Match(cmux.HTTP1Fast()))
 	go s.handleHttp(m.Match(cmux.HTTP2()))
 	go s.handleTcp(m.Match(cmux.Any()))
