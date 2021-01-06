@@ -442,6 +442,12 @@ func replaceProcessor(assets *Assets, path string, content []byte, regex *regexp
 		//fmt.Println("Match: " + string(match))
 		file := string(match)[len(prefix) : len(match)-len(postfix)]
 
+		quoted := strings.HasPrefix(file, "'") && strings.HasSuffix(file, "'")
+		quoted = quoted || (strings.HasPrefix(file, "\"") && strings.HasSuffix(file, "\""))
+		if quoted {
+			file = file[1 : len(file)-1]
+		}
+
 		if strings.HasPrefix(file, "data:") || strings.HasPrefix(file, "\"data:") || strings.HasPrefix(file, "base64:") || strings.HasPrefix(file, "\"base64:") {
 			return []byte(file)
 		}
