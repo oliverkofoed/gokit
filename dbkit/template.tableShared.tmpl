@@ -184,6 +184,20 @@ func (q *{{ .StructName }}Query) First(ctx context.Context) ( *{{ .StructName }}
 	return q.driver.queryFirst(ctx,q)
 }
 
+// Count returns a the count of matched item 
+func (q *{{ .StructName }}Query) Count(ctx context.Context) (int64, error) {
+	return q.driver.queryCount(ctx,q)
+}
+
+// CountP returns a the count of matched item and panics on error
+func (q *{{ .StructName }}Query) CountP(ctx context.Context) int64 {
+	c, err := q.driver.queryCount(ctx,q)
+	if err != nil {
+		panic(panicWrap(err))
+	}
+	return c
+}
+
 // SliceP returns a slice with all the matched item (warning: can use lots of memory) and panics on error
 func (q *{{ .StructName }}Query) SliceP(ctx context.Context,expectedSliceSize int) []*{{ .StructName }} {
 	v, err := q.driver.querySlice(ctx,q, expectedSliceSize)
@@ -218,6 +232,7 @@ type {{ .GoLowerTableName }}Driver interface {
 	delete(ctx context.Context,query string, args ...interface{}) error
 	save(ctx context.Context,{{ .LowerStructName }} *{{ .StructName }}) error
 	//scan({{ .LowerStructName }} *{{ .StructName }}, rows *sql.Rows) error
+	queryCount(ctx context.Context,query *{{ .StructName }}Query) (int64, error)
 	queryFirst(ctx context.Context,query *{{ .StructName }}Query) (*{{ .StructName }}, error)
 	querySlice(ctx context.Context,query *{{ .StructName }}Query, expectedSliceSize int) ([]*{{ .StructName }}, error)
 	queryEach(ctx context.Context,query *{{ .StructName }}Query, reuseItem bool, action func(*{{ .StructName }}) error) error{{ range .IndexCombinations }}

@@ -193,6 +193,37 @@ func (i *{{.StructName}}) resetLoadVars(){
 	{{ end }}
 }
 
+func (d *{{ .GoLowerTableName }}PostgresDriver) queryCount(ctx context.Context, query *{{ .StructName }}Query) (int64, error) {
+	var sb bytes.Buffer
+	sb.WriteString("Select count(*) from {{ .DBTableName }}")
+	if query.whereQuery != "" {
+		sb.WriteString(" WHERE ")
+		sb.WriteString(query.whereQuery)
+	}
+	sql := sb.String()
+	{{ if .Logging -}}
+	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
+	defer done()
+	{{- end }}
+	rows, err := d.db.Query(sql, query.args...)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+
+	count := int64(0)
+	if rows.Next() {
+		if err := rows.Scan(&count); err != nil {
+			return 0, err
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func (d *{{ .GoLowerTableName }}PostgresDriver) queryFirst(ctx context.Context, query *{{ .StructName }}Query) (*{{ .StructName }}, error) {
 	sql := d.querySQL(query)
 	{{ if .Logging -}}
