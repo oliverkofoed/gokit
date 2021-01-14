@@ -9,7 +9,7 @@ import (
 	"github.com/oliverkofoed/gokit/sitekit/web"
 )
 
-func (s *Sessions) AccessBrowserSession(c *web.Context) (bool, bool) {
+func (s *Sessions) BrowserAccessSession(c *web.Context) (bool, bool) {
 	_, token := readSessionCookie(c)
 	for _, session := range s.sessions.Sessions {
 		if subtle.ConstantTimeCompare(session.Token, token) == 1 {
@@ -29,13 +29,13 @@ func (s *Sessions) AccessBrowserSession(c *web.Context) (bool, bool) {
 	return false, false
 }
 
-func (s *Sessions) CreateBrowserSession(c *web.Context, userID int64, permanentCookie bool) {
+func (s *Sessions) BrowserCreateSession(c *web.Context, userID int64, permanentCookie bool) {
 	token := randomBytes(20)
-	deviceID := GetBrowserID(c)
-	newSessions := make([]*session, 0, len(s.sessions.Sessions)+1)
-	newSessions = append(newSessions, &session{
+	deviceID := BrowserID(c)
+	newSessions := make([]*Session, 0, len(s.sessions.Sessions)+1)
+	newSessions = append(newSessions, &Session{
 		Token:      token,
-		ClientInfo: GetBrowserClientInfo(c),
+		ClientInfo: BrowserClientInfo(c),
 		DeviceID:   deviceID,
 		LastIP:     c.ClientIP(),
 		Created:    getCurrentLastAccess(),
@@ -52,8 +52,8 @@ func (s *Sessions) CreateBrowserSession(c *web.Context, userID int64, permanentC
 
 func (s *Sessions) BrowserLogout(c *web.Context) {
 	_, token := readSessionCookie(c)
-	deviceID := GetBrowserID(c)
-	newSessions := make([]*session, 0, len(s.sessions.Sessions))
+	deviceID := BrowserID(c)
+	newSessions := make([]*Session, 0, len(s.sessions.Sessions))
 	for _, session := range s.sessions.Sessions {
 		if !bytes.Equal(deviceID, session.DeviceID) && !bytes.Equal(token, session.Token) {
 			newSessions = append(newSessions, session)
@@ -64,7 +64,7 @@ func (s *Sessions) BrowserLogout(c *web.Context) {
 	deleteCookieValue(c, "sid")
 }
 
-func GetBrowserID(c *web.Context) []byte {
+func BrowserID(c *web.Context) []byte {
 	if bid := getCookieValue(c, "bid"); bid != nil {
 		return bid
 	} else {
@@ -74,11 +74,11 @@ func GetBrowserID(c *web.Context) []byte {
 	}
 }
 
-func GetBrowserClientInfo(c *web.Context) string {
+func BrowserClientInfo(c *web.Context) string {
 	return "browser"
 }
 
-func GetCookieUserID(c *web.Context) int64 {
+func BrowserCookieUserID(c *web.Context) int64 {
 	userID, _ := readSessionCookie(c)
 	return userID
 }

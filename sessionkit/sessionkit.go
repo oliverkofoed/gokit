@@ -5,8 +5,10 @@ import (
 	"crypto/rand"
 	"crypto/subtle"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"net"
 	"time"
 
 	"go.dedis.ch/protobuf"
@@ -37,7 +39,7 @@ type Sessions struct {
 
 type protobufContainer struct {
 	// one of these should be set
-	Sessions []*session `protobuf:"1"`
+	Sessions []*Session `protobuf:"1"`
 
 	Password  *passwordContainer  `protobuf:"2"`
 	Logincode *logincodeContainer `protobuf:"3"`
@@ -54,21 +56,37 @@ type logincodeContainer struct {
 	Expires     int64  `protobuf:"3"`
 }
 
-type session struct {
-	// one of these should be set
+type Session struct {
 	Token      []byte `protobuf:"1"`
 	ClientInfo string `protobuf:"2"` // could be: user-agent, sdk version, app version, ...
-
 	DeviceID   []byte `protobuf:"10,opt"`
 	LastIP     []byte `protobuf:"11,opt"`
 	LastAccess int64  `protobuf:"12,opt"`
 	Created    int64  `protobuf:"13,opt"`
-
 	//utc_offset INT8 NOT NULL DEFAULT 0:::INT,
-
 	// push
 	IOSPushToken     []byte `protobuf:"51,opt"`
 	AndroidPushToken []byte `protobuf:"52,opt"`
+}
+
+func (s *Session) TokenHex() string {
+	return hex.EncodeToString(s.Token)
+}
+
+func (s *Session) DeviceIDHex() string {
+	return hex.EncodeToString(s.DeviceID)
+}
+
+func (s *Session) LastIPNet() net.IP {
+	return net.IP(s.LastIP)
+}
+
+func (s *Session) LastAccessTime() time.Time {
+	return time.Unix(s.LastAccess, 0)
+}
+
+func (s *Session) CreatedTime() time.Time {
+	return time.Unix(s.Created, 0)
 }
 
 func (s *Sessions) Bytes() []byte {
@@ -77,6 +95,10 @@ func (s *Sessions) Bytes() []byte {
 		panic(err)
 	}
 	return buf
+}
+
+func (s *Sessions) Sessions() []*Session {
+	return s.sessions.Sessions
 }
 
 func (s *Sessions) LoginWithPassword(password string, maxFailedAttempts int64) Result {
