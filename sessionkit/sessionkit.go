@@ -65,8 +65,8 @@ type Session struct {
 	Created    int64  `protobuf:"13,opt"`
 	//utc_offset INT8 NOT NULL DEFAULT 0:::INT,
 	// push
-	IOSPushToken     []byte `protobuf:"51,opt"`
-	AndroidPushToken []byte `protobuf:"52,opt"`
+	IOSPushToken        []byte `protobuf:"51,opt"`
+	GooglePlayPushToken []byte `protobuf:"52,opt"`
 }
 
 func (s *Session) TokenHex() string {

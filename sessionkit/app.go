@@ -50,6 +50,28 @@ func (s *Sessions) TokenCreateSession(userID int64, deviceID []byte, clientInfo 
 	return token
 }
 
+func (s *Sessions) TokenSetIOSPushToken(token []byte, iosPushToken []byte) {
+	t := token[8:]
+	for _, session := range s.sessions.Sessions {
+		if subtle.ConstantTimeCompare(session.Token, t) == 1 {
+			now := getCurrentLastAccess()
+			session.LastAccess = now
+			session.IOSPushToken = iosPushToken
+		}
+	}
+}
+
+func (s *Sessions) TokenSetGooglePlayPushToken(token []byte, googlePlayPushToken []byte) {
+	t := token[8:]
+	for _, session := range s.sessions.Sessions {
+		if subtle.ConstantTimeCompare(session.Token, t) == 1 {
+			now := getCurrentLastAccess()
+			session.LastAccess = now
+			session.GooglePlayPushToken = googlePlayPushToken
+		}
+	}
+}
+
 func TokenUserID(token []byte) int64 {
 	return int64(binary.LittleEndian.Uint64(token))
 }
