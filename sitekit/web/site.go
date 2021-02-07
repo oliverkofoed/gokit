@@ -150,6 +150,17 @@ func (s *Site) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func RemoveAssetsFilter(events []logkit.Event) []logkit.Event {
+	op := events[0]
+	if len(op.Fields) > 0 && op.Fields[0].Key == "url" {
+		url := op.Fields[0].Str
+		if strings.HasPrefix(url, "/_/") {
+			return nil
+		}
+	}
+	return events
+}
+
 func (s *Site) runRoute(route *Route, w http.ResponseWriter, req *http.Request, params httprouter.Params, dontWrap bool) {
 	// automatic zipping of all data.
 	if !route.NoGZip && dontWrap == false && req.Method == "GET" {
