@@ -103,6 +103,19 @@ func encodeImage(buffer *bytes.Buffer, format string, image image.Image, maxByte
 	return format, nil
 }
 
+func ParseDetails(imageBytes []byte) (string, int, int, error) {
+	c, imageFormat, err := image.DecodeConfig(bytes.NewReader(imageBytes))
+	if err != nil {
+		return "", 0, 0, fmt.Errorf("Clould not get mime type from image: %v", err)
+	}
+
+	mimeType, err := GetMimeType(imageFormat)
+	if err != nil {
+		return "", 0, 0, err
+	}
+	return mimeType, c.Width, c.Height, err
+}
+
 func ParseMimeType(imageBytes []byte) (string, error) {
 	_, imageFormat, err := image.DecodeConfig(bytes.NewReader(imageBytes))
 	if err != nil {
