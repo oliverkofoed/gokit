@@ -73,7 +73,11 @@ func (s *Sessions) TokenSetGooglePlayPushToken(token []byte, googlePlayPushToken
 }
 
 func TokenUserID(token []byte) int64 {
-	return int64(binary.LittleEndian.Uint64(token))
+	if len(token) < 8 {
+		return -1
+	} else {
+		return int64(binary.LittleEndian.Uint64(token))
+	}
 }
 
 func (s *Sessions) TokenLogout(token []byte) {
