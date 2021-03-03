@@ -72,6 +72,16 @@ func (s *Sessions) TokenSetGooglePlayPushToken(token []byte, googlePlayPushToken
 	}
 }
 
+func (s *Sessions) TokenGetIOSPushToken(token []byte) []byte {
+	t := token[8:]
+	for _, session := range s.sessions.Sessions {
+		if subtle.ConstantTimeCompare(session.Token, t) == 1 {
+			return session.IOSPushToken
+		}
+	}
+	return nil
+}
+
 func TokenUserID(token []byte) int64 {
 	if len(token) < 8 {
 		return -1
