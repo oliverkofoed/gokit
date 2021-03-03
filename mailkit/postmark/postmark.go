@@ -29,17 +29,25 @@ func New() *Postmark {
 	}
 }
 
-func (p *Postmark) Master(productname string, preheader string, address []string) *mailkit.Block {
+func (p *Postmark) Master(productName string, productUrl string, productImageUrl string, productImageWidth int, productImageHeight int, preheader string, address []string) *mailkit.Block {
 	return p.Mailset.CreateBlock("master", struct {
-		Preheader     string
-		ProductName   string
-		Address       []string
-		CopyrightYear string
+		ProductName        string
+		ProductUrl         string
+		ProductImageUrl    string
+		ProductImageWidth  int
+		ProductImageHeight int
+		Preheader          string
+		Address            []string
+		CopyrightYear      string
 	}{
-		ProductName:   productname,
-		Preheader:     preheader,
-		Address:       address,
-		CopyrightYear: fmt.Sprintf("%v", time.Now().Year()),
+		ProductName:        productName,
+		ProductUrl:         productUrl,
+		ProductImageUrl:    productImageUrl,
+		ProductImageWidth:  productImageWidth,
+		ProductImageHeight: productImageHeight,
+		Preheader:          preheader,
+		Address:            address,
+		CopyrightYear:      fmt.Sprintf("%v", time.Now().Year()),
 	})
 }
 
