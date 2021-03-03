@@ -42,6 +42,10 @@ func (s *MediaStore) GetFormattedMedia(ctx context.Context, path string, format 
 		return nil, "", err
 	}
 
+	// remove whatever comes after @
+	formatParts := strings.Split(format, "@")
+	format = formatParts[0]
+
 	// format media
 	if format != "" && format != "original" {
 		unknownFormat := true
