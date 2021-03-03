@@ -1,0 +1,6 @@
+{{range .Blocks}}{{.}}{{end}}
+
+--
+{{.Args.ProductName}}
+{{range .Args.Address}}{{.}}
+{{end}}
