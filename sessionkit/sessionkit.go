@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/big"
 	"net"
 	"time"
 
@@ -130,41 +131,53 @@ func getCurrentLastAccess() int64 {
 	return day.Unix()
 }
 
-// --------------------------
-
-func checkLoginCode(container *logincodeContainer, code string, maxTries int64) Result {
-	now := time.Now().UTC()
-
-	// no login code
-	if container == nil || container.Expires == 0 || container.Code == "" {
-		return ResultExpired
+func (s *Sessions) GenerateLogincode(letters string, length int, expires time.Duration) string {
+	ret := make([]byte, length)
+	for i := 0; i < length; i++ {
+		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
+		if err != nil {
+			panic(err)
+		}
+		ret[i] = letters[num.Int64()]
 	}
 
-	// expired login code
-	if time.Unix(container.Expires, 0).Before(now) {
-		return ResultExpired
+	code := string(ret)
+
+	s.sessions.Logincode = &logincodeContainer{
+		Code:        code,
+		FailedTries: 0,
+		Expires:     time.Now().Add(expires).UTC().Unix(),
 	}
 
-	// max tries
-	if container.FailedTries > maxTries {
-		return ResultMaxTries
-	}
+	return code
+}
 
-	// check if they match
-	if subtle.ConstantTimeCompare([]byte(container.Code), []byte(code)) == 1 {
-		//user.LoginCode = ""
-		//user.LoginCodeExpires = nil
-		//user.LoginCodeTries = 0
-		//user.Save(context.Background())
+func (s *Sessions) ValidateLogincode(code string, maxTries int64) Result {
+	if lc := s.sessions.Logincode; lc != nil && lc.Code != "" {
+		// has the code expired?
+		if lc.Expires < time.Now().UTC().Unix() {
+			lc.FailedTries += 1
+			return ResultExpired
+		}
+
+		// did we try too many times?
+		if lc.FailedTries > maxTries {
+			lc.FailedTries += 1
+			return ResultMaxTries
+		}
+
+		// is the code valid
+		if subtle.ConstantTimeCompare([]byte(lc.Code), []byte(code)) != 1 {
+			lc.FailedTries += 1
+			return ResultInvalid
+		}
+		s.sessions.Logincode = nil
 		return ResultValid
 	}
-
-	//user.LoginCodeTries += 1
-	//user.Save(context.Background())
-	//time.Sleep(time.Second)
-
 	return ResultInvalid
 }
+
+// ---------------------
 
 func GetPasswordContainer(password string) []byte {
 	version := byte(1)
