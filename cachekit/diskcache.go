@@ -111,6 +111,8 @@ func (d *DiskCache) Evict(ctx context.Context, maxSize int64) {
 	var complete bool
 	seen := make(map[string]bool)
 	totalSize := int64(0)
+	deletedEntries := 0
+	deletedLeftovers := 0
 	batchSize := 100
 
 	for !complete {
@@ -120,7 +122,7 @@ func (d *DiskCache) Evict(ctx context.Context, maxSize int64) {
 			accessLength := len(accessPrefix)
 			c := bucket.Cursor()
 			now := time.Now().UnixNano()
-			batchCount := 0
+			batchOperations := 0
 
 			k, v := c.Seek(accessPrefix)
 			if offset != nil {
@@ -139,26 +141,31 @@ func (d *DiskCache) Evict(ctx context.Context, maxSize int64) {
 				binary.Read(buf, binary.LittleEndian, &length)
 				binary.Read(buf, binary.LittleEndian, &expires)
 
+				//fmt.Println(fmt.Sprintf(string(key)), expires)
+
 				if _, alreadyProcessed := seen[string(key)]; !alreadyProcessed {
-					delete := expires < now
+					delete := expires < now || (totalSize+length) >= maxSize
 					if !delete {
 						totalSize += length
-						if totalSize >= maxSize {
-							delete = true
-						}
 					}
 
 					if delete {
 						bucket.Delete(key) // delete data
 						bucket.Delete(k)   // delete access pointer
+						deletedEntries++
+						batchOperations++
 					}
 
 					seen[string(key)] = true
+				} else {
+					// already seen this acces pointer, get rid of it
+					bucket.Delete(k)
+					batchOperations++
+					deletedLeftovers++
 				}
 
 				offset = k
-				batchCount++
-				if batchCount >= batchSize {
+				if batchOperations >= batchSize {
 					return nil
 				}
 			}
@@ -171,6 +178,11 @@ func (d *DiskCache) Evict(ctx context.Context, maxSize int64) {
 			break
 		}
 	}
+
+	logkit.Debug(ctx, "diskcache.evict.complete",
+		logkit.Int64("alivebytes", totalSize),
+		logkit.Int64("deleted", int64(deletedEntries)),
+		logkit.Int64("deletedleftoveraccespointers", int64(deletedLeftovers)))
 }
 
 type diskCacheStore struct {
