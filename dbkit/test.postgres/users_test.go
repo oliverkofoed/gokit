@@ -88,7 +88,7 @@ func testUsers(db *DB, t *testing.T) {
 	err = batch.Execute(ctx)
 	noerr(err)
 
-	_ := db.Users.Query().Where("display_name = 'bobbyboy'").CountP(ctx)
+	db.Users.Query().Where("display_name = 'bobbyboy'").CountP(ctx)
 	// Delete
 	// ...
 }
