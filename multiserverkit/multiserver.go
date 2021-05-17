@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/oliverkofoed/gokit/logkit"
-	"github.com/oliverkofoed/gokit/sitekit/web"
 	"github.com/soheilhy/cmux"
 	"golang.org/x/crypto/acme/autocert"
 )
@@ -19,7 +18,7 @@ import (
 type MultiServer struct {
 	achmeChallengeHandler  http.Handler
 	TlsConfig              *tls.Config
-	GetSite                func(domain string) *web.Site
+	GetSite                func(domain string) http.Handler
 	HandleTCP              func(conn net.Conn)
 	HandleGRPC             func(lis net.Listener)
 	BasicHttpAuthenticator func(req *http.Request, username string, password string) (bool, string)
@@ -31,7 +30,7 @@ func New() *MultiServer {
 
 func NewWithAutocert(autocertCache autocert.Cache) *MultiServer {
 	s := &MultiServer{
-		GetSite: func(domain string) *web.Site {
+		GetSite: func(domain string) http.Handler {
 			return nil
 		},
 		HandleTCP: func(conn net.Conn) {
