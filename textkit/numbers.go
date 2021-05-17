@@ -26,5 +26,4 @@ func ShortNumber(number int) string {
 		s := fmt.Sprintf("%vM", int(float64(number)/float64(1000000)))
 		return s
 	}
-	return "bad"
 }

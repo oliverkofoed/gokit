@@ -13,15 +13,29 @@ func TimeAgo(t time.Time) string {
 
 // TimeAgoUTC returns a short time ago string for an UTC time
 func TimeAgoUTC(t time.Time) string {
-	return timeago(t, time.Now().UTC())
+	fmt.Println(time.Now().Zone())
+	fmt.Println(t.Zone())
+	fmt.Println(time.Now())
+	fmt.Println(t)
+	fmt.Println(t.UTC())
+	fmt.Println(time.Now().UTC())
+
+	return timeago(t.UTC(), time.Now().UTC())
 }
 
 func timeago(t time.Time, now time.Time) string {
 	diff := now.Sub(t)
+	prefix := ""
+	if diff < 0 {
+		diff = 0 - diff
+		prefix = "-"
+	}
+
+	v := ""
 	if diff < time.Minute*3 {
-		return "just now"
+		v = "just now"
 	} else if diff < time.Minute*60 {
-		return fmt.Sprintf("%v minutes ago", int(diff/time.Minute))
+		v = fmt.Sprintf("%v minutes ago", int(diff/time.Minute))
 	} else if diff < time.Hour*48 {
 		h := int(diff / time.Hour)
 
@@ -32,20 +46,22 @@ func timeago(t time.Time, now time.Time) string {
 
 		if h == 1 {
 			if strings.HasSuffix(hour, ".0") {
-				return fmt.Sprintf("%v hour ago", h)
+				v = fmt.Sprintf("%v hour ago", h)
+			} else {
+				v = fmt.Sprintf("%v hour ago", hour)
 			}
-
-			return fmt.Sprintf("%v hour ago", hour)
+		} else {
+			if strings.HasSuffix(hour, ".0") {
+				v = fmt.Sprintf("%v hours ago", h)
+			} else {
+				v = fmt.Sprintf("%v hours ago", hour)
+			}
 		}
-
-		if strings.HasSuffix(hour, ".0") {
-			return fmt.Sprintf("%v hours ago", h)
-		}
-
-		return fmt.Sprintf("%v hours ago", hour)
+	} else {
+		v = fmt.Sprintf("%v days ago", int(diff/(time.Hour*24)))
 	}
+	return prefix + v
 
-	return fmt.Sprintf("%v days ago", int(diff/(time.Hour*24)))
 }
 
 // TimeStamp returns an absolute timestamp
