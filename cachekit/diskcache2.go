@@ -208,11 +208,10 @@ func (cache *DiskCache2) itemKeyHash(prefix []byte, key []byte) dc2Hash {
 	_, _ = hash.Write(prefix)
 	_, _ = hash.Write(key)
 
-	var bytes []byte
-	hash.Sum(bytes)
+	bytes := hash.Sum(make([]byte, 0))
 
 	var result dc2Hash
-	copy(bytes, result[:])
+	copy(result[:], bytes)
 
 	return result
 }
