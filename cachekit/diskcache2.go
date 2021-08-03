@@ -294,14 +294,14 @@ func (cache *DiskCache2) Get(ctx context.Context, keyHash dc2Hash) []byte {
 	}()
 
 	if data == nil {
-		_ = logkit.Debug(ctx, "Cache miss", logkit.String("path", path))
+		// _ = logkit.Debug(ctx, "Cache miss", logkit.String("path", path))
 
 		atomic.AddInt64(&cache.stats.Misses, 1)
 
 		// TODO: async removal?
 		cache.Remove(ctx, keyHash)
 	} else {
-		_ = logkit.Debug(ctx, "Cache hit", logkit.String("path", path))
+		// _ = logkit.Debug(ctx, "Cache hit", logkit.String("path", path))
 
 		size := int64(len(data)) + dc2HeaderSize
 		atomic.AddInt64(&cache.stats.ReadBytes, size)
@@ -371,7 +371,7 @@ func (cache *DiskCache2) Set(ctx context.Context, keyHash dc2Hash, value []byte,
 		return
 	}
 
-	_ = logkit.Debug(ctx, "Created a cache item", logkit.String("path", path), logkit.Int64("size", size))
+	// _ = logkit.Debug(ctx, "Created a cache item", logkit.String("path", path), logkit.Int64("size", size))
 
 	atomic.AddInt64(&cache.stats.EstimatedCount, 1-oldCount)
 
@@ -387,7 +387,7 @@ func (cache *DiskCache2) Remove(ctx context.Context, keyHash dc2Hash) bool {
 	info, err := os.Stat(path)
 
 	if err == nil {
-		_ = logkit.Debug(ctx, "Removing cache item", logkit.String("path", path), logkit.Int64("size", info.Size()), logkit.Time("time", atime(info)))
+		// _ = logkit.Debug(ctx, "Removing cache item", logkit.String("path", path), logkit.Int64("size", info.Size()), logkit.Time("time", atime(info)))
 
 		if err := os.Remove(path); err != nil {
 			_ = logkit.Error(ctx, "Failed to remove cache data file, this could mean disk or filesystem failure", logkit.String("path", path), logkit.Err(err))
@@ -401,7 +401,7 @@ func (cache *DiskCache2) Remove(ctx context.Context, keyHash dc2Hash) bool {
 
 		return true
 	} else {
-		_ = logkit.Debug(ctx, "NOT removing cache item", logkit.String("path", path))
+		// _ = logkit.Debug(ctx, "NOT removing cache item", logkit.String("path", path))
 	}
 
 	return false
