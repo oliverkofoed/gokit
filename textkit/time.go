@@ -13,13 +13,6 @@ func TimeAgo(t time.Time) string {
 
 // TimeAgoUTC returns a short time ago string for an UTC time
 func TimeAgoUTC(t time.Time) string {
-	fmt.Println(time.Now().Zone())
-	fmt.Println(t.Zone())
-	fmt.Println(time.Now())
-	fmt.Println(t)
-	fmt.Println(t.UTC())
-	fmt.Println(time.Now().UTC())
-
 	return timeago(t.UTC(), time.Now().UTC())
 }
 
