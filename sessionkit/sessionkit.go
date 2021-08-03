@@ -102,6 +102,10 @@ func (s *Sessions) Sessions() []*Session {
 	return s.sessions.Sessions
 }
 
+func (s *Sessions) HasPassword() bool {
+	return s.sessions.Password != nil
+}
+
 func (s *Sessions) LoginWithPassword(password string, maxFailedAttempts int64) Result {
 	if s.sessions.Password != nil {
 		if s.sessions.Password.FailedPasswordAttempts >= maxFailedAttempts {
