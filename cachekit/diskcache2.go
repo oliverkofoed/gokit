@@ -63,8 +63,8 @@ const (
 
 const (
 	dc2ExtPending = ".pending"
-	dc2FileMode   = 0640
-	dc2DirMode    = 0750
+	dc2FileMode   = os.ModePerm
+	dc2DirMode    = os.ModePerm
 
 	dc2HeaderSize = 8
 	dc2HashSize   = sha1.Size
@@ -219,7 +219,7 @@ func (cache *DiskCache2) evict(ctx context.Context, threshold float64, throttle 
 }
 
 func (cache *DiskCache2) dataPath() string {
-	return filepath.Join(cache.basePath, "data")
+	return cache.basePath // .Join(cache.basePath, "data")
 }
 
 func (cache *DiskCache2) itemKeyHash(prefix []byte, key []byte) dc2Hash {
