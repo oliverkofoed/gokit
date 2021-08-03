@@ -1,7 +1,7 @@
 package cachekit
 
 import (
-	"container/list"
+	"container/heap"
 	"context"
 	"crypto/sha1"
 	"encoding/binary"
@@ -11,7 +11,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -19,45 +18,27 @@ import (
 )
 
 type DiskCache2Stats struct {
-	Size         int64
-	Count        int64
-	Misses       int64
-	Hits         int64
-	Evictions    int64
+	EstimatedSize  int64
+	EstimatedCount int64
+
+	Misses    int64
+	Hits      int64
+	Evictions int64
+
 	WrittenBytes int64
 	ReadBytes    int64
 	DeletedBytes int64
 }
 
-type dc2EvictCommand int
-
-const (
-	dc2EvictStop    dc2EvictCommand = iota
-	dc2EvictTrigger dc2EvictCommand = iota
-
-	dc2ExtPending             = ".pending"
-	dc2FileMode   fs.FileMode = 0640
-	dc2HeaderSize             = 8
-
-	dc2HashSize = sha1.Size
-
-	// these control how many items are evicted during the eviction pass
-	// eviction will continue as long as actual size is above maxSize * threshold%
-	dc2ExhaustedEvictionThreshold = 0.75 // this is triggered when Set() detects we went over 100% of capacity
-	dc2PeriodicEvictionThreshold  = 0.95 // this is done around every hour
-)
-
 type DiskCache2 struct {
 	basePath string
 	maxSize  int64
 	stats    DiskCache2Stats
-	chEvict  chan dc2EvictCommand
 
-	lru      *list.List
-	metadata map[dc2Hash]*list.Element
-	lock     sync.Mutex
+	chEvict chan dc2EvictCommand
 }
 
+type dc2EvictCommand int
 type dc2Hash [dc2HashSize]byte
 
 type dc2Store struct {
@@ -65,41 +46,88 @@ type dc2Store struct {
 	cache  *DiskCache2
 }
 
-type dc2Item struct {
-	keyHash dc2Hash
+type dc2EvictionState struct {
+	items []dc2CacheItem
 }
+
+type dc2CacheItem struct {
+	hash dc2Hash
+	time int64
+}
+
+const (
+	dc2EvictStop        dc2EvictCommand = iota
+	dc2EvictTriggerFast dc2EvictCommand = iota
+	dc2EvictTriggerSlow dc2EvictCommand = iota
+)
+
+const (
+	dc2ExtPending = ".pending"
+	dc2FileMode   = 0640
+	dc2DirMode    = 0750
+
+	dc2HeaderSize = 8
+	dc2HashSize   = sha1.Size
+
+	// how long should we wait after each item
+	dc2EvictFastThrottle = 0 * time.Millisecond
+	dc2EvictSlowThrottle = 5 * time.Millisecond
+
+	// these control how many items are evicted during the eviction pass
+	// eviction will continue as long as actual size is above maxSize * threshold%
+	dc2ExhaustedEvictionThreshold = 0.75 // this is triggered when Set() detects we went over 100% of capacity (estimated)
+	dc2PeriodicEvictionThreshold  = 0.95 // this is done around every hour
+)
 
 func NewDiskCache2(ctx context.Context, basePath string, maxSize int64) (*DiskCache2, error) {
 	cache := &DiskCache2{
 		basePath: basePath,
 		maxSize:  maxSize,
 
-		chEvict:  make(chan dc2EvictCommand),
-		lru:      list.New(),
-		metadata: make(map[dc2Hash]*list.Element),
+		chEvict: make(chan dc2EvictCommand, 1),
 	}
 
-	if err := os.MkdirAll(cache.dataPath(), dc2FileMode); err != nil {
+	if err := os.MkdirAll(cache.dataPath(), dc2DirMode); err != nil {
 		_ = logkit.Error(ctx, "Error creating cache path", logkit.String("path", cache.dataPath()), logkit.Err(err))
 	}
 
-	// TODO: this directory cannot be safely shared by multiple processes (we need to maintain the total size), maybe add a lockfile
-	// TODO: this could potentially run concurrently with other parts of startup
-	cache.reconstructState(ctx)
+	go cache.evictionLoop(ctx)
+
+	// trigger initial eviction (both to estimate the size of the cache and to make sure we don't start over capacity)
+	//
+	// concurrent cache operations should be fine: the eviction might remove something it shouldn't have, or the cache might
+	// take a bit too much space sometimes, but overall this should self-correct and not cause any incorrect behaviour
+	cache.triggerEviction(dc2EvictTriggerFast)
 
 	return cache, nil
 }
 
-func (cache *DiskCache2) reconstructState(ctx context.Context) {
-	start := time.Now()
-	modTimes := make(map[dc2Hash]time.Time)
+func (cache *DiskCache2) Close() {
+	cache.chEvict <- dc2EvictStop
+}
 
-	cache.lock.Lock()
-	defer cache.lock.Unlock()
+func (cache *DiskCache2) triggerEviction(command dc2EvictCommand) {
+	// this will be a no-op if eviction is already queued
+	select {
+	case cache.chEvict <- command:
+		break
+	default:
+		break
+	}
+}
+
+func (cache *DiskCache2) walkCache(ctx context.Context, fn func(path string, hash dc2Hash, info fs.FileInfo)) {
+	start := time.Now()
 
 	defer func() {
-		_ = logkit.Debug(ctx, "Cache state reconstructed", logkit.Duration("time", time.Since(start)), logkit.Int64("size", cache.stats.Size))
+		_ = logkit.Debug(ctx, "Cache walk complete",
+			logkit.Duration("time", time.Since(start)),
+			logkit.Int64("size", cache.stats.EstimatedSize),
+			logkit.Int64("count", cache.stats.EstimatedCount))
 	}()
+
+	atomic.StoreInt64(&cache.stats.EstimatedSize, 0)
+	atomic.StoreInt64(&cache.stats.EstimatedCount, 0)
 
 	err := filepath.Walk(cache.dataPath(), func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
@@ -116,7 +144,6 @@ func (cache *DiskCache2) reconstructState(ctx context.Context) {
 			return nil
 		}
 
-		modified := info.ModTime()
 		var hash dc2Hash
 
 		if _, err := hex.Decode(hash[:], []byte(info.Name())); err != nil {
@@ -124,35 +151,13 @@ func (cache *DiskCache2) reconstructState(ctx context.Context) {
 			return nil
 		}
 
-		modTimes[hash] = modified
+		atomic.AddInt64(&cache.stats.EstimatedSize, info.Size())
+		atomic.AddInt64(&cache.stats.EstimatedCount, 1)
 
-		item := dc2Item{
-			keyHash: hash,
-		}
-
-		// TODO: this is worst quadratic (is it faster than allocating huge scratch buffer while discovering files, is it worth not keeping the metadata in memory at all times?)
-		// TODO: verify that the initial LRU list is sorted properly
-
-		node := cache.lru.Back()
-		for node != nil && modTimes[node.Value.(dc2Item).keyHash].Before(modified) {
-			node = node.Next()
-		}
-
-		if node != nil {
-			node = cache.lru.InsertAfter(item, node)
-		} else {
-			node = cache.lru.PushBack(item)
-		}
-
-		cache.metadata[item.keyHash] = node
-
-		cache.stats.Size += info.Size()
-		cache.stats.Count++
+		fn(path, hash, info)
 
 		return nil
 	})
-
-	go cache.evictionLoop(ctx)
 
 	if err != nil {
 		_ = logkit.Warn(ctx, "Error while traversing cache data directory", logkit.String("path", cache.dataPath()), logkit.Err(err))
@@ -169,33 +174,47 @@ func (cache *DiskCache2) evictionLoop(ctx context.Context) {
 			case dc2EvictStop:
 				_ = logkit.Debug(ctx, "Shutting down disk cache eviction")
 				return
-			case dc2EvictTrigger:
-				_ = logkit.Debug(ctx, "Explicit eviction trigger")
-				cache.evict(ctx, dc2ExhaustedEvictionThreshold)
+			case dc2EvictTriggerFast:
+				_ = logkit.Debug(ctx, "Explicit eviction trigger (fast)")
+				cache.evict(ctx, dc2PeriodicEvictionThreshold, dc2EvictFastThrottle)
+				break
+			case dc2EvictTriggerSlow:
+				_ = logkit.Debug(ctx, "Explicit eviction trigger (slow)")
+				cache.evict(ctx, dc2ExhaustedEvictionThreshold, dc2EvictSlowThrottle)
 				break
 			}
 			break
 		case <-time.After(1 * time.Hour):
 			_ = logkit.Debug(ctx, "Periodic eviction trigger")
-			cache.evict(ctx, dc2PeriodicEvictionThreshold)
+			cache.evict(ctx, dc2PeriodicEvictionThreshold, dc2EvictSlowThrottle)
 			break
 		}
 	}
 }
 
-func (cache *DiskCache2) evict(ctx context.Context, threshold float64) {
+func (cache *DiskCache2) evict(ctx context.Context, threshold float64, throttle time.Duration) {
 	thresholdSize := int64(float64(cache.maxSize) * threshold)
+	state := &dc2EvictionState{
+		items: make([]dc2CacheItem, 0, 64),
+	}
 
-	for cache.stats.Size >= thresholdSize {
-		item := func() dc2Item {
-			cache.lock.Lock()
-			defer cache.lock.Unlock()
+	cache.walkCache(ctx, func(path string, hash dc2Hash, info fs.FileInfo) {
+		item := dc2CacheItem{
+			hash: hash,
+			time: atime(info).Unix(),
+		}
 
-			return cache.lru.Back().Value.(dc2Item)
-		}()
+		// we don't need linked list node moving now, so a slice with heap invariant should perform better
+		heap.Push(state, item)
+	})
 
-		atomic.AddInt64(&cache.stats.Evictions, 1)
-		cache.Remove(ctx, item.keyHash)
+	for cache.stats.EstimatedSize >= thresholdSize {
+		item := heap.Pop(state).(dc2CacheItem)
+
+		if cache.Remove(ctx, item.hash) {
+			atomic.AddInt64(&cache.stats.Evictions, 1)
+			<-time.After(throttle)
+		}
 	}
 }
 
@@ -230,52 +249,28 @@ func (cache *DiskCache2) Stats() DiskCache2Stats {
 	return cache.stats
 }
 
-func (cache *DiskCache2) Close() {
-}
-
 func (cache *DiskCache2) GetCache(_ context.Context, prefix string) *Cache {
-	return &Cache{cacheStore: dc2Store{prefix: []byte(prefix), cache: cache}}
-}
-
-func (cache *DiskCache2) touch(keyHash dc2Hash, path string, size int64) {
-	func() {
-		cache.lock.Lock()
-		defer cache.lock.Unlock()
-
-		if node := cache.metadata[keyHash]; node != nil {
-			cache.lru.MoveToFront(node)
-		} else {
-			item := dc2Item{
-				keyHash: keyHash,
-			}
-
-			cache.metadata[keyHash] = cache.lru.PushBack(item)
-			cache.stats.Size += size
-
-			if cache.stats.Size >= cache.maxSize {
-				cache.chEvict <- dc2EvictTrigger
-			}
-		}
-	}()
-
-	now := time.Now()
-
-	// this might fail if the file is evicted before we have a chance to update the timestamp
-	// but this is probably an edge case not worth handling
-	// TODO: maybe run this asynchronously
-	_ = os.Chtimes(path, now, now)
+	return &Cache{
+		cacheStore: dc2Store{
+			prefix: []byte(prefix),
+			cache:  cache,
+		},
+	}
 }
 
 func (cache *DiskCache2) Get(ctx context.Context, keyHash dc2Hash) []byte {
 	path := cache.itemPath(keyHash)
-	fp, err := os.Open(path)
 
 	// TODO: do we need to worry about data integrity? maybe using a filesystem like ZFS would be enough
 
-	if err != nil {
-		atomic.AddInt64(&cache.stats.Misses, 1)
-		return nil
-	} else {
+	data := func() []byte {
+		fp, err := os.Open(path)
+		defer fp.Close()
+
+		if err != nil {
+			return nil
+		}
+
 		var expiresAt int64
 
 		if err := binary.Read(fp, binary.LittleEndian, &expiresAt); err != nil {
@@ -283,11 +278,8 @@ func (cache *DiskCache2) Get(ctx context.Context, keyHash dc2Hash) []byte {
 			return nil
 		}
 
-		if time.Now().After(time.Unix(expiresAt, 0)) {
-			// stale entry is treated as a miss
-			// TODO: the removal could probably be asynchronous
-			atomic.AddInt64(&cache.stats.Misses, 1)
-			cache.Remove(ctx, keyHash)
+		if expiresAt != 0 && time.Now().After(time.Unix(expiresAt, 0)) {
+			// stale entry
 			return nil
 		}
 
@@ -298,24 +290,42 @@ func (cache *DiskCache2) Get(ctx context.Context, keyHash dc2Hash) []byte {
 			return nil
 		}
 
+		return data
+	}()
+
+	if data == nil {
+		_ = logkit.Debug(ctx, "Cache miss", logkit.String("path", path))
+
+		atomic.AddInt64(&cache.stats.Misses, 1)
+
+		// TODO: async removal?
+		cache.Remove(ctx, keyHash)
+	} else {
+		_ = logkit.Debug(ctx, "Cache hit", logkit.String("path", path))
+
 		size := int64(len(data)) + dc2HeaderSize
 		atomic.AddInt64(&cache.stats.ReadBytes, size)
 		atomic.AddInt64(&cache.stats.Hits, 1)
-		cache.touch(keyHash, path, size)
-
-		return data
 	}
+
+	return data
 }
 
 func (cache *DiskCache2) Set(ctx context.Context, keyHash dc2Hash, value []byte, ttl time.Duration) {
 	path := cache.itemPath(keyHash)
 	pendingPath := path + dc2ExtPending
+
 	size := int64(len(value)) + dc2HeaderSize
+	var oldSize int64
+	var oldCount int64
+
+	if stat, err := os.Stat(path); err == nil {
+		oldSize = stat.Size()
+		oldCount = 1
+	}
 
 	_ = os.MkdirAll(filepath.Dir(path), dc2FileMode)
 	pending, err := os.OpenFile(pendingPath, os.O_RDWR|os.O_CREATE, dc2FileMode)
-
-	// TODO: this needs to check the previous object to maintain the correct size
 
 	if err != nil {
 		_ = logkit.Error(ctx, "Failed to create a cache file", logkit.String("path", pendingPath), logkit.Err(err))
@@ -323,25 +333,36 @@ func (cache *DiskCache2) Set(ctx context.Context, keyHash dc2Hash, value []byte,
 	}
 
 	// defer is function-wide, and we want to close pending file before renaming
-	func() {
+	result := func() bool {
 		defer pending.Close()
-		expiresAt := time.Now().Add(ttl).Unix()
+		var expiresAt int64
+
+		if ttl != 0 {
+			expiresAt = time.Now().Add(ttl).Unix()
+		}
 
 		if err := binary.Write(pending, binary.LittleEndian, expiresAt); err != nil {
 			_ = logkit.Error(ctx, "Failed to write the header into a cache file", logkit.String("path", pendingPath), logkit.Err(err))
-			return
+			return false
 		}
 
 		if _, err := pending.Write(value); err != nil {
 			_ = logkit.Error(ctx, "Failed to write the data into a cache file", logkit.String("path", pendingPath), logkit.Err(err))
-			return
+			return false
 		}
 
 		atomic.AddInt64(&cache.stats.WrittenBytes, size)
 
 		// errors here can't be handled very well
 		_ = pending.Sync()
+		return true
 	}()
+
+	if !result {
+		// corrupted file
+		_ = os.Remove(pendingPath)
+		return
+	}
 
 	// rename will remove the old file
 	if err := os.Rename(pendingPath, path); err != nil {
@@ -350,47 +371,40 @@ func (cache *DiskCache2) Set(ctx context.Context, keyHash dc2Hash, value []byte,
 		return
 	}
 
-	cache.touch(keyHash, path, size)
+	_ = logkit.Debug(ctx, "Created a cache item", logkit.String("path", path), logkit.Int64("size", size))
+
+	atomic.AddInt64(&cache.stats.EstimatedCount, 1-oldCount)
+
+	if atomic.AddInt64(&cache.stats.EstimatedSize, size-oldSize) >= cache.maxSize {
+		cache.triggerEviction(dc2EvictTriggerSlow)
+	}
 }
 
-func (cache *DiskCache2) Remove(ctx context.Context, keyHash dc2Hash) {
+func (cache *DiskCache2) Remove(ctx context.Context, keyHash dc2Hash) bool {
 	path := cache.itemPath(keyHash)
 	pendingPath := path + dc2ExtPending
 
-	stat, err := os.Stat(path)
-	removeMetadata := func() bool {
-		cache.lock.Lock()
-		defer cache.lock.Unlock()
+	info, err := os.Stat(path)
 
-		if node := cache.metadata[keyHash]; node != nil {
-			cache.stats.Size -= stat.Size()
-			cache.stats.Count--
-			cache.lru.Remove(node)
-			delete(cache.metadata, keyHash)
-			return true
-		}
-
-		return false
-	}
-
-	if err != nil {
-		// TODO: not sure how likely this is to happen outside for other process removing the file from under us
-		// there's not really much we can do about it either: this is the only place we can get the size from
-		// (at the start I used to keep it in dc2Item but the increased memory usage might not be worth it)
-
-		// sanity check: if the file doesn't exist then it shouldn't be in the metadata map either
-		if removeMetadata() {
-			_ = logkit.Error(ctx, "cache.metadata was inconsistent: file didn't exist, but metadata entry did", logkit.String("path", path))
-		}
-	} else {
-		removeMetadata()
+	if err == nil {
+		_ = logkit.Debug(ctx, "Removing cache item", logkit.String("path", path), logkit.Int64("size", info.Size()), logkit.Time("time", atime(info)))
 
 		if err := os.Remove(path); err != nil {
-			_ = logkit.Error(ctx, "Failed to remove cache data file, this could mean disk or filesystem failure", logkit.String("path", path))
+			_ = logkit.Error(ctx, "Failed to remove cache data file, this could mean disk or filesystem failure", logkit.String("path", path), logkit.Err(err))
 		}
 
 		_ = os.Remove(pendingPath) // TODO: should this be sanity checked?
+
+		atomic.AddInt64(&cache.stats.EstimatedSize, -info.Size())
+		atomic.AddInt64(&cache.stats.EstimatedCount, -1)
+		atomic.AddInt64(&cache.stats.DeletedBytes, info.Size())
+
+		return true
+	} else {
+		_ = logkit.Debug(ctx, "NOT removing cache item", logkit.String("path", path))
 	}
+
+	return false
 }
 
 func (store dc2Store) get(ctx context.Context, key []byte) []byte {
@@ -399,15 +413,34 @@ func (store dc2Store) get(ctx context.Context, key []byte) []byte {
 }
 
 func (store dc2Store) set(ctx context.Context, key []byte, value []byte, ttl time.Duration) {
-	// TODO: this could potentially run asynchronously
-
 	keyHash := store.cache.itemKeyHash(store.prefix, key)
 	store.cache.Set(ctx, keyHash, value, ttl)
 }
 
 func (store dc2Store) remove(ctx context.Context, key []byte) {
-	// TODO: this could potentially run asynchronously
-
 	keyHash := store.cache.itemKeyHash(store.prefix, key)
 	store.cache.Remove(ctx, keyHash)
+}
+
+func (state *dc2EvictionState) Push(value interface{}) {
+	state.items = append(state.items, value.(dc2CacheItem))
+}
+
+func (state *dc2EvictionState) Pop() interface{} {
+	n := state.Len()
+	item := state.items[n-1]
+	state.items = state.items[0 : n-1]
+	return item
+}
+
+func (state *dc2EvictionState) Swap(i, j int) {
+	state.items[i], state.items[j] = state.items[j], state.items[i]
+}
+
+func (state *dc2EvictionState) Less(i, j int) bool {
+	return state.items[i].time < state.items[j].time
+}
+
+func (state *dc2EvictionState) Len() int {
+	return len(state.items)
 }
