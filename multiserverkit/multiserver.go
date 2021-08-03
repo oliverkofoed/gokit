@@ -81,8 +81,8 @@ func (s *MultiServer) Listen(ctx context.Context, listen string, useTls bool) {
 	if s.HandleGRPC != nil {
 		go s.HandleGRPC(m.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc")))
 	}
-	go s.handleHttp(m.Match(cmux.HTTP1Fast()))
 	go s.handleHttp(m.Match(cmux.HTTP2()))
+	go s.handleHttp(m.Match(cmux.HTTP1Fast()))
 	go s.handleTcp(m.Match(cmux.Any()))
 
 	if err := m.Serve(); !strings.Contains(err.Error(), "use of closed network connection") {
