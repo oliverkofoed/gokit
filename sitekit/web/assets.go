@@ -179,7 +179,7 @@ func (f *Assets) AddDirectory(directory string, virtualPath string) error {
 				return err
 			}
 
-			f.AddFile(path, virtualPath+rel)
+			f.AddFile(path, virtualPath + getURLPathOfFile(rel))
 		}
 
 		return err
@@ -417,11 +417,15 @@ func httpError(w http.ResponseWriter, code int, message string) {
 	fmt.Fprintln(w, message)
 }
 
+func getURLPathOfFile(path string) string {
+	return strings.Replace(path, "\\", "/", -1)
+}
+
 func (f *Assets) getRooted(fromFile string, targetFile string) (string, error) {
 	if targetFile[0] == '/' {
 		return targetFile, nil
 	}
-	return filepath.Join(filepath.Dir(fromFile), targetFile), nil
+	return getURLPathOfFile(filepath.Join(filepath.Dir(fromFile), targetFile)), nil
 }
 
 // ------
