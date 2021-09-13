@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"sync/atomic"
@@ -313,7 +314,11 @@ func (cache *DiskCache2) Get(ctx context.Context, keyHash dc2Hash) []byte {
 
 func (cache *DiskCache2) Set(ctx context.Context, keyHash dc2Hash, value []byte, ttl time.Duration) {
 	path := cache.itemPath(keyHash)
-	pendingPath := path + dc2ExtPending
+
+	pendingTag := make([]byte, 4)
+	_, _ = rand.Read(pendingTag)
+
+	pendingPath := fmt.Sprintf("%v-%x%v", path, pendingTag, dc2ExtPending)
 
 	size := int64(len(value)) + dc2HeaderSize
 	var oldSize int64
