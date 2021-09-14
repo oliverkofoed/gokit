@@ -6,6 +6,7 @@ var Main *DB
 
 // DB is the main access point to the database
 type DB struct {
+	Connection interface{}
 	newBatch func() Batch
 {{range .Schema.Tables}}	{{.GoTableName}} *{{.GoTableName}}Table
 {{end}}}
@@ -35,6 +36,7 @@ func NewDB(driverName, dataSourceName string) (*DB, error) {
 			}
 
 			result :=  &DB{
+				Connection: db,
 				newBatch:func() Batch{return &cassandraBatch{db:db, cqlBatch: gocql.NewBatch(gocql.LoggedBatch)}},
 			{{range $.Schema.Tables}}	{{.GoTableName}}: &{{.GoTableName}}Table{driver: &{{.GoLowerTableName}}CassandraDriver{db: db}},
 			{{end}}}
@@ -50,6 +52,7 @@ func NewDB(driverName, dataSourceName string) (*DB, error) {
 			}
 
 			result := &DB{
+				Connection: db,
 				newBatch:func() Batch{return &postgresBatch{db:db}},
 			{{range $.Schema.Tables}}	{{.GoTableName}}: &{{.GoTableName}}Table{driver: &{{.GoLowerTableName}}PostgresDriver{db: db}},
 			{{end}}}
