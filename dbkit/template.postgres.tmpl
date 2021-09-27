@@ -43,7 +43,7 @@ func (d *{{ .GoLowerTableName }}PostgresDriver) insert(ctx context.Context, {{ra
 	defer done()
 	{{- end }}
 	var newID int64
-	err := d.db.QueryRowContext(ctx,sql{{range .NonAutoIDColumns}}, {{.GoLowerName}}{{end}}).Scan(&newID)
+	err := d.db.QueryRowContext(ctx,sql{{range .NonAutoIDColumns}}, {{if .IsArray}}pq.Array({{end}}{{.GoLowerName}}{{if .IsArray}}){{end}}{{end}}).Scan(&newID)
 	{{else}}
 	sql := "insert into {{ .DBTableName }}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.DBName}}{{end}}) values ({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}${{$i | plusone}}{{end}})"
 	{{ if .Logging -}}
@@ -112,7 +112,7 @@ func (d *{{ .GoLowerTableName }}PostgresDriver) delete(ctx context.Context, quer
 }
 
 func (d *{{ .GoLowerTableName }}PostgresDriver) scan(item *{{ .StructName }}, rows *sql.Rows) error {
-	err := rows.Scan({{range $i, $c := .Columns}}{{if $i}}, {{end}}&item.{{$c.GoName}}{{end}})
+	err := rows.Scan({{range $i, $c := .Columns}}{{if $i}}, {{end}}{{if $c.IsArray}}pq.Array({{end}}&item.{{$c.GoName}}{{if $c.IsArray}}){{end}}{{end}})
 	if err != nil {
 		return err
 	}
@@ -169,7 +169,7 @@ func getSave{{.StructName}}SQL(item *{{ .StructName }}, argOffset int) (string, 
 		}
 		sb.WriteString("{{.DBName}}=$")
 		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
-		args = append(args, item.{{.GoName}})
+		args = append(args, {{if .IsArray}}pq.Array({{end}}item.{{.GoName}} {{if .IsArray}}){{end}})
 	}
 	{{ end }}
 

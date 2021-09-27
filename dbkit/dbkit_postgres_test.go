@@ -39,6 +39,7 @@ func TestPostgres(t *testing.T) {
 			display_name TEXT NOT NULL,
 			avatar TEXT NOT NULL,
 			email TEXT NULL,
+			keywords STRING[] NOT NULL DEFAULT ARRAY[],
 			facebook_user_id TEXT NULL,
 			arb_data JSONB,
 			CONSTRAINT "primary" PRIMARY KEY (id),

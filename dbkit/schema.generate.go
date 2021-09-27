@@ -195,6 +195,9 @@ func runTemplate(templateName string, buf *bytes.Buffer, data interface{}) {
 			if column.Type == DataTypeJSON {
 				return "!bytes.Equal(" + currentPrefix + column.GoName + "," + loadedPrefix + column.GoName + ")"
 			}
+			if column.Type == DataTypeStringArray {
+				return "!equalStringArrays(" + currentPrefix + column.GoName + "," + loadedPrefix + column.GoName + ")"
+			}
 			if column.Type == DataTypeTime {
 				if column.Nullable {
 					return current + " != " + loaded + " && !(" + current + " != nil && " + loaded + " != nil && " + current + ".Equal(*" + loaded + "))"

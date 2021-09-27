@@ -1,14 +1,13 @@
 package dbkit_tests
 
 import (
-	// db library
-	_ "github.com/lib/pq"
 	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/lib/pq"
 	"github.com/oliverkofoed/gokit/logkit"
 	"github.com/satori/go.uuid"
 	"strconv"
@@ -37,6 +36,7 @@ type User struct {
 	DisplayName      string
 	Avatar      string
 	Email      *string
+	Keywords      []string
 	FacebookUserID      *string
 	ArbData      json.RawMessage
 	
@@ -50,6 +50,7 @@ type User struct {
 	loadDisplayName      string
 	loadAvatar      string
 	loadEmail      *string
+	loadKeywords      []string
 	loadFacebookUserID      *string
 	loadArbData      json.RawMessage
 	
@@ -72,8 +73,8 @@ func (t UsersTable) Execute(ctx context.Context, command string, args ...interfa
 }
 
 // InsertP creates a record in the Users table and panics on errors
-func (t UsersTable) InsertP(ctx context.Context, birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string, arbData json.RawMessage) *User {
-	v, err := t.driver.insert(ctx, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, facebookUserID, arbData)
+func (t UsersTable) InsertP(ctx context.Context, birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, keywords []string, facebookUserID *string, arbData json.RawMessage) *User {
+	v, err := t.driver.insert(ctx, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, keywords, facebookUserID, arbData)
 	if err != nil {
 		panic(panicWrap(err))
 	}
@@ -81,8 +82,8 @@ func (t UsersTable) InsertP(ctx context.Context, birthdate time.Time, anotherID 
 }
 
 // Insert creates a record in the Users table
-func (t UsersTable) Insert(ctx context.Context, birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string, arbData json.RawMessage) (*User, error) {
-	return t.driver.insert(ctx, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, facebookUserID, arbData)
+func (t UsersTable) Insert(ctx context.Context, birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, keywords []string, facebookUserID *string, arbData json.RawMessage) (*User, error) {
+	return t.driver.insert(ctx, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, keywords, facebookUserID, arbData)
 }
 
 // LoadP a single record from the Users table based on the given query and panics on error
@@ -555,7 +556,7 @@ func (q *UserQuery) Each(ctx context.Context, reuseItem bool, action func(*User)
 
 type usersDriver interface {
 	execute(ctx context.Context,query string, args ...interface{}) error
-	insert(ctx context.Context,birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string, arbData json.RawMessage) (*User, error)
+	insert(ctx context.Context,birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, keywords []string, facebookUserID *string, arbData json.RawMessage) (*User, error)
 	load(ctx context.Context,query string, args ...interface{}) (*User, error)
 	delete(ctx context.Context,query string, args ...interface{}) error
 	save(ctx context.Context,user *User) error
@@ -628,6 +629,9 @@ func (i *User) IsDirty() bool {
 	if i.Email != i.loadEmail && !(i.Email != nil && i.loadEmail != nil && *i.Email == *i.loadEmail) {
 		return true
 	}
+	if !equalStringArrays(i.Keywords,i.loadKeywords) {
+		return true
+	}
 	if i.FacebookUserID != i.loadFacebookUserID && !(i.FacebookUserID != nil && i.loadFacebookUserID != nil && *i.FacebookUserID == *i.loadFacebookUserID) {
 		return true
 	}
@@ -688,6 +692,11 @@ func (i *User) IsDirtyEmail() bool {
 	return i.Email != i.loadEmail && !(i.Email != nil && i.loadEmail != nil && *i.Email == *i.loadEmail)
 }
 
+// IsDirtyKeywords returns true if the Keywords value differs from the originally loaded value
+func (i *User) IsDirtyKeywords() bool {
+	return !equalStringArrays(i.Keywords,i.loadKeywords)
+}
+
 // IsDirtyFacebookUserID returns true if the FacebookUserID value differs from the originally loaded value
 func (i *User) IsDirtyFacebookUserID() bool {
 	return i.FacebookUserID != i.loadFacebookUserID && !(i.FacebookUserID != nil && i.loadFacebookUserID != nil && *i.FacebookUserID == *i.loadFacebookUserID)
@@ -718,7 +727,7 @@ func (d *usersPostgresDriver) execute(ctx context.Context, query string, args ..
 	return err
 }
 
-func (d *usersPostgresDriver) insert(ctx context.Context, birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string, arbData json.RawMessage) (*User, error) {
+func (d *usersPostgresDriver) insert(ctx context.Context, birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, keywords []string, facebookUserID *string, arbData json.RawMessage) (*User, error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -734,6 +743,7 @@ func (d *usersPostgresDriver) insert(ctx context.Context, birthdate time.Time, a
 		DisplayName:      displayName,
 		Avatar:      avatar,
 		Email:      email,
+		Keywords:      keywords,
 		FacebookUserID:      facebookUserID,
 		ArbData:      arbData,
 		
@@ -746,6 +756,7 @@ func (d *usersPostgresDriver) insert(ctx context.Context, birthdate time.Time, a
 		loadDisplayName:      displayName,
 		loadAvatar:      avatar,
 		loadEmail:      email,
+		loadKeywords:      keywords,
 		loadFacebookUserID:      facebookUserID,
 		loadArbData:      arbData,
 		
@@ -759,11 +770,11 @@ func (d *usersPostgresDriver) insert(ctx context.Context, birthdate time.Time, a
 	}
 
 	
-	sql := "insert into Users(birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id, arb_data) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) returning id"
+	sql := "insert into Users(birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, keywords, facebook_user_id, arb_data) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) returning id"
 	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
 	defer done()
 	var newID int64
-	err := d.db.QueryRowContext(ctx,sql, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, facebookUserID, arbData).Scan(&newID)
+	err := d.db.QueryRowContext(ctx,sql, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, pq.Array(keywords), facebookUserID, arbData).Scan(&newID)
 	
 	if err != nil {
 		return nil, err
@@ -785,7 +796,7 @@ func (d *usersPostgresDriver) load(ctx context.Context, query string, args ...in
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	sql := "SELECT id, birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id, arb_data from Users where "+query
+	sql := "SELECT id, birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, keywords, facebook_user_id, arb_data from Users where "+query
 	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
 	defer done()
 	rows, err := d.db.QueryContext(ctx,sql, args...)
@@ -821,7 +832,7 @@ func (d *usersPostgresDriver) delete(ctx context.Context, query string, args ...
 }
 
 func (d *usersPostgresDriver) scan(item *User, rows *sql.Rows) error {
-	err := rows.Scan(&item.ID, &item.Birthdate, &item.AnotherID, &item.Gender, &item.Created, &item.LastSeen, &item.Interest, &item.DisplayName, &item.Avatar, &item.Email, &item.FacebookUserID, &item.ArbData)
+	err := rows.Scan(&item.ID, &item.Birthdate, &item.AnotherID, &item.Gender, &item.Created, &item.LastSeen, &item.Interest, &item.DisplayName, &item.Avatar, &item.Email, pq.Array(&item.Keywords), &item.FacebookUserID, &item.ArbData)
 	if err != nil {
 		return err
 	}
@@ -836,6 +847,7 @@ func (d *usersPostgresDriver) scan(item *User, rows *sql.Rows) error {
 	item.loadDisplayName = item.DisplayName
 	item.loadAvatar = item.Avatar
 	item.loadEmail = item.Email
+	item.loadKeywords = item.Keywords
 	item.loadFacebookUserID = item.FacebookUserID
 	item.loadArbData = item.ArbData
 	
@@ -878,7 +890,7 @@ func (d *usersPostgresDriver) save(ctx context.Context, item *User) error {
 func getSaveUserSQL(item *User, argOffset int) (string, []interface{}) {
 	var sb bytes.Buffer
 	sb.WriteString("update Users set ")
-	args := make([]interface{}, 0, 12 )
+	args := make([]interface{}, 0, 13 )
 
 	
 	if item.ID != item.loadID {
@@ -887,7 +899,7 @@ func getSaveUserSQL(item *User, argOffset int) (string, []interface{}) {
 		}
 		sb.WriteString("id=$")
 		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
-		args = append(args, item.ID)
+		args = append(args, item.ID )
 	}
 	
 	if item.Birthdate != item.loadBirthdate {
@@ -896,7 +908,7 @@ func getSaveUserSQL(item *User, argOffset int) (string, []interface{}) {
 		}
 		sb.WriteString("birthdate=$")
 		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
-		args = append(args, item.Birthdate)
+		args = append(args, item.Birthdate )
 	}
 	
 	if !bytes.Equal(item.AnotherID.Bytes(),item.loadAnotherID.Bytes()) {
@@ -905,7 +917,7 @@ func getSaveUserSQL(item *User, argOffset int) (string, []interface{}) {
 		}
 		sb.WriteString("another_id=$")
 		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
-		args = append(args, item.AnotherID)
+		args = append(args, item.AnotherID )
 	}
 	
 	if item.Gender != item.loadGender {
@@ -914,7 +926,7 @@ func getSaveUserSQL(item *User, argOffset int) (string, []interface{}) {
 		}
 		sb.WriteString("gender=$")
 		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
-		args = append(args, item.Gender)
+		args = append(args, item.Gender )
 	}
 	
 	if item.Created != item.loadCreated {
@@ -923,7 +935,7 @@ func getSaveUserSQL(item *User, argOffset int) (string, []interface{}) {
 		}
 		sb.WriteString("created=$")
 		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
-		args = append(args, item.Created)
+		args = append(args, item.Created )
 	}
 	
 	if item.LastSeen != item.loadLastSeen {
@@ -932,7 +944,7 @@ func getSaveUserSQL(item *User, argOffset int) (string, []interface{}) {
 		}
 		sb.WriteString("last_seen=$")
 		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
-		args = append(args, item.LastSeen)
+		args = append(args, item.LastSeen )
 	}
 	
 	if item.Interest != item.loadInterest {
@@ -941,7 +953,7 @@ func getSaveUserSQL(item *User, argOffset int) (string, []interface{}) {
 		}
 		sb.WriteString("interest=$")
 		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
-		args = append(args, item.Interest)
+		args = append(args, item.Interest )
 	}
 	
 	if item.DisplayName != item.loadDisplayName {
@@ -950,7 +962,7 @@ func getSaveUserSQL(item *User, argOffset int) (string, []interface{}) {
 		}
 		sb.WriteString("display_name=$")
 		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
-		args = append(args, item.DisplayName)
+		args = append(args, item.DisplayName )
 	}
 	
 	if item.Avatar != item.loadAvatar {
@@ -959,7 +971,7 @@ func getSaveUserSQL(item *User, argOffset int) (string, []interface{}) {
 		}
 		sb.WriteString("avatar=$")
 		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
-		args = append(args, item.Avatar)
+		args = append(args, item.Avatar )
 	}
 	
 	if item.Email != item.loadEmail && !(item.Email != nil && item.loadEmail != nil && *item.Email == *item.loadEmail) {
@@ -968,7 +980,16 @@ func getSaveUserSQL(item *User, argOffset int) (string, []interface{}) {
 		}
 		sb.WriteString("email=$")
 		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
-		args = append(args, item.Email)
+		args = append(args, item.Email )
+	}
+	
+	if !equalStringArrays(item.Keywords,item.loadKeywords) {
+		if len(args) != 0 {
+			sb.WriteString(", ")
+		}
+		sb.WriteString("keywords=$")
+		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
+		args = append(args, pq.Array(item.Keywords ))
 	}
 	
 	if item.FacebookUserID != item.loadFacebookUserID && !(item.FacebookUserID != nil && item.loadFacebookUserID != nil && *item.FacebookUserID == *item.loadFacebookUserID) {
@@ -977,7 +998,7 @@ func getSaveUserSQL(item *User, argOffset int) (string, []interface{}) {
 		}
 		sb.WriteString("facebook_user_id=$")
 		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
-		args = append(args, item.FacebookUserID)
+		args = append(args, item.FacebookUserID )
 	}
 	
 	if !bytes.Equal(item.ArbData,item.loadArbData) {
@@ -986,7 +1007,7 @@ func getSaveUserSQL(item *User, argOffset int) (string, []interface{}) {
 		}
 		sb.WriteString("arb_data=$")
 		sb.WriteString(strconv.FormatInt(int64(len(args)+argOffset), 10))
-		args = append(args, item.ArbData)
+		args = append(args, item.ArbData )
 	}
 	
 
@@ -1016,6 +1037,7 @@ func (i *User) resetLoadVars(){
 	i.loadDisplayName = i.DisplayName
 	i.loadAvatar = i.Avatar
 	i.loadEmail = i.Email
+	i.loadKeywords = i.Keywords
 	i.loadFacebookUserID = i.FacebookUserID
 	i.loadArbData = i.ArbData
 	
@@ -1135,7 +1157,7 @@ func (d *usersPostgresDriver) queryEach(ctx context.Context, query *UserQuery, r
 func (d *usersPostgresDriver) querySQL(query *UserQuery) string {
 	var sb bytes.Buffer
 
-	sb.WriteString("Select id, birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id, arb_data from Users")
+	sb.WriteString("Select id, birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, keywords, facebook_user_id, arb_data from Users")
 
 	if query.whereQuery != "" {
 		sb.WriteString(" WHERE ")

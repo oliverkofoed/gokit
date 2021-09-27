@@ -106,7 +106,7 @@ func (p *Postgres) GetSchema(packageName string, log func(msg string, args ...in
 	}
 
 	// 2. get the columns
-	query = "select table_name, column_name, column_default, is_nullable, data_type from information_schema.columns where table_catalog = '" + *dbName + "' and table_schema='public' order by table_name, ordinal_position asc"
+	query = "select table_name, column_name, column_default, is_nullable, data_type,crdb_sql_type from information_schema.columns where table_catalog = '" + *dbName + "' and table_schema='public' order by table_name, ordinal_position asc"
 	errTemplate = "Could not load columns from " + *dbName + " with query %v. error: %v"
 	rows, err = p.db.Query(query)
 	if err != nil {
@@ -118,7 +118,8 @@ func (p *Postgres) GetSchema(packageName string, log func(msg string, args ...in
 		var defaultValue *string
 		var isNullable string
 		var dataType string
-		if err := rows.Scan(&table, &columnName, &defaultValue, &isNullable, &dataType); err != nil {
+		var crdbDataType string
+		if err := rows.Scan(&table, &columnName, &defaultValue, &isNullable, &dataType, &crdbDataType); err != nil {
 			return nil, fmt.Errorf(errTemplate, query, err)
 		}
 		nullable := isNullable != "NO"
@@ -149,6 +150,13 @@ func (p *Postgres) GetSchema(packageName string, log func(msg string, args ...in
 			t.AddColumn(columnName, goColumnName, DataTypeUUID, nullable)
 		case "JSON", "JSONB":
 			t.AddColumn(columnName, goColumnName, DataTypeJSON, nullable)
+		case "ARRAY":
+			switch crdbDataType {
+			case "STRING[]":
+				t.AddColumn(columnName, goColumnName, DataTypeStringArray, nullable)
+			default:
+				return nil, fmt.Errorf("unknown column data type for column: '%s' type: %v/%v", columnName, dataType, crdbDataType)
+			}
 		default:
 			return nil, fmt.Errorf("unknown column data type for column: '%s' type: '%v'", columnName, dataType)
 		}

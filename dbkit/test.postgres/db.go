@@ -1,13 +1,12 @@
 package dbkit_tests
 
 import (
-	// db library
-	_ "github.com/lib/pq"
 	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"github.com/lib/pq"
 	"github.com/oliverkofoed/gokit/logkit"
 	"github.com/satori/go.uuid"
 	"strconv"
@@ -18,6 +17,7 @@ var Main *DB
 
 // DB is the main access point to the database
 type DB struct {
+	Connection interface{}
 	newBatch func() Batch
 	Users *UsersTable
 }
@@ -34,6 +34,7 @@ func NewDB(driverName, dataSourceName string) (*DB, error) {
 			}
 
 			result := &DB{
+				Connection: db,
 				newBatch:func() Batch{return &postgresBatch{db:db}},
 				Users: &UsersTable{driver: &usersPostgresDriver{db: db}},
 			}
@@ -55,9 +56,9 @@ type Batch interface {
 	
 	
 	
-	UpsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string, arbData json.RawMessage)
+	UpsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, keywords []string, facebookUserID *string, arbData json.RawMessage)
 	
-	InsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string, arbData json.RawMessage) 
+	InsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, keywords []string, facebookUserID *string, arbData json.RawMessage) 
 	DeleteUserByID(id int64)
 	DeleteUserByAnotherID(anotherID uuid.UUID)
 	DeleteUserByAnotherIDAndGender(anotherID uuid.UUID, gender int64)
@@ -84,6 +85,20 @@ func panicWrap(err error) error {
 	return err
 }
 
+func equalStringArrays(a,b []string) bool {
+	if a == nil || b == nil {
+		return a == nil && b == nil
+	}
+	if len(a) != len(b) {
+		return false
+	}
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
+}
 func (db *DB) NewLoader() *Loader {
 	return &Loader{db: db}
 }
@@ -235,7 +250,7 @@ func (b *postgresBatch) SaveUser(user *User){
 	}
 }
 
-func (b *postgresBatch) InsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string, arbData json.RawMessage){
+func (b *postgresBatch) InsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, keywords []string, facebookUserID *string, arbData json.RawMessage){
 	operationKey := "insert_User"
 	var op *postgresBatchOperation
 	for _, o := range b.operations {
@@ -246,7 +261,7 @@ func (b *postgresBatch) InsertUser(birthdate time.Time, anotherID uuid.UUID, gen
 	}
 	if op == nil {
 		sql := bytes.NewBuffer(nil)
-		sql.WriteString("insert into Users(birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id, arb_data) values ")
+		sql.WriteString("insert into Users(birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, keywords, facebook_user_id, arb_data) values ")
 
 		op = &postgresBatchOperation{
 			key: operationKey,
@@ -259,7 +274,7 @@ func (b *postgresBatch) InsertUser(birthdate time.Time, anotherID uuid.UUID, gen
 		op.sql.WriteString(",")
 	}
 	op.sql.WriteString("(")
-	for i:=0; i!= 11;i++ {
+	for i:=0; i!= 12;i++ {
 		if i >0 {
 			op.sql.WriteString(",")
 		}
@@ -267,10 +282,10 @@ func (b *postgresBatch) InsertUser(birthdate time.Time, anotherID uuid.UUID, gen
 		op.sql.WriteString(strconv.Itoa(1+i+len(op.args)))
 	}
 	op.sql.WriteString(")")
-	op.args = append(op.args, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, facebookUserID, arbData)
+	op.args = append(op.args, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, pq.Array(keywords), facebookUserID, arbData)
 }
 
-func (b *postgresBatch) UpsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string, arbData json.RawMessage){
+func (b *postgresBatch) UpsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, keywords []string, facebookUserID *string, arbData json.RawMessage){
 	operationKey := "upsert_User"
 	var op *postgresBatchOperation
 	for _, o := range b.operations {
@@ -281,7 +296,7 @@ func (b *postgresBatch) UpsertUser(birthdate time.Time, anotherID uuid.UUID, gen
 	}
 	if op == nil {
 		sql := bytes.NewBuffer(nil)
-		sql.WriteString("upsert into Users(birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id, arb_data) values ")
+		sql.WriteString("upsert into Users(birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, keywords, facebook_user_id, arb_data) values ")
 
 		op = &postgresBatchOperation{
 			key: operationKey,
@@ -294,7 +309,7 @@ func (b *postgresBatch) UpsertUser(birthdate time.Time, anotherID uuid.UUID, gen
 		op.sql.WriteString(",")
 	}
 	op.sql.WriteString("(")
-	for i:=0; i!= 11;i++ {
+	for i:=0; i!= 12;i++ {
 		if i >0 {
 			op.sql.WriteString(",")
 		}
@@ -302,7 +317,7 @@ func (b *postgresBatch) UpsertUser(birthdate time.Time, anotherID uuid.UUID, gen
 		op.sql.WriteString(strconv.Itoa(1+i+len(op.args)))
 	}
 	op.sql.WriteString(")")
-	op.args = append(op.args, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, facebookUserID, arbData)
+	op.args = append(op.args, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, keywords, facebookUserID, arbData)
 }
 
 
@@ -442,11 +457,11 @@ func (b *postgresBatch) SaveUser(user *User){
 	}
 }
 
-func (b *postgresBatch) InsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, facebookUserID *string, arbData json.RawMessage){
+func (b *postgresBatch) InsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, keywords []string, facebookUserID *string, arbData json.RawMessage){
 	if b.statementCount > 0 {
 		b.sql.WriteString(";\n")
 	}
-	b.sql.WriteString("insert into Users(birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, facebook_user_id, arb_data) values (")
+	b.sql.WriteString("insert into Users(birthdate, another_id, gender, created, last_seen, interest, display_name, avatar, email, keywords, facebook_user_id, arb_data) values (")
 	b.sql.WriteString("$")
 	b.sql.WriteString(strconv.Itoa(len(b.args)+1))
 	b.sql.WriteString(", $")
@@ -469,8 +484,10 @@ func (b *postgresBatch) InsertUser(birthdate time.Time, anotherID uuid.UUID, gen
 	b.sql.WriteString(strconv.Itoa(len(b.args)+10))
 	b.sql.WriteString(", $")
 	b.sql.WriteString(strconv.Itoa(len(b.args)+11))
+	b.sql.WriteString(", $")
+	b.sql.WriteString(strconv.Itoa(len(b.args)+12))
 	b.sql.WriteString(")")
-	b.args = append(b.args, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, facebookUserID, arbData)
+	b.args = append(b.args, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, keywords, facebookUserID, arbData)
 	b.statementCount++
 }
 

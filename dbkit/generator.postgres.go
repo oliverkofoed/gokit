@@ -21,7 +21,7 @@ func (p *postgresGenerator) dbImports(schema *Schema) []string {
 	imports = append(imports, "github.com/oliverkofoed/gokit/logkit")
 	imports = append(imports, "bytes")
 	imports = append(imports, "strconv")
-	imports = append(imports, "_github.com/lib/pq")
+	hasArray := false
 	for _, t := range schema.Tables {
 		for _, col := range t.Columns {
 			if col.Type == DataTypeTime || col.Type == DataTypeDate {
@@ -33,7 +33,15 @@ func (p *postgresGenerator) dbImports(schema *Schema) []string {
 			if col.Type == DataTypeJSON {
 				imports = append(imports, "encoding/json")
 			}
+			if col.Type == DataTypeStringArray {
+				hasArray = true
+			}
 		}
+	}
+	if hasArray {
+		imports = append(imports, "github.com/lib/pq")
+	} else {
+		imports = append(imports, "_github.com/lib/pq")
 	}
 	return imports
 }
@@ -46,7 +54,7 @@ func (p *postgresGenerator) imports(t *Table) []string {
 	imports = append(imports, "fmt")
 	imports = append(imports, "database/sql")
 	imports = append(imports, "github.com/oliverkofoed/gokit/logkit")
-	imports = append(imports, "_github.com/lib/pq")
+	hasArray := false
 	for _, col := range t.Columns {
 		if col.Type == DataTypeUUID {
 			imports = append(imports, "github.com/satori/go.uuid")
@@ -54,6 +62,14 @@ func (p *postgresGenerator) imports(t *Table) []string {
 		if col.Type == DataTypeJSON {
 			imports = append(imports, "encoding/json")
 		}
+		if col.Type == DataTypeStringArray {
+			hasArray = true
+		}
+	}
+	if hasArray {
+		imports = append(imports, "github.com/lib/pq")
+	} else {
+		imports = append(imports, "_github.com/lib/pq")
 	}
 	return imports
 }

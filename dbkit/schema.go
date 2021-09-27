@@ -34,6 +34,8 @@ const (
 	DataTypeUUID
 	// DataTypeJSON is a JSON value
 	DataTypeJSON
+	// DataTypeStringArray is a string array
+	DataTypeStringArray
 )
 
 // Schema represents a database schema
@@ -237,6 +239,10 @@ type Column struct {
 	Nullable    bool
 }
 
+func (c *Column) IsArray() bool {
+	return c.Type == DataTypeStringArray
+}
+
 // GoType returns the go typename as a string
 func (c *Column) GoType() string {
 	prefix := ""
@@ -268,6 +274,8 @@ func (c *Column) GoType() string {
 		return "uuid.UUID"
 	case DataTypeJSON:
 		return "json.RawMessage"
+	case DataTypeStringArray:
+		return "[]string"
 	default:
 		panic(fmt.Sprintf("don't know go type for: %v", c.Type))
 	}

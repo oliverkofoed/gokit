@@ -36,7 +36,7 @@ func testUsers(db *DB, t *testing.T) {
 	uid := uuid.NewV4()
 
 	// Create
-	u, err := db.Users.Insert(ctx, time.Now(), uid, 0, time.Now(), time.Now(), 0, "Oliver", "abcdef", nil, dbkit.NullableString("fbid"), json.RawMessage("{}"))
+	u, err := db.Users.Insert(ctx, time.Now(), uid, 0, time.Now(), time.Now(), 0, "Oliver", "abcdef", nil, []string{"hello", "bob", "howareyou"}, dbkit.NullableString("fbid"), json.RawMessage("{}"))
 	fmt.Println(u)
 	noerr(err)
 
@@ -51,6 +51,14 @@ func testUsers(db *DB, t *testing.T) {
 	// Update
 	u.DisplayName = "bobby"
 	noerr(u.Save(nil))
+
+	// Update string array
+	u.Keywords = []string{"hello", "world"}
+	noerr(u.Save(nil))
+	u2 := db.Users.LoadP(ctx, "ID=$1", u.ID)
+	if !equalStringArrays(u2.Keywords, u.Keywords) {
+		panic("bad")
+	}
 
 	// save with no changes
 	noerr(u.Save(nil))
@@ -80,9 +88,9 @@ func testUsers(db *DB, t *testing.T) {
 
 	// batch test
 	batch := db.NewBatch()
-	batch.InsertUser(time.Now(), uid, 0, time.Now(), time.Now(), 0, "b1", "abcdef", nil, nil, json.RawMessage("{}"))
-	batch.InsertUser(time.Now(), uid, 0, time.Now(), time.Now(), 0, "b2", "abcdef", nil, nil, json.RawMessage("{}"))
-	batch.InsertUser(time.Now(), uid, 0, time.Now(), time.Now(), 0, "b3", "abcdef", nil, nil, json.RawMessage("{}"))
+	batch.InsertUser(time.Now(), uid, 0, time.Now(), time.Now(), 0, "b1", "abcdef", nil, []string{"hello", "bob", "howareyou"}, nil, json.RawMessage("{}"))
+	batch.InsertUser(time.Now(), uid, 0, time.Now(), time.Now(), 0, "b2", "abcdef", nil, []string{"hello", "bob", "howareyou"}, nil, json.RawMessage("{}"))
+	batch.InsertUser(time.Now(), uid, 0, time.Now(), time.Now(), 0, "b3", "abcdef", nil, []string{"hello", "bob", "howareyou"}, nil, json.RawMessage("{}"))
 	u.DisplayName = "bobbyboy"
 	batch.SaveUser(u)
 	err = batch.Execute(ctx)

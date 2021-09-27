@@ -96,3 +96,17 @@ func panicWrap(err error) error {
 	return err
 }
 
+func equalStringArrays(a,b []string) bool {
+	if a == nil || b == nil {
+		return a == nil && b == nil
+	}
+	if len(a) != len(b) {
+		return false
+	}
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
+}

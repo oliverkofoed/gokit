@@ -132,7 +132,7 @@ func (b *postgresBatch) Insert{{.StructName}}({{range $i, $c := .NonAutoIDColumn
 		op.sql.WriteString(strconv.Itoa(1+i+len(op.args)))
 	}
 	op.sql.WriteString(")")
-	op.args = append(op.args, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}}{{end}})
+	op.args = append(op.args, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{if $c.IsArray}}pq.Array({{end}}{{$c.GoLowerName}}{{if $c.IsArray}}){{end}}{{end}})
 }
 
 func (b *postgresBatch) Upsert{{.StructName}}({{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}} {{$c.GoType}}{{end}}){
