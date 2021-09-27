@@ -487,7 +487,7 @@ func (b *postgresBatch) InsertUser(birthdate time.Time, anotherID uuid.UUID, gen
 	b.sql.WriteString(", $")
 	b.sql.WriteString(strconv.Itoa(len(b.args)+12))
 	b.sql.WriteString(")")
-	b.args = append(b.args, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, keywords, facebookUserID, arbData)
+	b.args = append(b.args, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, pq.Array(keywords), facebookUserID, arbData)
 	b.statementCount++
 }
 

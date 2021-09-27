@@ -50,7 +50,7 @@ func (d *{{ .GoLowerTableName }}PostgresDriver) insert(ctx context.Context, {{ra
 	ctx, done := logkit.Operation(ctx,"pg.sql", logkit.String("sql",sql))
 	defer done()
 	{{- end }}
-	_, err := d.db.ExecContext(ctx,sql{{range .NonAutoIDColumns}}, {{.GoLowerName}}{{end}})
+	_, err := d.db.ExecContext(ctx,sql{{range .NonAutoIDColumns}}, {{if .IsArray}}pq.Array({{end}}{{.GoLowerName}}{{if .IsArray}}){{end}}{{end}})
 	{{end}}
 	if err != nil {
 		return nil, err

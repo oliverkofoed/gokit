@@ -236,7 +236,7 @@ func (b *postgresBatch) Insert{{.StructName}}({{range $i, $c := .NonAutoIDColumn
 	{{range $i, $c := .NonAutoIDColumns}}b.sql.WriteString("{{if $i}}, {{end}}$")
 	b.sql.WriteString(strconv.Itoa(len(b.args)+{{$i | plusone}}))
 	{{end}}b.sql.WriteString(")")
-	b.args = append(b.args, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{end}}{{$c.GoLowerName}}{{end}})
+	b.args = append(b.args, {{range $i, $c := .NonAutoIDColumns}}{{if $i}}, {{if $c.IsArray}}pq.Array({{end}}{{end}}{{$c.GoLowerName}}{{if $c.IsArray}}){{end}}{{end}})
 	b.statementCount++
 }
 
