@@ -38,9 +38,9 @@ func (d *WriterOutput) Event(evt Event) {
 	case EventTypeCompleteOperation:
 		t := evt.Operation.End.Sub(evt.Operation.Start)
 		if t > time.Millisecond*20 {
-			d.writePrefix(evt.Operation)
 			d.Lock()
 			defer d.Unlock()
+			d.writePrefix(evt.Operation)
 			io.WriteString(d.output, " finished in ")
 			io.WriteString(d.output, t.String())
 			io.WriteString(d.output, "\n")
