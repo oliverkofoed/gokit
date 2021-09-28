@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -57,10 +58,10 @@ func Run(ctx context.Context, name string, action func(ctx context.Context) (boo
 	defer func() {
 		if err := recover(); err != nil {
 			if asErr, ok := err.(error); ok {
-				logkit.Error(scheduleCtx, "unhandled panic", logkit.Err(asErr))
+				logkit.Error(scheduleCtx, "unhandled panic", logkit.Err(asErr), logkit.String("Stack", string(debug.Stack())))
 				errMarker.AnyError = true
 			} else {
-				logkit.Error(scheduleCtx, "unhandled panic", logkit.Interface("err", err))
+				logkit.Error(scheduleCtx, "unhandled panic", logkit.Interface("err", err), logkit.String("Stack", string(debug.Stack())))
 				errMarker.AnyError = true
 			}
 		}
