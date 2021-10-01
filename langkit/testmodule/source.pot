@@ -1,0 +1,24 @@
+#. This is my comment to yall
+#: lang_test.go:53
+msgid "Hello World"
+msgstr ""
+
+#: lang_test.go:54
+msgid "Hello\nBrave\nNew\nWorld"
+msgstr ""
+
+#: lang_test.go:55
+msgid "It's a \"quote\""
+msgstr ""
+
+#: lang_test.go:56
+msgid "You have one message"
+msgid_plural "You have {plural} messages"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lang_test.go:58
+msgid "You have one message from {1}"
+msgid_plural "You have {plural} messages from {1}"
+msgstr[0] ""
+msgstr[1] ""
