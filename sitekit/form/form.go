@@ -58,8 +58,11 @@ func GetFields(form interface{}) []Field {
 	numFields := v.NumField()
 	fields := make([]Field, 0, numFields)
 	for i := 0; i < numFields; i++ {
-		if field, ok := (v.Field(i).Addr().Interface()).(Field); ok {
-			fields = append(fields, field)
+		field := v.Field(i)
+		if field.CanInterface() { // note: experimental, added october 18 2021
+			if field, ok := (v.Field(i).Addr().Interface()).(Field); ok {
+				fields = append(fields, field)
+			}
 		}
 	}
 
