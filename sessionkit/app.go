@@ -27,6 +27,11 @@ func (s *Sessions) TokenAccessSession(token []byte, clientIP net.IP) (bool, bool
 	return false, false
 }
 
+func (s *Sessions) TokenReplaceUserID(token []byte, newUserID int64) []byte {
+	binary.LittleEndian.PutUint64(token, uint64(newUserID)) // first 8 bytes is userid
+	return token
+}
+
 func (s *Sessions) TokenCreateSession(userID int64, deviceID []byte, clientInfo string, clientIP net.IP) []byte {
 	token := randomBytes(28)
 
