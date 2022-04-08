@@ -25,7 +25,7 @@ type Site struct {
 	Development           bool
 	DefaultMasterFile     string
 	TemplateDataWrapper   TemplateDataWrapper
-	Assets                Assets
+	Assets                *Assets
 	NotFound              Route
 	ServerError           Route
 	PanicHandler          func(c *Context, err interface{}) bool
