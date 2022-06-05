@@ -22,17 +22,18 @@ type Middleware func(next Action) Action
 type TemplateDataWrapper func(c *Context, data interface{}) (interface{}, error)
 
 type Site struct {
-	Development           bool
-	DefaultMasterFile     string
-	TemplateDataWrapper   TemplateDataWrapper
-	Assets                *Assets
-	NotFound              Route
-	ServerError           Route
-	PanicHandler          func(c *Context, err interface{}) bool
-	router                httprouter.Router
-	RedirectTrailingSlash bool
-	middlewareChain       Action
-	BufferedEventsFilter  logkit.BufferedEventsFilter
+	NoRequestLogkitOperation bool
+	Development              bool
+	DefaultMasterFile        string
+	TemplateDataWrapper      TemplateDataWrapper
+	Assets                   *Assets
+	NotFound                 Route
+	ServerError              Route
+	PanicHandler             func(c *Context, err interface{}) bool
+	router                   httprouter.Router
+	RedirectTrailingSlash    bool
+	middlewareChain          Action
+	BufferedEventsFilter     logkit.BufferedEventsFilter
 }
 
 func NewSite(development bool, assetPath string) *Site {
@@ -171,14 +172,26 @@ func (s *Site) runRoute(route *Route, w http.ResponseWriter, req *http.Request, 
 			w = &compressorResponseWriter{Writer: compressor, ResponseWriter: w, hasContentType: false}
 		}
 	}
+
 	var ctx *logkit.Context
-	var done func()
-	if s.BufferedEventsFilter != nil {
-		ctx, done = logkit.OperationWithOutput(req.Context(), "web.request", logkit.NewBufferedOutput(logkit.DefaultOutput, s.BufferedEventsFilter), logkit.String("url", req.URL.Path), logkit.String("method", req.Method))
-	} else {
-		ctx, done = logkit.Operation(req.Context(), "web.request", logkit.String("url", req.URL.Path), logkit.String("method", req.Method))
+	createLogkitOperation := !s.NoRequestLogkitOperation
+	if !createLogkitOperation {
+		var ok bool
+		ctx, ok = req.Context().(*logkit.Context)
+		if !ok {
+			createLogkitOperation = true
+		}
 	}
-	defer done()
+
+	if createLogkitOperation {
+		var done func()
+		if s.BufferedEventsFilter != nil {
+			ctx, done = logkit.OperationWithOutput(req.Context(), "http.request", logkit.NewBufferedOutput(logkit.DefaultOutput, s.BufferedEventsFilter), logkit.String("url", req.URL.Path), logkit.String("method", req.Method))
+		} else {
+			ctx, done = logkit.Operation(req.Context(), "http.request", logkit.String("url", req.URL.Path), logkit.String("method", req.Method))
+		}
+		defer done()
+	}
 
 	// create context
 	c := CreateContext(ctx, s, route, w, req, params)
