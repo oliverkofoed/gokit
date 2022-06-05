@@ -19,11 +19,12 @@ var (
 
 type WriterOutput struct {
 	sync.RWMutex
-	output io.Writer
-	colors bool
+	output        io.Writer
+	colors        bool
+	printDuration time.Duration
 }
 
-func NewWriterOutput(output io.Writer, terminalColors bool) Output {
+func NewWriterOutput(output io.Writer, terminalColors bool, printDuration time.Duration) Output {
 	return &WriterOutput{output: output, colors: terminalColors}
 }
 
@@ -36,14 +37,16 @@ func (d *WriterOutput) Event(evt Event) {
 		PrintValues(d.output, evt.Operation.Fields)
 		io.WriteString(d.output, "\n")
 	case EventTypeCompleteOperation:
-		t := evt.Operation.End.Sub(evt.Operation.Start)
-		if t > time.Millisecond*20 {
-			d.Lock()
-			defer d.Unlock()
-			d.writePrefix(evt.Operation)
-			io.WriteString(d.output, " finished in ")
-			io.WriteString(d.output, t.String())
-			io.WriteString(d.output, "\n")
+		if d.printDuration > 0 {
+			t := evt.Operation.End.Sub(evt.Operation.Start)
+			if t > d.printDuration {
+				d.Lock()
+				defer d.Unlock()
+				d.writePrefix(evt.Operation)
+				io.WriteString(d.output, " finished in ")
+				io.WriteString(d.output, t.String())
+				io.WriteString(d.output, "\n")
+			}
 		}
 	default:
 		d.Lock()

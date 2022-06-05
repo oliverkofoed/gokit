@@ -24,7 +24,7 @@ func (d *outputBuffer) Event(evt Event) {
 		if d.filter != nil {
 			new = d.filter(d.buffered)
 		}
-		if d.buffered != nil {
+		if d.buffered != nil && new != nil && len(new) > 0 {
 			for _, e := range new {
 				d.parent.Event(e)
 			}

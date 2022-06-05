@@ -52,7 +52,7 @@ func Run(ctx context.Context, name string, repanic bool, action func(ctx context
 	zipper := &threadSafeWriter{w: gzip.NewWriter(result.Log)}
 	errMarker := &errorMarker{}
 
-	scheduleCtx, done := logkit.OperationWithOutput(ctx, name, logkit.NewSplitterOutput(errMarker, logkit.DefaultOutput, logkit.NewWriterOutput(zipper, true)))
+	scheduleCtx, done := logkit.OperationWithOutput(ctx, name, logkit.NewSplitterOutput(errMarker, logkit.DefaultOutput, logkit.NewWriterOutput(zipper, true, time.Millisecond*20)))
 
 	start := time.Now()
 	logkit.Info(scheduleCtx, "starting "+name)
