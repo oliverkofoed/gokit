@@ -14,7 +14,7 @@ import (
 )
 
 type Context struct {
-	logkit.Context
+	*logkit.Context
 	Site       *Site
 	Route      *Route
 	params     httprouter.Params
