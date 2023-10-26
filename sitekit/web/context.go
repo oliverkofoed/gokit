@@ -1,6 +1,7 @@
 package web
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -40,6 +41,10 @@ func CreateContext(ctx *logkit.Context, site *Site, route *Route, w http.Respons
 		PostForm: formInputReader{request: req, usePostForm: true},
 		Cookies:  cookieInputReader{request: req},
 	}
+}
+
+func (c *Context) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	return c.w.(http.Hijacker).Hijack()
 }
 
 func (c *Context) RemoveData(key string) {
