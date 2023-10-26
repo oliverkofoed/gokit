@@ -163,6 +163,11 @@ func RemoveAssetsFilter(events []logkit.Event) []logkit.Event {
 }
 
 func (s *Site) runRoute(route *Route, w http.ResponseWriter, req *http.Request, params httprouter.Params, dontWrap bool) {
+	if route.Handler != nil {
+		route.Handler.ServeHTTP(w, req)
+		return
+	}
+
 	// automatic zipping of all data.
 	if !route.NoGZip && dontWrap == false && req.Method == "GET" {
 		if strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") {
