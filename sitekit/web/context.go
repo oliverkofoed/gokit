@@ -31,7 +31,7 @@ type Context struct {
 
 func CreateContext(ctx *logkit.Context, site *Site, route *Route, w http.ResponseWriter, req *http.Request, params httprouter.Params) *Context {
 	return &Context{
-		Context:  *ctx,
+		Context:  ctx,
 		Site:     site,
 		Route:    route,
 		params:   params,
