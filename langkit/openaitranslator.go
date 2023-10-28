@@ -59,7 +59,6 @@ func TranslateMissingWithOpenAI(apiKey string, potFile string, targetPoFilesGlob
 
 		for _, s := range source.GetDomain().GetTranslations() {
 			found := false
-			fmt.Println("Numnber of translations: ", len(target.GetDomain().GetTranslations()))
 			for _, t := range target.GetDomain().GetTranslations() {
 				if eq(s.ID, t.ID) && eq(s.PluralID, t.PluralID) {
 					if s.PluralID == "" {
@@ -76,7 +75,7 @@ func TranslateMissingWithOpenAI(apiKey string, potFile string, targetPoFilesGlob
 				// create the translation
 				if s.PluralID == "" {
 					fmt.Println("  - translating: \"" + strings.Replace(s.ID, "\n", "\\n", -1) + "\"")
-					translation, err := openAI("You are a skilled translator for software as a service tools. You create the most acurate and concise translations possible.", fmt.Sprintf("Translate the following to %v: %v", targetLocale, s.ID), apiKey, "gpt-4")
+					translation, err := openAI("You are a skilled translator for software as a service tools. You create the most acurate and concise translations possible. Do not print anything except the final translated text.", fmt.Sprintf("Translate the following to %v: %v", targetLocale, s.ID), apiKey, "gpt-4")
 					if err != nil {
 						panic(err)
 					}
