@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -120,6 +120,7 @@ func openAI(system string, user string, apiKey string, model string) (string, er
 	}
 
 	type CompletionResponse struct {
+		Error   string   `json:"error"`
 		ID      string   `json:"id"`
 		Object  string   `json:"object"`
 		Created int      `json:"created"`
@@ -162,7 +163,7 @@ func openAI(system string, user string, apiKey string, model string) (string, er
 	}
 	defer resp.Body.Close()
 
-	respBody, err := ioutil.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
@@ -172,6 +173,11 @@ func openAI(system string, user string, apiKey string, model string) (string, er
 	err = json.Unmarshal(respBody, &completionResp)
 	if err != nil {
 		return "", err
+	}
+
+	// error from OpenAI
+	if completionResp.Error != "" {
+		return "", fmt.Errorf("LLM Error: %v", completionResp.Error)
 	}
 
 	// Print the assistant's message
