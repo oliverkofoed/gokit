@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -34,10 +35,11 @@ type Result struct {
 	Hostname string
 	SaveLog  bool
 	AnyError bool
+	Err      error
 	Log      *bytes.Buffer
 }
 
-func Run(ctx context.Context, name string, action func(ctx context.Context) (bool, error)) *Result {
+func Run(ctx context.Context, name string, repanic bool, action func(ctx context.Context) (bool, error)) *Result {
 	result := &Result{
 		Log: bytes.NewBuffer(nil),
 	}
@@ -50,37 +52,48 @@ func Run(ctx context.Context, name string, action func(ctx context.Context) (boo
 	zipper := &threadSafeWriter{w: gzip.NewWriter(result.Log)}
 	errMarker := &errorMarker{}
 
-	scheduleCtx, done := logkit.OperationWithOutput(ctx, name, logkit.NewSplitterOutput(errMarker, logkit.DefaultOutput, logkit.NewWriterOutput(zipper, true)))
+	scheduleCtx, done := logkit.OperationWithOutput(ctx, name, logkit.NewSplitterOutput(errMarker, logkit.DefaultOutput, logkit.NewWriterOutput(zipper, true, time.Millisecond*20)))
 
 	start := time.Now()
 	logkit.Info(scheduleCtx, "starting "+name)
-	defer func() {
-		if err := recover(); err != nil {
-			if asErr, ok := err.(error); ok {
-				logkit.Error(scheduleCtx, "unhandled panic", logkit.Err(asErr))
-				errMarker.AnyError = true
-			} else {
-				logkit.Error(scheduleCtx, "unhandled panic", logkit.Interface("err", err))
-				errMarker.AnyError = true
+	func() {
+		defer func() {
+			if err := recover(); err != nil {
+				if asErr, ok := err.(error); ok {
+					result.Err = asErr
+					logkit.Error(scheduleCtx, "unhandled panic", logkit.Err(asErr), logkit.String("Stack", string(debug.Stack())))
+					errMarker.AnyError = true
+					result.SaveLog = true
+				} else {
+					result.Err = fmt.Errorf("%v", err)
+					logkit.Error(scheduleCtx, "unhandled panic", logkit.Interface("err", err), logkit.String("Stack", string(debug.Stack())))
+					errMarker.AnyError = true
+					result.SaveLog = true
+				}
+				if repanic {
+					panic(err)
+				}
 			}
-		}
-		time.Sleep(time.Second)
-		logkit.Info(scheduleCtx, "done", logkit.Duration("duration", time.Since(start)))
+			time.Sleep(time.Second)
+		}()
 
-		done()
-
-		zipper.Close()
-		if errMarker.AnyError {
-			result.AnyError = true
+		// do the schedule
+		var err error
+		result.SaveLog, err = action(scheduleCtx)
+		if err != nil {
+			logkit.Error(scheduleCtx, "returned error", logkit.Err(err))
+			errMarker.AnyError = true
+			result.Err = err
 		}
 	}()
 
-	// do the schedule
-	var err error
-	result.SaveLog, err = action(scheduleCtx)
-	if err != nil {
-		logkit.Error(scheduleCtx, "returned error", logkit.Err(err))
-		errMarker.AnyError = true
+	logkit.Info(scheduleCtx, "done", logkit.Duration("duration", time.Since(start)))
+
+	done()
+
+	zipper.Close()
+	if errMarker.AnyError {
+		result.AnyError = true
 	}
 
 	return result

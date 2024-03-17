@@ -56,8 +56,8 @@ type File struct {
 	ContentType    string
 }
 
-func NewAssets(baseURL string) Assets {
-	assets := Assets{
+func NewAssets(baseURL string) *Assets {
+	assets := &Assets{
 		version:              0,
 		baseURL:              baseURL,
 		preprocessors:        make(map[string][]Preprocessor),
@@ -461,7 +461,7 @@ func replaceProcessor(assets *Assets, path string, content []byte, regex *regexp
 		}
 
 		if strings.HasPrefix(file, "data:") || strings.HasPrefix(file, "\"data:") || strings.HasPrefix(file, "base64:") || strings.HasPrefix(file, "\"base64:") {
-			return []byte(file)
+			return match //[]byte(prefix + prequoted + postfix)
 		}
 
 		inlineBase64 := false

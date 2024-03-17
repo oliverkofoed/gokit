@@ -1,6 +1,7 @@
 package web
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,7 +15,7 @@ import (
 )
 
 type Context struct {
-	logkit.Context
+	*logkit.Context
 	Site       *Site
 	Route      *Route
 	params     httprouter.Params
@@ -30,7 +31,7 @@ type Context struct {
 
 func CreateContext(ctx *logkit.Context, site *Site, route *Route, w http.ResponseWriter, req *http.Request, params httprouter.Params) *Context {
 	return &Context{
-		Context:  *ctx,
+		Context:  ctx,
 		Site:     site,
 		Route:    route,
 		params:   params,
@@ -40,6 +41,10 @@ func CreateContext(ctx *logkit.Context, site *Site, route *Route, w http.Respons
 		PostForm: formInputReader{request: req, usePostForm: true},
 		Cookies:  cookieInputReader{request: req},
 	}
+}
+
+func (c *Context) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	return c.w.(http.Hijacker).Hijack()
 }
 
 func (c *Context) RemoveData(key string) {
