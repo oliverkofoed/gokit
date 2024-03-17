@@ -171,15 +171,23 @@ func (f *Assets) SetTemplateFunc(name string, templateFunc interface{}) {
 	f.templateFuncMap[name] = templateFunc
 }
 
-func (f *Assets) AddDirectory(directory string, virtualPath string) error {
+func (f *Assets) AddDirectory(directory string, virtualPath string, ignoreDirs ...string) error {
 	return filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() {
+		if info.IsDir() {
+			if ignoreDirs != nil {
+				for _, name := range ignoreDirs {
+					if info.Name() == name {
+						return filepath.SkipDir
+					}
+				}
+			}
+		} else {
 			rel, err := filepath.Rel(directory, path)
 			if err != nil {
 				return err
 			}
 
-			f.AddFile(path, virtualPath + getURLPathOfFile(rel))
+			f.AddFile(path, virtualPath+getURLPathOfFile(rel))
 		}
 
 		return err

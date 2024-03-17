@@ -11,7 +11,7 @@ import (
 func TestFileSystem(t *testing.T) {
 	f := NewAssets("/a/")
 
-	testkit.NoError(t, f.AddDirectory("testassets", "/"))
+	testkit.NoError(t, f.AddDirectory("testassets", "/", "ignore"))
 
 	// look for unknown file
 	file, err := f.Get("/css/unknown.css")
@@ -38,6 +38,11 @@ func TestFileSystem(t *testing.T) {
 	testkit.Equal(t, file.path, "testassets/css/test.css")
 	testkit.Equal(t, file.HashString, "18b07bc34c47cb08bf8454d478188d8cac0c624f")
 	testkit.Equal(t, file.ContentType, "text/css; charset=utf-8")
+
+	// ensure ignored file is not in there
+	url, err = f.GetUrl("/ignore/testfile")
+	testkit.Assert(t, url == "")
+	testkit.Assert(t, err != nil)
 
 	// get url for file
 	url, err = f.GetUrl("/css/test.css")
