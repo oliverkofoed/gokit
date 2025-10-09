@@ -2,6 +2,7 @@ package multiserverkit
 
 import (
 	"context"
+	"crypto/rand"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -59,6 +60,17 @@ func NewWithAutocert(autocertCache autocert.Cache) *MultiServer {
 	}
 
 	return s
+}
+
+func (s *MultiServer) SetTlsConfig(certFile string, keyFile string) {
+	certificate, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		panic(err)
+	}
+	s.TlsConfig = &tls.Config{
+		Certificates: []tls.Certificate{certificate},
+		Rand:         rand.Reader,
+	}
 }
 
 func (s *MultiServer) Listen(ctx context.Context, listen string, useTls bool) {

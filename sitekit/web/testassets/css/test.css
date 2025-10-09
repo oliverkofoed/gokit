@@ -1,5 +1,5 @@
 body {
-	background:url(/images/red.png);
-	background:url(../images/red.png);
-	background:url(red.png);
+	background: url(/images/red.png);
+	background: url(../images/red.png);
+	background: url(red.png);
 }
