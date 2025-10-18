@@ -31,7 +31,6 @@ type Method struct {
 }
 
 type ApiMethods struct {
-	site                *web.Site
 	endpoints           []Method
 	schemaCache         *OpenAPISchema
 	schemaChecksumCache string
@@ -44,9 +43,8 @@ type WrappedAction struct {
 }
 
 // New creates a new API endpoints manager
-func New(site *web.Site) *ApiMethods {
+func New() *ApiMethods {
 	return &ApiMethods{
-		site:      site,
 		endpoints: make([]Method, 0),
 	}
 }
@@ -56,10 +54,13 @@ func (e *ApiMethods) Add(endpoint Method) {
 	e.endpoints = append(e.endpoints, endpoint)
 	e.schemaCache = nil
 	e.schemaChecksumCache = ""
-	e.site.AddRoute(web.Route{
-		Path:   endpoint.Path,
-		Action: endpoint.Action.MakeAction(e.site.Development),
-	})
+}
+
+// InstallInto installs the API methods into the site
+func (e *ApiMethods) InstallInto(site *web.Site) {
+	for _, endpoint := range e.endpoints {
+		e.Add(endpoint)
+	}
 }
 
 // Action wraps a handler function for use in Method

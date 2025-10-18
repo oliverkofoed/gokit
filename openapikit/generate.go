@@ -1,6 +1,7 @@
 package openapikit
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -9,42 +10,42 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/oliverkofoed/gokit/logkit"
 )
 
 // GenerateClient generates a client using openapi-generator-cli in the target folder
 // if the API endpoints checksum has changed compared to the .apichecksum file
 // generator and additionalArgs are passed directly to openapi-generator-cli
-func (e *ApiMethods) GenerateClient(generator string, folder string, additionalArgs ...string) {
+func (e *ApiMethods) GenerateClient(context context.Context, generator string, folder string, additionalArgs ...string) {
 	// Calculate current API checksum
 	currentChecksum, err := e.calculateChecksum()
 	if err != nil {
-		fmt.Println("failed to calculate API checksum:", err)
-		return
+		panic(err)
 	}
 
 	// Check if checksum file exists and read it
 	checksumFile := filepath.Join(folder, ".apichecksum")
 	storedChecksum, err := readChecksumFile(checksumFile)
 	if err != nil && !os.IsNotExist(err) {
-		fmt.Println("failed to read checksum file:", err)
-		return
+		panic(err)
 	}
 
 	// If checksums match, no need to regenerate
 	if storedChecksum == currentChecksum {
-		fmt.Println("checksums match, no need to regenerate")
 		return
 	}
 
 	// Generate client using openapi-generator-cli
+	logkit.Info(context, fmt.Sprintf("Generating OpenAPI %v client in %v", generator, folder))
 	if err := e.generateClientWithOpenAPIGenerator(generator, folder, additionalArgs...); err != nil {
-		fmt.Printf("failed to generate %s client: %v\n", generator, err)
+		logkit.Error(context, "failed to generate client", logkit.Err(err), logkit.String("generator", generator), logkit.String("folder", folder))
 		return
 	}
 
 	// Write new checksum
 	if err := writeChecksumFile(checksumFile, currentChecksum); err != nil {
-		fmt.Println("failed to write checksum file: %w", err)
+		logkit.Error(context, "failed to write checksum file", logkit.Err(err))
 	}
 }
 
@@ -91,7 +92,7 @@ func writeChecksumFile(path string, checksum string) error {
 	return os.WriteFile(path, []byte(checksum), 0644)
 }
 
-// generateClientWithOpenAPIGenerator generates a client using openapi-generator-cli
+// generateClientWithOpenAPIGenerator generates a client using openapi-generator JAR
 func (e *ApiMethods) generateClientWithOpenAPIGenerator(generator string, folder string, additionalArgs ...string) error {
 	// Create temporary OpenAPI spec file
 	schema := e.GenerateOpenAPISchema()
@@ -100,23 +101,23 @@ func (e *ApiMethods) generateClientWithOpenAPIGenerator(generator string, folder
 		return fmt.Errorf("failed to marshal OpenAPI schema: %w", err)
 	}
 
+	// Ensure output directory exists
+	if err := os.MkdirAll(folder, 0755); err != nil {
+		return fmt.Errorf("failed to create output directory: %w", err)
+	}
+
+	// Write OpenAPI spec file
 	specFile := filepath.Join(folder, "openapi-spec.json")
 	if err := os.WriteFile(specFile, specData, 0644); err != nil {
 		return fmt.Errorf("failed to write OpenAPI spec: %w", err)
 	}
 	defer os.Remove(specFile) // Clean up temp file
 
-	// Ensure output directory exists
-	if err := os.MkdirAll(folder, 0755); err != nil {
-		return fmt.Errorf("failed to create output directory: %w", err)
-	}
-
-	// Run openapi-generator-cli
-	cmd := exec.Command("openapi-generator-cli", "generate",
+	// Run openapi-generator using JAR directly
+	cmd := exec.Command("java", "-jar", "/usr/local/lib/openapi-generator-cli.jar", "generate",
 		"-i", specFile,
 		"-g", generator,
-		"-o", folder,
-		"--skip-validate-spec")
+		"-o", folder)
 
 	// Add any additional arguments provided by the caller
 	if len(additionalArgs) > 0 {
@@ -126,7 +127,7 @@ func (e *ApiMethods) generateClientWithOpenAPIGenerator(generator string, folder
 	// Execute the command
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("openapi-generator-cli failed: %w\nOutput: %s", err, string(output))
+		return fmt.Errorf("openapi-generator failed: %w\nOutput: %s", err, string(output))
 	}
 
 	return nil

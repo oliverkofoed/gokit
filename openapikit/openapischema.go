@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strings"
 
+	jsonschema "github.com/swaggest/jsonschema-go"
+
 	"github.com/oliverkofoed/gokit/sitekit/web"
 )
 
@@ -14,6 +16,8 @@ type OpenAPISchema struct {
 	Info       OpenAPIInfo                       `json:"info"`
 	Paths      map[string]map[string]OpenAPIPath `json:"paths"`
 	Components OpenAPIComponents                 `json:"components"`
+	// Optional but recommended in OAS 3.1 when using JSON Schema 2020-12
+	JsonSchemaDialect string `json:"jsonSchemaDialect,omitempty"`
 }
 
 type OpenAPIInfo struct {
@@ -39,31 +43,19 @@ type OpenAPIResponse struct {
 }
 
 type OpenAPIMediaType struct {
-	Schema *Schema `json:"schema"`
+	// Schema is a JSON Schema node (OAS 3.1 uses JSON Schema 2020-12)
+	Schema any `json:"schema"`
 }
 
 type OpenAPIComponents struct {
-	Schemas map[string]*Schema `json:"schemas"`
-}
-
-// Minimal, expressive OpenAPI Schema node (can be a $ref or inline)
-type Schema struct {
-	Ref                  string             `json:"$ref,omitempty"`
-	Type                 string             `json:"type,omitempty"`
-	Format               string             `json:"format,omitempty"`
-	Description          string             `json:"description,omitempty"`
-	Nullable             bool               `json:"nullable,omitempty"`
-	Enum                 []string           `json:"enum,omitempty"`
-	Properties           map[string]*Schema `json:"properties,omitempty"`
-	Required             []string           `json:"required,omitempty"`
-	Items                *Schema            `json:"items,omitempty"`
-	AdditionalProperties *Schema            `json:"additionalProperties,omitempty"`
+	// Schemas holds JSON Schema nodes keyed by component name.
+	Schemas map[string]any `json:"schemas"`
 }
 
 // ---------- Generator ----------
 
-func (e *ApiMethods) AddSchemaRoute(path string) {
-	e.site.AddRoute(web.Route{
+func (e *ApiMethods) AddSchemaRoute(site *web.Site, path string) {
+	site.AddRoute(web.Route{
 		Path: path,
 		Action: func(c *web.Context) {
 			schema := e.GenerateOpenAPISchema()
@@ -93,30 +85,32 @@ func (e *ApiMethods) GenerateOpenAPISchema() OpenAPISchema {
 }
 
 func (e *ApiMethods) generateFreshSchema() OpenAPISchema {
-	comps := OpenAPIComponents{Schemas: make(map[string]*Schema)}
+	comps := OpenAPIComponents{Schemas: make(map[string]any)}
 	seen := map[reflect.Type]string{} // type -> component name
+	ref := jsonschema.Reflector{}
 
 	s := OpenAPISchema{
-		OpenAPI: "3.0.3",
+		OpenAPI: "3.1.0",
 		Info: OpenAPIInfo{
 			Title:   "API",
 			Version: "1.0.0",
 		},
-		Paths:      make(map[string]map[string]OpenAPIPath),
-		Components: comps,
+		Paths:             make(map[string]map[string]OpenAPIPath),
+		Components:        comps,
+		JsonSchemaDialect: "https://json-schema.org/draft/2020-12/schema",
 	}
 
 	// Pre-register the error schema if we have one
-	var errRef *Schema
+	var errRef any
 	if et := e.ensureErrorType(); et != nil && et.Kind() == reflect.Struct {
-		name := e.addComponentSchema(et, comps.Schemas, seen)
-		errRef = &Schema{Ref: "#/components/schemas/" + name}
+		name := e.addComponentSchemaWithReflector(&ref, et, comps.Schemas, seen)
+		errRef = map[string]any{"$ref": "#/components/schemas/" + name}
 	}
 
 	for _, ep := range e.endpoints {
 		// Register args/result schemas
-		argName := e.addComponentSchema(ep.Action.ArgsType, comps.Schemas, seen)
-		resName := e.addComponentSchema(ep.Action.ResultType, comps.Schemas, seen)
+		argName := e.addComponentSchemaWithReflector(&ref, ep.Action.ArgsType, comps.Schemas, seen)
+		resName := e.addComponentSchemaWithReflector(&ref, ep.Action.ResultType, comps.Schemas, seen)
 
 		path := OpenAPIPath{
 			Summary:     ep.Description,
@@ -124,14 +118,14 @@ func (e *ApiMethods) generateFreshSchema() OpenAPISchema {
 			RequestBody: OpenAPIRequestBody{
 				Required: true,
 				Content: map[string]OpenAPIMediaType{
-					"application/json": {Schema: &Schema{Ref: "#/components/schemas/" + argName}},
+					"application/json": {Schema: map[string]any{"$ref": "#/components/schemas/" + argName}},
 				},
 			},
 			Responses: map[string]OpenAPIResponse{
 				"200": {
 					Description: "Success",
 					Content: map[string]OpenAPIMediaType{
-						"application/json": {Schema: &Schema{Ref: "#/components/schemas/" + resName}},
+						"application/json": {Schema: map[string]any{"$ref": "#/components/schemas/" + resName}},
 					},
 				},
 			},
@@ -162,132 +156,33 @@ func (e *ApiMethods) generateFreshSchema() OpenAPISchema {
 	return s
 }
 
-// addComponentSchema registers (and returns) the component name for t.
-func (e *ApiMethods) addComponentSchema(t reflect.Type, registry map[string]*Schema, seen map[reflect.Type]string) string {
+// addComponentSchemaWithReflector registers (and returns) the component name for t using jsonschema-go.
+func (e *ApiMethods) addComponentSchemaWithReflector(r *jsonschema.Reflector, t reflect.Type, registry map[string]any, seen map[reflect.Type]string) string {
 	if t == nil {
-		// represent "any" as object
-		return e.ensureNamedComponent(t, registry, seen, "Any", &Schema{Type: "object"})
+		// Represent "any" as an unconstrained schema.
+		return e.ensureNamedComponentAny(registry, "Any", map[string]any{})
 	}
 
-	// Unwrap aliases like type MyInt int
 	ut := underlying(t)
 
-	// If we already created a component for this type, reuse it.
 	if name, ok := seen[ut]; ok {
 		return name
 	}
 
-	// Decide a stable component name
 	name := e.typeName(ut)
-	seen[ut] = name // mark early to break recursive cycles
+	seen[ut] = name // mark early
 
-	// Build schema
-	schema := e.schemaFor(ut, registry, seen)
-	registry[name] = schema
+	// Reflect schema for the type using swaggest/jsonschema-go
+	v := reflect.New(ut).Interface()
+	// r.Reflect returns a schema struct; marshal and unmarshal it to generic map[string]any
+	sch, _ := r.Reflect(v)
+	// Convert to generic map for embedding
+	var node map[string]any
+	// Marshal regardless of pointer/value
+	b, _ := json.Marshal(sch)
+	_ = json.Unmarshal(b, &node)
+	registry[name] = node
 	return name
-}
-
-func (e *ApiMethods) schemaFor(t reflect.Type, registry map[string]*Schema, seen map[reflect.Type]string) *Schema {
-	switch t.Kind() {
-	case reflect.Bool:
-		return &Schema{Type: "boolean"}
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32:
-		return &Schema{Type: "integer", Format: "int32"}
-	case reflect.Int64:
-		return &Schema{Type: "integer", Format: "int64"}
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32:
-		return &Schema{Type: "integer", Format: "int32"}
-	case reflect.Uint64:
-		return &Schema{Type: "integer", Format: "int64"}
-	case reflect.Float32:
-		return &Schema{Type: "number", Format: "float"}
-	case reflect.Float64:
-		return &Schema{Type: "number", Format: "double"}
-	case reflect.String:
-		return &Schema{Type: "string"}
-	case reflect.Slice, reflect.Array:
-		return &Schema{
-			Type:  "array",
-			Items: e.schemaNode(t.Elem(), registry, seen),
-		}
-	case reflect.Map:
-		// object with additionalProperties of the value type
-		return &Schema{
-			Type:                 "object",
-			AdditionalProperties: e.schemaNode(t.Elem(), registry, seen),
-		}
-	case reflect.Ptr:
-		// pointers become nullable; schema is the element
-		elem := e.schemaNode(t.Elem(), registry, seen)
-		cp := *elem
-		cp.Nullable = true
-		return &cp
-	case reflect.Struct:
-		// well-known: time.Time
-		if t.PkgPath() == "time" && t.Name() == "Time" {
-			return &Schema{Type: "string", Format: "date-time"}
-		}
-		// Create an object and walk fields
-		props := map[string]*Schema{}
-		required := make([]string, 0)
-
-		for i := 0; i < t.NumField(); i++ {
-			f := t.Field(i)
-			if !f.IsExported() {
-				continue
-			}
-			// Skip explicitly ignored
-			tag := f.Tag.Get("json")
-			if tag == "-" {
-				continue
-			}
-
-			name, omitEmpty := parseJSONName(tag, f.Name)
-			fs := e.schemaNode(f.Type, registry, seen)
-
-			// copy to avoid mutating shared node
-			cp := *fs
-
-			// descriptions & enums from tags
-			if desc := f.Tag.Get("desc"); desc != "" {
-				cp.Description = desc
-			} else if desc := f.Tag.Get("description"); desc != "" {
-				cp.Description = desc
-			}
-			if enumTag := f.Tag.Get("enum"); enumTag != "" {
-				cp.Enum = splitEnum(enumTag)
-			}
-
-			// required if not omitempty and not a pointer
-			if !omitEmpty && f.Type.Kind() != reflect.Ptr {
-				required = append(required, name)
-			}
-
-			props[name] = &cp
-		}
-
-		return &Schema{
-			Type:       "object",
-			Properties: props,
-			Required:   required,
-		}
-	default:
-		// Fallback: treat as string
-		return &Schema{Type: "string"}
-	}
-}
-
-// schemaNode returns either an inline node or a $ref for named structs.
-func (e *ApiMethods) schemaNode(t reflect.Type, registry map[string]*Schema, seen map[reflect.Type]string) *Schema {
-	ut := underlying(t)
-
-	// For named structs (and their pointers), use component refs for reuse & recursion safety
-	if ut.Kind() == reflect.Struct && ut.Name() != "" && !(ut.PkgPath() == "time" && ut.Name() == "Time") {
-		name := e.addComponentSchema(ut, registry, seen)
-		return &Schema{Ref: "#/components/schemas/" + name}
-	}
-	// Inline otherwise (primitives, slices, maps, anonymous structs)
-	return e.schemaFor(ut, registry, seen)
 }
 
 func (e *ApiMethods) typeName(t reflect.Type) string {
@@ -306,13 +201,15 @@ func (e *ApiMethods) typeName(t reflect.Type) string {
 	}
 }
 
-// ensureNamedComponent registers a literal under a fixed name if not present.
-func (e *ApiMethods) ensureNamedComponent(_ reflect.Type, registry map[string]*Schema, _ map[reflect.Type]string, name string, s *Schema) string {
+// ensureNamedComponentAny registers a literal under a fixed name if not present.
+func (e *ApiMethods) ensureNamedComponentAny(registry map[string]any, name string, s map[string]any) string {
 	if _, ok := registry[name]; !ok {
 		registry[name] = s
 	}
 	return name
 }
+
+// (intentionally minimal) — prefer jsonschema tags directly on types for annotations.
 
 func underlying(t reflect.Type) reflect.Type {
 	for t.Kind() == reflect.Ptr {
@@ -337,42 +234,4 @@ func sanitizeName(s string) string {
 	return s
 }
 
-func parseJSONName(tag, fallback string) (name string, omitEmpty bool) {
-	name = fallback
-	if tag == "" {
-		return name, false
-	}
-	parts := strings.Split(tag, ",")
-	if parts[0] != "" {
-		name = parts[0]
-	}
-	for _, p := range parts[1:] {
-		if p == "omitempty" {
-			return name, true
-		}
-	}
-	return name, false
-}
-
-func splitEnum(v string) []string {
-	v = strings.TrimSpace(v)
-	if strings.Contains(v, "|") {
-		return splitAndTrim(v, "|")
-	}
-	if strings.Contains(v, ",") {
-		return splitAndTrim(v, ",")
-	}
-	return []string{v}
-}
-
-func splitAndTrim(s, sep string) []string {
-	parts := strings.Split(s, sep)
-	out := make([]string, 0, len(parts))
-	for _, p := range parts {
-		p = strings.TrimSpace(p)
-		if p != "" {
-			out = append(out, p)
-		}
-	}
-	return out
-}
+// Legacy helpers removed; prefer jsonschema tags on fields.
