@@ -77,6 +77,12 @@ func init() {
 	prometheus.Register(sqlDuration)
 }
 
+func HandlerWithFixedCredentials(metricsPath string, username string, password string) http.Handler {
+	return Handler(metricsPath, func(r *http.Request, u, p string) (bool, string) {
+		return username == u && password == p, "Promethus Metrics"
+	})
+}
+
 func Handler(metricsPath string, basicHttpAuthenticator func(r *http.Request, username string, password string) (bool, string)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path

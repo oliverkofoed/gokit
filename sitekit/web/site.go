@@ -146,6 +146,8 @@ func (s *Site) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// Handle 404
 	if s.NotFound.Action != nil {
 		s.runRoute(&s.NotFound, w, req, params, false)
+	} else if s.NotFound.Handler != nil {
+		s.NotFound.Handler.ServeHTTP(w, req)
 	} else {
 		http.NotFound(w, req)
 	}
