@@ -1,38 +1,43 @@
 package openapikit
 
 import (
+	"bytes"
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/oliverkofoed/gokit/logkit"
 )
 
 // GenerateClient generates a client using openapi-generator-cli in the target folder
-// if the API endpoints checksum has changed compared to the .apichecksum file
+// if the API schema has changed compared to the stored .apischema.json file
 // generator and additionalArgs are passed directly to openapi-generator-cli
 func (e *ApiMethods) GenerateClient(context context.Context, generator string, folder string, additionalArgs ...string) {
-	// Calculate current API checksum
-	currentChecksum, err := e.calculateChecksum()
+	// Generate current schema
+	schema := e.GenerateOpenAPISchema()
+	currentSchema, err := json.MarshalIndent(schema, "", "  ")
 	if err != nil {
 		panic(err)
 	}
 
-	// Check if checksum file exists and read it
-	checksumFile := filepath.Join(folder, ".apichecksum")
-	storedChecksum, err := readChecksumFile(checksumFile)
+	// Check if schema file exists and read it
+	schemaFile := filepath.Join(folder, "openapi.schema.json")
+	storedSchema, err := os.ReadFile(schemaFile)
 	if err != nil && !os.IsNotExist(err) {
 		panic(err)
 	}
 
-	// If checksums match, no need to regenerate
-	if storedChecksum == currentChecksum {
+	// If schemas match, no need to regenerate
+	if bytes.Equal(storedSchema, currentSchema) {
+		return
+	}
+
+	// Delete the target folder to ensure clean generation (no leftover files)
+	if err := os.RemoveAll(folder); err != nil && !os.IsNotExist(err) {
+		logkit.Error(context, "failed to remove target folder", logkit.Err(err), logkit.String("folder", folder))
 		return
 	}
 
@@ -43,53 +48,14 @@ func (e *ApiMethods) GenerateClient(context context.Context, generator string, f
 		return
 	}
 
-	// Write new checksum
-	if err := writeChecksumFile(checksumFile, currentChecksum); err != nil {
-		logkit.Error(context, "failed to write checksum file", logkit.Err(err))
+	// Write new schema
+	if err := os.MkdirAll(folder, 0755); err != nil {
+		logkit.Error(context, "failed to create directory", logkit.Err(err))
+		return
 	}
-}
-
-// calculateChecksum creates a SHA256 hash of the API endpoints structure
-func (e *ApiMethods) calculateChecksum() (string, error) {
-	// Return cached checksum if available
-	if e.schemaChecksumCache != "" {
-		return e.schemaChecksumCache, nil
+	if err := os.WriteFile(schemaFile, currentSchema, 0644); err != nil {
+		logkit.Error(context, "failed to write schema file", logkit.Err(err))
 	}
-
-	// Generate schema (this will cache it if not already cached)
-	schema := e.GenerateOpenAPISchema()
-
-	// Convert to JSON for hashing
-	data, err := json.Marshal(schema)
-	if err != nil {
-		return "", err
-	}
-
-	// Calculate SHA256
-	hash := sha256.Sum256(data)
-	checksum := hex.EncodeToString(hash[:])
-	e.schemaChecksumCache = checksum
-	return checksum, nil
-}
-
-// readChecksumFile reads the stored checksum from file
-func readChecksumFile(path string) (string, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return "", err
-	}
-	return strings.TrimSpace(string(data)), nil
-}
-
-// writeChecksumFile writes the checksum to file
-func writeChecksumFile(path string, checksum string) error {
-	// Ensure directory exists
-	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return err
-	}
-
-	return os.WriteFile(path, []byte(checksum), 0644)
 }
 
 // generateClientWithOpenAPIGenerator generates a client using openapi-generator JAR

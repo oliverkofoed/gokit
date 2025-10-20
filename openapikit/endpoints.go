@@ -27,13 +27,13 @@ func (e Error) Error() string {
 type Method struct {
 	Path        string
 	Description string
+	Service     string
 	Action      WrappedAction
 }
 
 type ApiMethods struct {
-	endpoints           []Method
-	schemaCache         *OpenAPISchema
-	schemaChecksumCache string
+	endpoints   []Method
+	schemaCache *OpenAPISchema
 }
 
 type WrappedAction struct {
@@ -53,7 +53,6 @@ func New() *ApiMethods {
 func (e *ApiMethods) Add(endpoint Method) {
 	e.endpoints = append(e.endpoints, endpoint)
 	e.schemaCache = nil
-	e.schemaChecksumCache = ""
 }
 
 // InstallInto installs the API methods into the site

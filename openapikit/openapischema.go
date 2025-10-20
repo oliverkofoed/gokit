@@ -28,6 +28,7 @@ type OpenAPIInfo struct {
 type OpenAPIPath struct {
 	Summary     string                     `json:"summary,omitempty"`
 	Description string                     `json:"description,omitempty"`
+	Tags        []string                   `json:"tags,omitempty"`
 	RequestBody OpenAPIRequestBody         `json:"requestBody"`
 	Responses   map[string]OpenAPIResponse `json:"responses"`
 }
@@ -131,6 +132,11 @@ func (e *ApiMethods) generateFreshSchema() OpenAPISchema {
 			},
 		}
 
+		// Add tags if service is specified
+		if ep.Service != "" {
+			path.Tags = []string{ep.Service}
+		}
+
 		// Add standard error responses if we know the error envelope
 		if errRef != nil {
 			path.Responses["400"] = OpenAPIResponse{
@@ -170,6 +176,16 @@ func (e *ApiMethods) addComponentSchemaWithReflector(r *jsonschema.Reflector, t 
 	}
 
 	name := e.typeName(ut)
+
+	// Check for name collision with a different type
+	for existingType, existingName := range seen {
+		if existingName == name && existingType != ut {
+			panic("OpenAPI type name collision: multiple types named '" + name + "' from different packages. " +
+				"First: " + existingType.PkgPath() + "." + existingType.Name() + ", " +
+				"Second: " + ut.PkgPath() + "." + ut.Name())
+		}
+	}
+
 	seen[ut] = name // mark early
 
 	// Reflect schema for the type using swaggest/jsonschema-go
@@ -189,13 +205,13 @@ func (e *ApiMethods) typeName(t reflect.Type) string {
 	switch t.Kind() {
 	case reflect.Struct:
 		if t.Name() != "" {
-			return sanitizeName(t.PkgPath() + "." + t.Name())
+			return t.Name()
 		}
 		// anonymous struct: generate from full string
 		return sanitizeName(t.String())
 	default:
 		if t.Name() != "" {
-			return sanitizeName(t.PkgPath() + "." + t.Name())
+			return t.Name()
 		}
 		return sanitizeName(t.String())
 	}
