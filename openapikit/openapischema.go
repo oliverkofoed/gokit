@@ -26,6 +26,7 @@ type OpenAPIInfo struct {
 }
 
 type OpenAPIPath struct {
+	OperationId string                     `json:"operationId,omitempty"`
 	Summary     string                     `json:"summary,omitempty"`
 	Description string                     `json:"description,omitempty"`
 	Tags        []string                   `json:"tags,omitempty"`
@@ -69,7 +70,7 @@ func (e *ApiMethods) AddSchemaRoute(site *web.Site, path string) {
 // internal: store the chosen error type here
 // (You can set it via SetErrorType; if nil, we try to use local Error{})
 func (e *ApiMethods) ensureErrorType() reflect.Type {
-	return reflect.TypeOf(Error{})
+	return reflect.TypeOf(ApiError{})
 }
 
 func (e *ApiMethods) GenerateOpenAPISchema() OpenAPISchema {
@@ -114,6 +115,7 @@ func (e *ApiMethods) generateFreshSchema() OpenAPISchema {
 		resName := e.addComponentSchemaWithReflector(&ref, ep.Action.ResultType, comps.Schemas, seen)
 
 		path := OpenAPIPath{
+			OperationId: ep.Action.Name,
 			Summary:     ep.Description,
 			Description: ep.Description,
 			RequestBody: OpenAPIRequestBody{
@@ -239,8 +241,6 @@ func underlying(t reflect.Type) reflect.Type {
 	return t
 }
 
-// ---------- helpers ----------
-
 var nonWord = regexp.MustCompile(`[^A-Za-z0-9_.]+`)
 
 func sanitizeName(s string) string {
@@ -249,5 +249,3 @@ func sanitizeName(s string) string {
 	s = nonWord.ReplaceAllString(s, "_")
 	return s
 }
-
-// Legacy helpers removed; prefer jsonschema tags on fields.
