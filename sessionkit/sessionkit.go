@@ -31,6 +31,7 @@ func New(sessiondata []byte) *Sessions {
 	if err != nil {
 		panic(err)
 	}
+	result.RemoveExpiredSessions()
 	return result
 }
 
@@ -64,6 +65,7 @@ type Session struct {
 	LastIP     []byte `protobuf:"11,opt"`
 	LastAccess int64  `protobuf:"12,opt"`
 	Created    int64  `protobuf:"13,opt"`
+	ExpiresAt  int64  `protobuf:"14,opt"` // Server-side expiration for access tokens
 	//utc_offset INT8 NOT NULL DEFAULT 0:::INT,
 	// push
 	IOSPushToken        []byte `protobuf:"51,opt"`
@@ -90,7 +92,33 @@ func (s *Session) CreatedTime() time.Time {
 	return time.Unix(s.Created, 0)
 }
 
+func (s *Sessions) RemoveExpiredSessions() {
+	now := time.Now().Unix()
+
+	// just a fast loop to check if any are expired
+	anyExpired := false
+	for _, session := range s.sessions.Sessions {
+		if session.ExpiresAt > 0 && session.ExpiresAt < now {
+			anyExpired = true
+		}
+	}
+	if !anyExpired {
+		return
+	}
+
+	// remove expired sessions
+	newSessions := make([]*Session, 0, len(s.sessions.Sessions))
+	for _, session := range s.sessions.Sessions {
+		if session.ExpiresAt > 0 && session.ExpiresAt < now {
+			continue
+		}
+		newSessions = append(newSessions, session)
+	}
+	s.sessions.Sessions = newSessions
+}
+
 func (s *Sessions) Bytes() []byte {
+	s.RemoveExpiredSessions()
 	buf, err := protobuf.Encode(s.sessions)
 	if err != nil {
 		panic(err)

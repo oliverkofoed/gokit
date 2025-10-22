@@ -173,6 +173,11 @@ func Action[TArgs any, TResult any](handler func(c *web.Context, args TArgs) (*T
 				// Call the handler
 				result, hErr := handler(c, args)
 				if hErr != nil {
+					var hex ApiError
+					if errors.As(hErr, &hex) {
+						writeError(development, c, http.StatusBadRequest, hex)
+						return
+					}
 					var he *ApiError
 					if errors.As(hErr, &he) {
 						writeError(development, c, http.StatusBadRequest, *he)
