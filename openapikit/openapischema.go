@@ -114,8 +114,25 @@ func (e *ApiMethods) generateFreshSchema() OpenAPISchema {
 		argName := e.addComponentSchemaWithReflector(&ref, ep.Action.ArgsType, comps.Schemas, seen)
 		resName := e.addComponentSchemaWithReflector(&ref, ep.Action.ResultType, comps.Schemas, seen)
 
+		// Determine operationId with priority:
+		// a) Method.Name if provided
+		// b) Action.Name if it doesn't start with "func"
+		// c) Last part of path (e.g., "signup" from "/auth/signup")
+		operationId := ep.Name
+		if operationId == "" && !strings.HasPrefix(ep.Action.Name, "func") {
+			operationId = ep.Action.Name
+		}
+		if operationId == "" {
+			// Extract last part of path
+			if idx := strings.LastIndex(ep.Path, "/"); idx >= 0 {
+				operationId = ep.Path[idx+1:]
+			} else {
+				operationId = ep.Path
+			}
+		}
+
 		path := OpenAPIPath{
-			OperationId: ep.Action.Name,
+			OperationId: operationId,
 			Summary:     ep.Description,
 			Description: ep.Description,
 			RequestBody: OpenAPIRequestBody{

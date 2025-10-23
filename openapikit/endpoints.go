@@ -29,6 +29,7 @@ type Method struct {
 	Path        string
 	Description string
 	Service     string
+	Name        string
 	Action      WrappedAction
 }
 
