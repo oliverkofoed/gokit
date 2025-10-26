@@ -9,9 +9,9 @@ import (
 
 func TestSelectField(t *testing.T) {
 	age := SelectField{Name: "selectfield", Caption: "My Text Field", Required: true, Description: "Here you go!", Options: []*Option{
-		&Option{Caption: "10-20", Name: "age10-20", Value: "[10:20]"},
-		&Option{Caption: "20-30", Name: "age20-30", Value: "[20:30]"},
-		&Option{Caption: "Above 30", Value: "30+"},
+		{Caption: "10-20", Name: "age10-20", Value: "[10:20]"},
+		{Caption: "20-30", Name: "age20-30", Value: "[20:30]"},
+		{Caption: "Above 30", Value: "30+"},
 	}}
 
 	// Assert renders initial value

@@ -18,34 +18,31 @@ var Main *DB
 // DB is the main access point to the database
 type DB struct {
 	Connection interface{}
-	newBatch func() Batch
-	Users *UsersTable
+	newBatch   func() Batch
+	Users      *UsersTable
 }
 
 // NewDB creates a new DB pointer to access a database
 func NewDB(driverName, dataSourceName string) (*DB, error) {
-	switch(driverName){
-	
-		
-		case "postgres":
-			db, err := sql.Open(driverName, dataSourceName)
-			if err != nil {
-				return nil, err
-			}
+	switch driverName {
 
-			result := &DB{
-				Connection: db,
-				newBatch:func() Batch{return &postgresBatch{db:db}},
-				Users: &UsersTable{driver: &usersPostgresDriver{db: db}},
-			}
-			result.Users.driver.(*usersPostgresDriver).table = result.Users
-			
+	case "postgres":
+		db, err := sql.Open(driverName, dataSourceName)
+		if err != nil {
+			return nil, err
+		}
 
-			return result, nil
-			
-	
-		default:
-			return nil, errors.New("unknown database driver: " + driverName)
+		result := &DB{
+			Connection: db,
+			newBatch:   func() Batch { return &postgresBatch{db: db} },
+			Users:      &UsersTable{driver: &usersPostgresDriver{db: db}},
+		}
+		result.Users.driver.(*usersPostgresDriver).table = result.Users
+
+		return result, nil
+
+	default:
+		return nil, errors.New("unknown database driver: " + driverName)
 	}
 
 }
@@ -53,12 +50,10 @@ func NewDB(driverName, dataSourceName string) (*DB, error) {
 type Batch interface {
 	String() string
 	Execute(ctx context.Context) error
-	
-	
-	
+
 	UpsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, keywords []string, facebookUserID *string, arbData json.RawMessage)
-	
-	InsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, keywords []string, facebookUserID *string, arbData json.RawMessage) 
+
+	InsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, keywords []string, facebookUserID *string, arbData json.RawMessage)
 	DeleteUserByID(id int64)
 	DeleteUserByAnotherID(anotherID uuid.UUID)
 	DeleteUserByAnotherIDAndGender(anotherID uuid.UUID, gender int64)
@@ -70,14 +65,13 @@ type Batch interface {
 	DeleteUserByCreatedAndGender(created time.Time, gender int64)
 	DeleteUserByCreatedAndGenderAndBirthdate(created time.Time, gender int64, birthdate time.Time)
 	SaveUser(user *User)
-
 }
 
-func (db *DB) NewBatch() Batch{
+func (db *DB) NewBatch() Batch {
 	return db.newBatch()
 }
 
-type loadVarResetable interface{
+type loadVarResetable interface {
 	resetLoadVars()
 }
 
@@ -85,7 +79,7 @@ func panicWrap(err error) error {
 	return err
 }
 
-func equalStringArrays(a,b []string) bool {
+func equalStringArrays(a, b []string) bool {
 	if a == nil || b == nil {
 		return a == nil && b == nil
 	}
@@ -105,8 +99,8 @@ func (db *DB) NewLoader() *Loader {
 
 // Loader makes it easy to load multiple values from multiple tables in one go
 type Loader struct {
-	db *DB
-	idsUser map[int64]bool
+	db         *DB
+	idsUser    map[int64]bool
 	valuesUser map[int64]*User
 }
 
@@ -134,13 +128,13 @@ func (l *Loader) LoadP(ctx context.Context) {
 	}
 }
 
-func (l *Loader) Load(ctx context.Context) error { 
-	if len(l.idsUser)>0 {
+func (l *Loader) Load(ctx context.Context) error {
+	if len(l.idsUser) > 0 {
 		if l.valuesUser == nil {
 			l.valuesUser = make(map[int64]*User)
 		}
 		for id := range l.idsUser {
-			v, err := l.db.Users.LoadByID(ctx,id)
+			v, err := l.db.Users.LoadByID(ctx, id)
 			if err != nil {
 				return err
 			}
@@ -152,26 +146,27 @@ func (l *Loader) Load(ctx context.Context) error {
 
 	return nil
 }
+
 type postgresBatch struct {
-	db *sql.DB
+	db         *sql.DB
 	operations []*postgresBatchOperation
 	//sql bytes.Buffer
 	//statementCount int
 	//args []interface{}
 }
 
-type postgresBatchOperation struct{
-	key string
-	sql *bytes.Buffer
-	args []interface{}
+type postgresBatchOperation struct {
+	key        string
+	sql        *bytes.Buffer
+	args       []interface{}
 	saveObject loadVarResetable
 }
 
-func (b *postgresBatch) String() string{
-	sql := bytes.NewBuffer(nil);
+func (b *postgresBatch) String() string {
+	sql := bytes.NewBuffer(nil)
 	for i, op := range b.operations {
 		if i > 0 {
-			sql.WriteString(";\n");
+			sql.WriteString(";\n")
 		}
 		sql.WriteString(op.sql.String())
 	}
@@ -187,12 +182,12 @@ func (b *postgresBatch) ExecuteP(ctx context.Context) {
 
 func (b *postgresBatch) Execute(ctx context.Context) error {
 	if len(b.operations) > 0 {
-		ctx, done := logkit.Operation(ctx,"pg.sql", logkit.Stringer("sql",b))
+		ctx, done := logkit.Operation(ctx, "pg.sql", logkit.Stringer("sql", b))
 		defer done()
 		for _, op := range b.operations {
 			sql := op.sql.String()
 			if _, err := b.db.ExecContext(ctx, sql, op.args...); err != nil {
-				return logkit.Error(ctx, "SQL Error",logkit.Err(err), logkit.String("sql",sql))
+				return logkit.Error(ctx, "SQL Error", logkit.Err(err), logkit.String("sql", sql))
 			}
 			if op.saveObject != nil {
 				op.saveObject.resetLoadVars()
@@ -212,7 +207,7 @@ func (b *postgresBatch) ExecuteCockroachDBP(ctx context.Context, noUpdateConflic
 
 func (b *postgresBatch) ExecuteCockroachDB(ctx context.Context, noUpdateConflict bool, returningNothing bool) error {
 	if len(b.operations) > 0 {
-		ctx, done := logkit.Operation(ctx,"pg.sql", logkit.Stringer("sql",b))
+		ctx, done := logkit.Operation(ctx, "pg.sql", logkit.Stringer("sql", b))
 		defer done()
 		for _, op := range b.operations {
 			if noUpdateConflict {
@@ -223,7 +218,7 @@ func (b *postgresBatch) ExecuteCockroachDB(ctx context.Context, noUpdateConflict
 			}
 			sql := op.sql.String()
 			if _, err := b.db.ExecContext(ctx, sql, op.args...); err != nil {
-				return logkit.Error(ctx, "SQL Error",logkit.Err(err), logkit.String("sql",sql))
+				return logkit.Error(ctx, "SQL Error", logkit.Err(err), logkit.String("sql", sql))
 			}
 			if op.saveObject != nil {
 				op.saveObject.resetLoadVars()
@@ -234,28 +229,25 @@ func (b *postgresBatch) ExecuteCockroachDB(ctx context.Context, noUpdateConflict
 	return nil
 }
 
-
-
-
-func (b *postgresBatch) SaveUser(user *User){
+func (b *postgresBatch) SaveUser(user *User) {
 	sql, args := getSaveUserSQL(user, 1)
 	if sql != "" {
 		sb := bytes.NewBuffer(nil)
 		sb.WriteString(sql) //TODO: smarter?
 		b.operations = append(b.operations, &postgresBatchOperation{
-			sql: sb,
-			args: args,
+			sql:        sb,
+			args:       args,
 			saveObject: user,
 		})
 	}
 }
 
-func (b *postgresBatch) InsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, keywords []string, facebookUserID *string, arbData json.RawMessage){
+func (b *postgresBatch) InsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, keywords []string, facebookUserID *string, arbData json.RawMessage) {
 	operationKey := "insert_User"
 	var op *postgresBatchOperation
 	for _, o := range b.operations {
 		if o.key == operationKey {
-			op = o;
+			op = o
 			break
 		}
 	}
@@ -270,27 +262,27 @@ func (b *postgresBatch) InsertUser(birthdate time.Time, anotherID uuid.UUID, gen
 		b.operations = append(b.operations, op)
 	}
 
-	if len(op.args)> 0 {
+	if len(op.args) > 0 {
 		op.sql.WriteString(",")
 	}
 	op.sql.WriteString("(")
-	for i:=0; i!= 12;i++ {
-		if i >0 {
+	for i := 0; i != 12; i++ {
+		if i > 0 {
 			op.sql.WriteString(",")
 		}
 		op.sql.WriteString("$")
-		op.sql.WriteString(strconv.Itoa(1+i+len(op.args)))
+		op.sql.WriteString(strconv.Itoa(1 + i + len(op.args)))
 	}
 	op.sql.WriteString(")")
 	op.args = append(op.args, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, pq.Array(keywords), facebookUserID, arbData)
 }
 
-func (b *postgresBatch) UpsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, keywords []string, facebookUserID *string, arbData json.RawMessage){
+func (b *postgresBatch) UpsertUser(birthdate time.Time, anotherID uuid.UUID, gender int64, created time.Time, lastSeen time.Time, interest int64, displayName string, avatar string, email *string, keywords []string, facebookUserID *string, arbData json.RawMessage) {
 	operationKey := "upsert_User"
 	var op *postgresBatchOperation
 	for _, o := range b.operations {
 		if o.key == operationKey {
-			op = o;
+			op = o
 			break
 		}
 	}
@@ -305,28 +297,27 @@ func (b *postgresBatch) UpsertUser(birthdate time.Time, anotherID uuid.UUID, gen
 		b.operations = append(b.operations, op)
 	}
 
-	if len(op.args)> 0 {
+	if len(op.args) > 0 {
 		op.sql.WriteString(",")
 	}
 	op.sql.WriteString("(")
-	for i:=0; i!= 12;i++ {
-		if i >0 {
+	for i := 0; i != 12; i++ {
+		if i > 0 {
 			op.sql.WriteString(",")
 		}
 		op.sql.WriteString("$")
-		op.sql.WriteString(strconv.Itoa(1+i+len(op.args)))
+		op.sql.WriteString(strconv.Itoa(1 + i + len(op.args)))
 	}
 	op.sql.WriteString(")")
 	op.args = append(op.args, birthdate, anotherID, gender, created, lastSeen, interest, displayName, avatar, email, keywords, facebookUserID, arbData)
 }
 
-
 func (b *postgresBatch) DeleteUserByID(id int64) {
 	sql := bytes.NewBuffer(nil)
 	sql.WriteString("delete from Users where id=$1")
 	b.operations = append(b.operations, &postgresBatchOperation{
-		sql: sql,
-		args: []interface{}{ id },
+		sql:  sql,
+		args: []interface{}{id},
 	})
 }
 
@@ -334,8 +325,8 @@ func (b *postgresBatch) DeleteUserByAnotherID(anotherID uuid.UUID) {
 	sql := bytes.NewBuffer(nil)
 	sql.WriteString("delete from Users where another_id=$1")
 	b.operations = append(b.operations, &postgresBatchOperation{
-		sql: sql,
-		args: []interface{}{ anotherID },
+		sql:  sql,
+		args: []interface{}{anotherID},
 	})
 }
 
@@ -343,8 +334,8 @@ func (b *postgresBatch) DeleteUserByAnotherIDAndGender(anotherID uuid.UUID, gend
 	sql := bytes.NewBuffer(nil)
 	sql.WriteString("delete from Users where another_id=$1 and gender=$2")
 	b.operations = append(b.operations, &postgresBatchOperation{
-		sql: sql,
-		args: []interface{}{ anotherID, gender },
+		sql:  sql,
+		args: []interface{}{anotherID, gender},
 	})
 }
 
@@ -352,8 +343,8 @@ func (b *postgresBatch) DeleteUserByEmail(email *string) {
 	sql := bytes.NewBuffer(nil)
 	sql.WriteString("delete from Users where email=$1")
 	b.operations = append(b.operations, &postgresBatchOperation{
-		sql: sql,
-		args: []interface{}{ email },
+		sql:  sql,
+		args: []interface{}{email},
 	})
 }
 
@@ -361,8 +352,8 @@ func (b *postgresBatch) DeleteUserByFacebookUserID(facebookUserID *string) {
 	sql := bytes.NewBuffer(nil)
 	sql.WriteString("delete from Users where facebook_user_id=$1")
 	b.operations = append(b.operations, &postgresBatchOperation{
-		sql: sql,
-		args: []interface{}{ facebookUserID },
+		sql:  sql,
+		args: []interface{}{facebookUserID},
 	})
 }
 
@@ -370,8 +361,8 @@ func (b *postgresBatch) DeleteUserByFacebookUserIDAndAvatar(facebookUserID *stri
 	sql := bytes.NewBuffer(nil)
 	sql.WriteString("delete from Users where facebook_user_id=$1 and avatar=$2")
 	b.operations = append(b.operations, &postgresBatchOperation{
-		sql: sql,
-		args: []interface{}{ facebookUserID, avatar },
+		sql:  sql,
+		args: []interface{}{facebookUserID, avatar},
 	})
 }
 
@@ -379,8 +370,8 @@ func (b *postgresBatch) DeleteUserByAvatar(avatar string) {
 	sql := bytes.NewBuffer(nil)
 	sql.WriteString("delete from Users where avatar=$1")
 	b.operations = append(b.operations, &postgresBatchOperation{
-		sql: sql,
-		args: []interface{}{ avatar },
+		sql:  sql,
+		args: []interface{}{avatar},
 	})
 }
 
@@ -388,8 +379,8 @@ func (b *postgresBatch) DeleteUserByCreated(created time.Time) {
 	sql := bytes.NewBuffer(nil)
 	sql.WriteString("delete from Users where created=$1")
 	b.operations = append(b.operations, &postgresBatchOperation{
-		sql: sql,
-		args: []interface{}{ created },
+		sql:  sql,
+		args: []interface{}{created},
 	})
 }
 
@@ -397,8 +388,8 @@ func (b *postgresBatch) DeleteUserByCreatedAndGender(created time.Time, gender i
 	sql := bytes.NewBuffer(nil)
 	sql.WriteString("delete from Users where created=$1 and gender=$2")
 	b.operations = append(b.operations, &postgresBatchOperation{
-		sql: sql,
-		args: []interface{}{ created, gender },
+		sql:  sql,
+		args: []interface{}{created, gender},
 	})
 }
 
@@ -406,11 +397,10 @@ func (b *postgresBatch) DeleteUserByCreatedAndGenderAndBirthdate(created time.Ti
 	sql := bytes.NewBuffer(nil)
 	sql.WriteString("delete from Users where created=$1 and gender=$2 and birthdate=$3")
 	b.operations = append(b.operations, &postgresBatchOperation{
-		sql: sql,
-		args: []interface{}{ created, gender, birthdate },
+		sql:  sql,
+		args: []interface{}{created, gender, birthdate},
 	})
 }
-
 
 /* // MULTI-statement batchs (not fully supported by cockroachdb yet)
 

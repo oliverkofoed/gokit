@@ -7,24 +7,21 @@ import (
 )
 
 /*
+logkit.Debug(ctx, "blfdjaklfdjlkdfsjkafjkldfjafds klfdsj aklfd ", args...)
+logkit.Debugf(ctx, "blfdjaklfdjlkdfsjkafjkldfjafds klfdsj aklfd ", args...)
+logkit.Info(ctx, "blfdjaklfdjlkdfsjkafjkldfjafds klfdsj aklfd ", args...)
+logkit.Infof(ctx, "blfdjaklfdjlkdfsjkafjkldfjafds klfdsj aklfd ", args...)
+logkit.Warn(ctx, "blfdjaklfdjlkdfsjkafjkldfjafds klfdsj aklfd ", args...)
+logkit.Warnf(ctx, "blfdjaklfdjlkdfsjkafjkldfjafds klfdsj aklfd ", args...)
+logkit.Error(ctx, "blfdjaklfdjlkdfsjkafjkldfjafds klfdsj aklfd ", args...)
+logkit.Errorf(ctx, "blfdjaklfdjlkdfsjkafjkldfjafds klfdsj aklfd ", args...)
 
-	logkit.Debug(ctx, "blfdjaklfdjlkdfsjkafjkldfjafds klfdsj aklfd ", args...)
-	logkit.Debugf(ctx, "blfdjaklfdjlkdfsjkafjkldfjafds klfdsj aklfd ", args...)
-	logkit.Info(ctx, "blfdjaklfdjlkdfsjkafjkldfjafds klfdsj aklfd ", args...)
-	logkit.Infof(ctx, "blfdjaklfdjlkdfsjkafjkldfjafds klfdsj aklfd ", args...)
-	logkit.Warn(ctx, "blfdjaklfdjlkdfsjkafjkldfjafds klfdsj aklfd ", args...)
-	logkit.Warnf(ctx, "blfdjaklfdjlkdfsjkafjkldfjafds klfdsj aklfd ", args...)
-	logkit.Error(ctx, "blfdjaklfdjlkdfsjkafjkldfjafds klfdsj aklfd ", args...)
-	logkit.Errorf(ctx, "blfdjaklfdjlkdfsjkafjkldfjafds klfdsj aklfd ", args...)
+ctx := logkit.context
+ctx.Info
+ctx.Infof
 
-	ctx := logkit.context
-	ctx.Info
-	ctx.Infof
-
-
-	ctx, done = logkit.Operation("bdasdas", args..)
-	defer done()
-
+ctx, done = logkit.Operation("bdasdas", args..)
+defer done()
 */
 func TestMain(t *testing.T) {
 	ctx := context.Background()

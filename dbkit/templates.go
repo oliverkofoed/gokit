@@ -266,12 +266,12 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"template.db.tmpl": templateDbTmpl,
-	"template.loader.tmpl": templateLoaderTmpl,
-	"template.postgres.tmpl": templatePostgresTmpl,
-	"template.postgres.db.tmpl": templatePostgresDbTmpl,
-	"template.tableShared.tmpl": templateTablesharedTmpl,
-	"template.cassandra.tmpl": templateCassandraTmpl,
+	"template.db.tmpl":           templateDbTmpl,
+	"template.loader.tmpl":       templateLoaderTmpl,
+	"template.postgres.tmpl":     templatePostgresTmpl,
+	"template.postgres.db.tmpl":  templatePostgresDbTmpl,
+	"template.tableShared.tmpl":  templateTablesharedTmpl,
+	"template.cassandra.tmpl":    templateCassandraTmpl,
 	"template.cassandra.db.tmpl": templateCassandraDbTmpl,
 }
 
@@ -279,11 +279,13 @@ var _bindata = map[string]func() (*asset, error){
 // directory embedded in the file by go-bindata.
 // For example if you run go-bindata on data/... and data contains the
 // following hierarchy:
-//     data/
-//       foo.txt
-//       img/
-//         a.png
-//         b.png
+//
+//	data/
+//	  foo.txt
+//	  img/
+//	    a.png
+//	    b.png
+//
 // then AssetDir("data") would return []string{"foo.txt", "img"}
 // AssetDir("data/img") would return []string{"a.png", "b.png"}
 // AssetDir("foo.txt") and AssetDir("notexist") would return an error
@@ -314,14 +316,15 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
+
 var _bintree = &bintree{nil, map[string]*bintree{
-	"template.cassandra.db.tmpl": &bintree{templateCassandraDbTmpl, map[string]*bintree{}},
-	"template.cassandra.tmpl": &bintree{templateCassandraTmpl, map[string]*bintree{}},
-	"template.db.tmpl": &bintree{templateDbTmpl, map[string]*bintree{}},
-	"template.loader.tmpl": &bintree{templateLoaderTmpl, map[string]*bintree{}},
-	"template.postgres.db.tmpl": &bintree{templatePostgresDbTmpl, map[string]*bintree{}},
-	"template.postgres.tmpl": &bintree{templatePostgresTmpl, map[string]*bintree{}},
-	"template.tableShared.tmpl": &bintree{templateTablesharedTmpl, map[string]*bintree{}},
+	"template.cassandra.db.tmpl": {templateCassandraDbTmpl, map[string]*bintree{}},
+	"template.cassandra.tmpl":    {templateCassandraTmpl, map[string]*bintree{}},
+	"template.db.tmpl":           {templateDbTmpl, map[string]*bintree{}},
+	"template.loader.tmpl":       {templateLoaderTmpl, map[string]*bintree{}},
+	"template.postgres.db.tmpl":  {templatePostgresDbTmpl, map[string]*bintree{}},
+	"template.postgres.tmpl":     {templatePostgresTmpl, map[string]*bintree{}},
+	"template.tableShared.tmpl":  {templateTablesharedTmpl, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory
@@ -370,4 +373,3 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
-
