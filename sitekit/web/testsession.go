@@ -2,6 +2,7 @@ package web
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -16,6 +17,25 @@ import (
 
 	"github.com/oliverkofoed/gokit/logkit"
 )
+
+// NewTestContext creates a minimal web.Context for unit testing.
+// Useful for testing individual handler functions without setting up a full Site.
+//
+// Example:
+//
+//	func TestMyHandler(t *testing.T) {
+//	    c := web.NewTestContext(t, "POST", "/myhandler", strings.NewReader("param1=value1&param2=value2"))
+//	    c.Request.Header.Set("Origin", "https://example.com")
+//	    result, err := MyHandler(c, db, args)
+//	    // assertions...
+//	}
+func NewTestContext(t *testing.T, method string, path string, body io.Reader) *Context {
+	req := httptest.NewRequest(method, path, body)
+	w := httptest.NewRecorder()
+	logCtx, _ := logkit.Operation(context.Background(), path)
+
+	return CreateContext(logCtx, nil, nil, w, req, nil)
+}
 
 // TestSession represents a test session for a single user
 type TestSession struct {
