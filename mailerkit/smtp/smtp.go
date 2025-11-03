@@ -56,9 +56,9 @@ func New(u *url.URL) mailerkit.Mailer {
 		panic("SMTP config missing required 'from' parameter")
 	}
 
-	secure := true // default to secure
-	if query.Get("secure") == "false" {
-		secure = false
+	secure := false // default to secure
+	if query.Get("secure") == "true" {
+		secure = true
 	}
 
 	return &smtpMailer{
