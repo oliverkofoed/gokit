@@ -5,7 +5,7 @@ go 1.22
 toolchain go1.24.1
 
 require (
-	github.com/aws/aws-sdk-go v1.43.21
+	github.com/aws/aws-sdk-go v1.55.8
 	github.com/bmatcuk/doublestar/v4 v4.0.2
 	github.com/boltdb/bolt v1.3.1
 	github.com/coocood/freecache v1.2.1
