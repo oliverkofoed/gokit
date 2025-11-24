@@ -2,6 +2,7 @@ package openapikit
 
 import (
 	"encoding/json"
+	"io"
 	"reflect"
 	"regexp"
 	"strings"
@@ -86,6 +87,37 @@ func (e *ApiMethods) GenerateOpenAPISchema() OpenAPISchema {
 	return schema
 }
 
+func (e *ApiMethods) fixBinarySchema(schema any) {
+	if m, ok := schema.(map[string]any); ok {
+		// Check if this is a reference to IoReader
+		if ref, ok := m["$ref"].(string); ok && strings.HasSuffix(ref, "/IoReader") {
+			delete(m, "$ref")
+			m["type"] = "string"
+			m["format"] = "binary"
+			return
+		}
+
+		// Check for definitions/IoReader and remove it
+		if defs, ok := m["definitions"].(map[string]any); ok {
+			if _, ok := defs["IoReader"]; ok {
+				delete(defs, "IoReader")
+				if len(defs) == 0 {
+					delete(m, "definitions")
+				}
+			}
+		}
+
+		// Recurse
+		for _, v := range m {
+			e.fixBinarySchema(v)
+		}
+	} else if s, ok := schema.([]any); ok {
+		for _, v := range s {
+			e.fixBinarySchema(v)
+		}
+	}
+}
+
 func (e *ApiMethods) generateFreshSchema() OpenAPISchema {
 	comps := OpenAPIComponents{Schemas: make(map[string]any)}
 	seen := map[reflect.Type]string{} // type -> component name
@@ -114,6 +146,9 @@ func (e *ApiMethods) generateFreshSchema() OpenAPISchema {
 		argName := e.addComponentSchemaWithReflector(&ref, ep.Action.ArgsType, comps.Schemas, seen)
 		resName := e.addComponentSchemaWithReflector(&ref, ep.Action.ResultType, comps.Schemas, seen)
 
+		// Fix binary schema in components
+		e.fixBinarySchema(comps.Schemas[argName])
+
 		// Determine operationId with priority:
 		// a) Method.Name if provided
 		// b) Action.Name if it doesn't start with "func"
@@ -131,6 +166,26 @@ func (e *ApiMethods) generateFreshSchema() OpenAPISchema {
 			}
 		}
 
+		// Check if args has io.Reader
+		hasFile := false
+		argsType := ep.Action.ArgsType
+		if argsType.Kind() == reflect.Ptr {
+			argsType = argsType.Elem()
+		}
+		if argsType.Kind() == reflect.Struct {
+			for i := 0; i < argsType.NumField(); i++ {
+				if argsType.Field(i).Type == reflect.TypeOf((*io.Reader)(nil)).Elem() {
+					hasFile = true
+					break
+				}
+			}
+		}
+
+		contentType := "application/json"
+		if hasFile {
+			contentType = "multipart/form-data"
+		}
+
 		path := OpenAPIPath{
 			OperationId: operationId,
 			Summary:     ep.Description,
@@ -138,7 +193,7 @@ func (e *ApiMethods) generateFreshSchema() OpenAPISchema {
 			RequestBody: OpenAPIRequestBody{
 				Required: true,
 				Content: map[string]OpenAPIMediaType{
-					"application/json": {Schema: map[string]any{"$ref": "#/components/schemas/" + argName}},
+					contentType: {Schema: map[string]any{"$ref": "#/components/schemas/" + argName}},
 				},
 			},
 			Responses: map[string]OpenAPIResponse{
