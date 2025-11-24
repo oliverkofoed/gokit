@@ -25,10 +25,15 @@ type S3Store struct {
 }
 
 func NewS3(region string, s3bucket string, s3prefix string, s3accessKey string, s3secretkey string, endpoint *string) *S3Store {
+	var forcePathStyle *bool
+	if endpoint != nil {
+		forcePathStyle = aws.Bool(true)
+	}
 	awsSession := session.New(&aws.Config{
-		Region:      aws.String(region), //"us-east-2"),
-		Credentials: credentials.NewStaticCredentials(s3accessKey, s3secretkey, ""),
-		Endpoint:    endpoint,
+		Region:           aws.String(region), //"us-east-2"),
+		Credentials:      credentials.NewStaticCredentials(s3accessKey, s3secretkey, ""),
+		Endpoint:         endpoint,
+		S3ForcePathStyle: forcePathStyle,
 	})
 
 	return &S3Store{
