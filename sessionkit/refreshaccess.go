@@ -174,6 +174,10 @@ func RefreshAndCreateAccessToken[TUser any](c *web.Context, path string, expires
 		return ""
 	}
 
+	// Calculate parent hash of old refresh token to identify derived access tokens to remove
+	oldParentHashFull := sha256.Sum256(refreshToken)
+	oldParentHash := oldParentHashFull[:20]
+
 	// Rotate the refresh token
 	t := refreshToken[9:]
 	var newRefreshToken []byte
@@ -202,6 +206,22 @@ func RefreshAndCreateAccessToken[TUser any](c *web.Context, path string, expires
 	if !found {
 		return ""
 	}
+
+	// Remove old access tokens derived from the old refresh token
+	// Access tokens are 40 bytes: [20B random][20B parent hash]
+	newSessions := make([]*Session, 0, len(sessions.sessions.Sessions))
+	for _, session := range sessions.sessions.Sessions {
+		// Keep non-access-token sessions (refresh tokens are 20 bytes)
+		if len(session.Token) != 40 {
+			newSessions = append(newSessions, session)
+			continue
+		}
+		// Keep access tokens that are NOT derived from the old refresh token
+		if !bytes.Equal(session.Token[20:40], oldParentHash) {
+			newSessions = append(newSessions, session)
+		}
+	}
+	sessions.sessions.Sessions = newSessions
 
 	// Create parent hash (first 20 bytes of SHA256)
 	parentHashFull := sha256.Sum256(newRefreshToken)
