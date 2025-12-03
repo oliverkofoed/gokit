@@ -130,6 +130,10 @@ func (s *Sessions) Sessions() []*Session {
 	return s.sessions.Sessions
 }
 
+func (s *Sessions) SetSessions(sessions []*Session) {
+	s.sessions.Sessions = sessions
+}
+
 func (s *Sessions) HasPassword() bool {
 	return s.sessions.Password != nil
 }
