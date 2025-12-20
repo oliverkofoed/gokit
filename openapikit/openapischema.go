@@ -87,33 +87,46 @@ func (e *ApiMethods) GenerateOpenAPISchema() OpenAPISchema {
 	return schema
 }
 
-func (e *ApiMethods) fixBinarySchema(schema any) {
+func (e *ApiMethods) fixSchema(schema any, registry map[string]any) {
 	if m, ok := schema.(map[string]any); ok {
-		// Check if this is a reference to IoReader
-		if ref, ok := m["$ref"].(string); ok && strings.HasSuffix(ref, "/IoReader") {
-			delete(m, "$ref")
-			m["type"] = "string"
-			m["format"] = "binary"
-			return
+		// Fix $ref
+		if ref, ok := m["$ref"].(string); ok {
+			if strings.HasPrefix(ref, "#/definitions/") {
+				m["$ref"] = strings.Replace(ref, "#/definitions/", "#/components/schemas/", 1)
+			}
+
+			// Check if this is a reference to IoReader
+			if strings.HasSuffix(ref, "/IoReader") {
+				delete(m, "$ref")
+				m["type"] = "string"
+				m["format"] = "binary"
+				return
+			}
 		}
 
-		// Check for definitions/IoReader and remove it
+		// Check for definitions (swaggest/jsonschema-go uses this for nested types)
 		if defs, ok := m["definitions"].(map[string]any); ok {
-			if _, ok := defs["IoReader"]; ok {
-				delete(defs, "IoReader")
-				if len(defs) == 0 {
-					delete(m, "definitions")
+			for k, v := range defs {
+				if k == "IoReader" {
+					continue
+				}
+				// Move to global registry if not already there
+				if _, exists := registry[k]; !exists {
+					registry[k] = v
+					// Recursively fix the moved schema
+					e.fixSchema(v, registry)
 				}
 			}
+			delete(m, "definitions")
 		}
 
 		// Recurse
 		for _, v := range m {
-			e.fixBinarySchema(v)
+			e.fixSchema(v, registry)
 		}
 	} else if s, ok := schema.([]any); ok {
 		for _, v := range s {
-			e.fixBinarySchema(v)
+			e.fixSchema(v, registry)
 		}
 	}
 }
@@ -139,6 +152,9 @@ func (e *ApiMethods) generateFreshSchema() OpenAPISchema {
 	if et := e.ensureErrorType(); et != nil && et.Kind() == reflect.Struct {
 		name := e.addComponentSchemaWithReflector(&ref, et, comps.Schemas, seen)
 		errRef = map[string]any{"$ref": "#/components/schemas/" + name}
+
+		// Fix error schema
+		e.fixSchema(comps.Schemas[name], comps.Schemas)
 	}
 
 	for _, ep := range e.endpoints {
@@ -146,8 +162,9 @@ func (e *ApiMethods) generateFreshSchema() OpenAPISchema {
 		argName := e.addComponentSchemaWithReflector(&ref, ep.Action.ArgsType, comps.Schemas, seen)
 		resName := e.addComponentSchemaWithReflector(&ref, ep.Action.ResultType, comps.Schemas, seen)
 
-		// Fix binary schema in components
-		e.fixBinarySchema(comps.Schemas[argName])
+		// Fix schema (binary handling, flatten definitions, fix $ref prefixes)
+		e.fixSchema(comps.Schemas[argName], comps.Schemas)
+		e.fixSchema(comps.Schemas[resName], comps.Schemas)
 
 		// Determine operationId with priority:
 		// a) Method.Name if provided

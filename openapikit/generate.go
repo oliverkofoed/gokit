@@ -5,10 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/oliverkofoed/gokit/logkit"
 )
@@ -82,7 +85,12 @@ func (e *ApiMethods) generateClientWithOpenAPIGenerator(generator string, folder
 	defer os.Remove(specFile) // Clean up temp file
 
 	// Run openapi-generator using JAR directly
-	cmd := exec.Command("java", "-jar", "/usr/local/lib/openapi-generator-cli.jar", "generate",
+	jarPath, err := getOpenAPIGeneratorJarPath()
+	if err != nil {
+		return fmt.Errorf("unable to locate openapi-generator-cli jar: %w", err)
+	}
+
+	cmd := exec.Command("java", "-jar", jarPath, "generate",
 		"-i", specFile,
 		"-g", generator,
 		"-o", folder)
@@ -110,4 +118,53 @@ func (e *ApiMethods) generateClientWithOpenAPIGenerator(generator string, folder
 	fmt.Println(string(output))
 
 	return nil
+}
+
+// getOpenAPIGeneratorJarPath locates the openapi-generator-cli jar, downloading it if missing.
+func getOpenAPIGeneratorJarPath() (string, error) {
+	jarPath := os.Getenv("OPENAPI_GENERATOR_JAR")
+	if jarPath == "" {
+		jarPath = "/usr/local/lib/openapi-generator-cli.jar"
+	}
+
+	if _, err := os.Stat(jarPath); err == nil {
+		return jarPath, nil
+	}
+
+	version := os.Getenv("OPENAPI_GENERATOR_VERSION")
+	if version == "" {
+		version = "7.16.0"
+	}
+
+	cacheDir := filepath.Join(os.TempDir(), "openapi-generator-cli")
+	if err := os.MkdirAll(cacheDir, 0o755); err != nil {
+		return "", fmt.Errorf("failed creating cache dir: %w", err)
+	}
+	downloadPath := filepath.Join(cacheDir, fmt.Sprintf("openapi-generator-cli-%s.jar", version))
+	if _, err := os.Stat(downloadPath); err == nil {
+		return downloadPath, nil
+	}
+
+	url := fmt.Sprintf("https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/%s/openapi-generator-cli-%s.jar", version, version)
+	client := http.Client{Timeout: 2 * time.Minute}
+	resp, err := client.Get(url)
+	if err != nil {
+		return "", fmt.Errorf("failed to download generator: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to download generator: status %d", resp.StatusCode)
+	}
+
+	out, err := os.Create(downloadPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to create jar file: %w", err)
+	}
+	defer out.Close()
+
+	if _, err := io.Copy(out, resp.Body); err != nil {
+		return "", fmt.Errorf("failed to save jar: %w", err)
+	}
+
+	return downloadPath, nil
 }
