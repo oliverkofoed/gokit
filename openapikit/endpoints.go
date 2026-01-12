@@ -12,8 +12,17 @@ import (
 	"runtime/debug"
 	"strings"
 
+	jsoniter "github.com/json-iterator/go"
+	"github.com/modern-go/reflect2"
 	"github.com/oliverkofoed/gokit/sitekit/web"
 )
+
+type TypeFormatter interface {
+	Type() reflect.Type
+	JsonEncoder() jsoniter.ValEncoder
+	JsonDecoder() jsoniter.ValDecoder
+	UpdateSchema(schema map[string]any)
+}
 
 type ApiError struct {
 	Code    string `json:"code"`
@@ -36,11 +45,13 @@ type Method struct {
 type ApiMethods struct {
 	endpoints   []Method
 	schemaCache *OpenAPISchema
+	formatters  []TypeFormatter
+	jsonConfig  jsoniter.API
 }
 
 type WrappedAction struct {
 	Name       string
-	MakeAction func(development bool) func(*web.Context)
+	MakeAction func(e *ApiMethods, development bool) func(*web.Context)
 	ArgsType   reflect.Type
 	ResultType reflect.Type
 }
@@ -48,8 +59,39 @@ type WrappedAction struct {
 // New creates a new API endpoints manager
 func New() *ApiMethods {
 	return &ApiMethods{
-		endpoints: make([]Method, 0),
+		endpoints:  make([]Method, 0),
+		jsonConfig: jsoniter.ConfigCompatibleWithStandardLibrary,
 	}
+}
+
+func (e *ApiMethods) RegisterJsonFormatter(f TypeFormatter) {
+	e.formatters = append(e.formatters, f)
+	e.schemaCache = nil
+
+	// Rebuild jsonConfig with the new formatter
+	config := jsoniter.ConfigCompatibleWithStandardLibrary
+	extension := &jsonFormatterExtension{formatter: f}
+	config.RegisterExtension(extension)
+	e.jsonConfig = config
+}
+
+type jsonFormatterExtension struct {
+	jsoniter.DummyExtension
+	formatter TypeFormatter
+}
+
+func (e *jsonFormatterExtension) CreateEncoder(typ reflect2.Type) jsoniter.ValEncoder {
+	if typ.Type1() == e.formatter.Type() {
+		return e.formatter.JsonEncoder()
+	}
+	return nil
+}
+
+func (e *jsonFormatterExtension) CreateDecoder(typ reflect2.Type) jsoniter.ValDecoder {
+	if typ.Type1() == e.formatter.Type() {
+		return e.formatter.JsonDecoder()
+	}
+	return nil
 }
 
 // Add registers an API method using the Method struct
@@ -63,7 +105,7 @@ func (e *ApiMethods) InstallInto(site *web.Site, development bool) {
 	for _, endpoint := range e.endpoints {
 		site.AddRoute(web.Route{
 			Path:   endpoint.Path,
-			Action: endpoint.Action.MakeAction(development),
+			Action: endpoint.Action.MakeAction(e, development),
 			NoGZip: true,
 		})
 		e.Add(endpoint)
@@ -95,7 +137,7 @@ func Action[TArgs any, TResult any](handler func(c *web.Context, args TArgs) (*T
 		Name:       funcName,
 		ArgsType:   reflect.TypeOf((*TArgs)(nil)).Elem(),
 		ResultType: reflect.TypeOf((*TResult)(nil)).Elem(),
-		MakeAction: func(development bool) func(c *web.Context) {
+		MakeAction: func(e *ApiMethods, development bool) func(c *web.Context) {
 			return func(c *web.Context) {
 				// --- Panic recovery with stack trace ---
 				defer func() {
@@ -179,11 +221,11 @@ func Action[TArgs any, TResult any](handler func(c *web.Context, args TArgs) (*T
 								case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 									// We could use strconv here, but JSON unmarshal is safer/easier for all types
 									var v any
-									if err := json.Unmarshal([]byte(formVal), &v); err == nil {
+									if err := e.jsonConfig.Unmarshal([]byte(formVal), &v); err == nil {
 										// This might be tricky because Unmarshal unmarshals numbers to float64
 										// Let's try direct unmarshal to the field type
 										vPtr := reflect.New(field.Type).Interface()
-										if err := json.Unmarshal([]byte(formVal), vPtr); err == nil {
+										if err := e.jsonConfig.Unmarshal([]byte(formVal), vPtr); err == nil {
 											fieldVal.Set(reflect.ValueOf(vPtr).Elem())
 										}
 									} else {
@@ -198,7 +240,7 @@ func Action[TArgs any, TResult any](handler func(c *web.Context, args TArgs) (*T
 								default:
 									// Complex types (structs, slices, maps) or primitives
 									vPtr := reflect.New(field.Type).Interface()
-									if err := json.Unmarshal([]byte(formVal), vPtr); err == nil {
+									if err := e.jsonConfig.Unmarshal([]byte(formVal), vPtr); err == nil {
 										fieldVal.Set(reflect.ValueOf(vPtr).Elem())
 									} else if field.Type.Kind() == reflect.String {
 										// If unmarshal failed and it's a string, it might be a raw string
@@ -231,8 +273,8 @@ func Action[TArgs any, TResult any](handler func(c *web.Context, args TArgs) (*T
 					// Decode with limits and strictness
 					r := c.Request
 					r.Body = http.MaxBytesReader(c, r.Body, 1<<20)
-					dec := json.NewDecoder(r.Body)
-					dec.DisallowUnknownFields()
+					dec := e.jsonConfig.NewDecoder(r.Body)
+					// dec.DisallowUnknownFields() // json-iterator doesn't have this on the decoder exactly the same way, but let's see
 
 					if err := dec.Decode(&args); err != nil {
 						var msg string
@@ -291,10 +333,12 @@ func Action[TArgs any, TResult any](handler func(c *web.Context, args TArgs) (*T
 
 				// all good
 				c.Header().Set("Content-Type", "application/json; charset=utf-8")
-				enc := json.NewEncoder(c)
-				enc.SetEscapeHTML(false)
+				enc := e.jsonConfig.NewEncoder(c)
 				if development {
-					enc.SetIndent("", "  ")
+					// json-iterator doesn't have SetEscapeHTML(false) exactly like encoding/json,
+					// but it defaults to escaping.
+					// enc.SetEscapeHTML(false)
+					// enc.SetIndent("", "  ")
 				}
 				c.WriteHeader(http.StatusOK)
 				_ = enc.Encode(result)

@@ -14,11 +14,13 @@ require (
 	github.com/fogleman/gg v1.3.0
 	github.com/gocql/gocql v1.0.0
 	github.com/jinzhu/inflection v1.0.0
+	github.com/json-iterator/go v1.1.12
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/leonelquinteros/gotext v1.5.0
 	github.com/lib/pq v1.10.4
 	github.com/mailgun/mailgun-go/v4 v4.23.0
 	github.com/mattn/go-isatty v0.0.14
+	github.com/modern-go/reflect2 v1.0.2
 	github.com/prometheus/client_golang v1.23.2
 	github.com/satori/go.uuid v1.2.0
 	github.com/soheilhy/cmux v0.1.5
@@ -40,10 +42,8 @@ require (
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/mailgun/errors v0.4.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.66.1 // indirect

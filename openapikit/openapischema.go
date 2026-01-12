@@ -216,6 +216,17 @@ func (e *ApiMethods) generateFreshSchema() OpenAPISchema {
 	opIdCollisions := e.buildOperationIdCollisionMap()
 	ref := jsonschema.Reflector{}
 
+	// Register formatters with the reflector using TypeMapping
+	for _, f := range e.formatters {
+		var s jsonschema.Schema
+		m := make(map[string]any)
+		f.UpdateSchema(m)
+		b, _ := json.Marshal(m)
+		_ = s.UnmarshalJSON(b)
+
+		ref.AddTypeMapping(reflect.New(f.Type()).Elem().Interface(), s)
+	}
+
 	s := OpenAPISchema{
 		OpenAPI: "3.1.0",
 		Info: OpenAPIInfo{
@@ -364,6 +375,14 @@ func (e *ApiMethods) addComponentSchemaWithReflector(r *jsonschema.Reflector, t 
 	// Marshal regardless of pointer/value
 	b, _ := json.Marshal(sch)
 	_ = json.Unmarshal(b, &node)
+
+	// Apply formatters if any
+	for _, f := range e.formatters {
+		if f.Type() == ut {
+			f.UpdateSchema(node)
+		}
+	}
+
 	registry[name] = node
 	return name
 }
@@ -429,6 +448,25 @@ func underlying(t reflect.Type) reflect.Type {
 		// Non-struct named types behave like their underlying primitives in shape.
 	}
 	return t
+}
+
+type formatterExposer struct {
+	f TypeFormatter
+}
+
+func (fe formatterExposer) JSONSchema() (jsonschema.Schema, error) {
+	var s jsonschema.Schema
+	m := make(map[string]any)
+	fe.f.UpdateSchema(m)
+
+	// Convert map back to Schema using JSON marshal/unmarshal
+	// This is slightly inefficient but ensures we correctly map the generic map to the Schema struct
+	b, err := json.Marshal(m)
+	if err != nil {
+		return s, err
+	}
+	err = s.UnmarshalJSON(b)
+	return s, err
 }
 
 var nonWord = regexp.MustCompile(`[^A-Za-z0-9_.]+`)
