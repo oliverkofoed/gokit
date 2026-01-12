@@ -131,9 +131,89 @@ func (e *ApiMethods) fixSchema(schema any, registry map[string]any) {
 	}
 }
 
+// buildOperationIdCollisionMap scans all endpoints and returns a set of base operationIds that have collisions
+func (e *ApiMethods) buildOperationIdCollisionMap() map[string]bool {
+	// Map from base operationId -> set of unique services with that operationId
+	nameToServices := make(map[string]map[string]bool)
+
+	for _, ep := range e.endpoints {
+		// Determine base operationId using the same logic as generateFreshSchema
+		baseOpId := ep.Name
+		if baseOpId == "" && !strings.HasPrefix(ep.Action.Name, "func") {
+			baseOpId = ep.Action.Name
+		}
+		if baseOpId == "" {
+			if idx := strings.LastIndex(ep.Path, "/"); idx >= 0 {
+				baseOpId = ep.Path[idx+1:]
+			} else {
+				baseOpId = ep.Path
+			}
+		}
+
+		if nameToServices[baseOpId] == nil {
+			nameToServices[baseOpId] = make(map[string]bool)
+		}
+		nameToServices[baseOpId][ep.Service] = true
+	}
+
+	// Build collision set - operationIds that appear in more than one service
+	collisions := make(map[string]bool)
+	for name, services := range nameToServices {
+		if len(services) > 1 {
+			collisions[name] = true
+		}
+	}
+
+	return collisions
+}
+
+// buildCollisionMap scans all types and returns a set of base names that have collisions
+func (e *ApiMethods) buildCollisionMap() map[string]bool {
+	// Map from base name -> set of unique types with that name
+	nameToTypes := make(map[string]map[reflect.Type]bool)
+
+	collectType := func(t reflect.Type) {
+		if t == nil {
+			return
+		}
+		ut := underlying(t)
+		if ut.Name() == "" {
+			return // anonymous types don't collide by name
+		}
+		baseName := e.baseTypeName(ut)
+		if nameToTypes[baseName] == nil {
+			nameToTypes[baseName] = make(map[reflect.Type]bool)
+		}
+		nameToTypes[baseName][ut] = true
+	}
+
+	// Error type
+	if et := e.ensureErrorType(); et != nil && et.Kind() == reflect.Struct {
+		collectType(et)
+	}
+
+	// All endpoint types
+	for _, ep := range e.endpoints {
+		collectType(ep.Action.ArgsType)
+		collectType(ep.Action.ResultType)
+	}
+
+	// Build collision set - names that have more than one unique type
+	collisions := make(map[string]bool)
+	for name, types := range nameToTypes {
+		if len(types) > 1 {
+			collisions[name] = true
+		}
+	}
+
+	return collisions
+}
+
 func (e *ApiMethods) generateFreshSchema() OpenAPISchema {
 	comps := OpenAPIComponents{Schemas: make(map[string]any)}
 	seen := map[reflect.Type]string{} // type -> component name
+	collisions := e.buildCollisionMap()
+	opIdCollisions := e.buildOperationIdCollisionMap()
 	ref := jsonschema.Reflector{}
 
 	s := OpenAPISchema{
@@ -150,7 +230,7 @@ func (e *ApiMethods) generateFreshSchema() OpenAPISchema {
 	// Pre-register the error schema if we have one
 	var errRef any
 	if et := e.ensureErrorType(); et != nil && et.Kind() == reflect.Struct {
-		name := e.addComponentSchemaWithReflector(&ref, et, comps.Schemas, seen)
+		name := e.addComponentSchemaWithReflector(&ref, et, comps.Schemas, seen, collisions)
 		errRef = map[string]any{"$ref": "#/components/schemas/" + name}
 
 		// Fix error schema
@@ -159,8 +239,8 @@ func (e *ApiMethods) generateFreshSchema() OpenAPISchema {
 
 	for _, ep := range e.endpoints {
 		// Register args/result schemas
-		argName := e.addComponentSchemaWithReflector(&ref, ep.Action.ArgsType, comps.Schemas, seen)
-		resName := e.addComponentSchemaWithReflector(&ref, ep.Action.ResultType, comps.Schemas, seen)
+		argName := e.addComponentSchemaWithReflector(&ref, ep.Action.ArgsType, comps.Schemas, seen, collisions)
+		resName := e.addComponentSchemaWithReflector(&ref, ep.Action.ResultType, comps.Schemas, seen, collisions)
 
 		// Fix schema (binary handling, flatten definitions, fix $ref prefixes)
 		e.fixSchema(comps.Schemas[argName], comps.Schemas)
@@ -181,6 +261,11 @@ func (e *ApiMethods) generateFreshSchema() OpenAPISchema {
 			} else {
 				operationId = ep.Path
 			}
+		}
+
+		// Prefix with service name if there's a collision
+		if opIdCollisions[operationId] && ep.Service != "" {
+			operationId = ep.Service + operationId
 		}
 
 		// Check if args has io.Reader
@@ -254,7 +339,7 @@ func (e *ApiMethods) generateFreshSchema() OpenAPISchema {
 }
 
 // addComponentSchemaWithReflector registers (and returns) the component name for t using jsonschema-go.
-func (e *ApiMethods) addComponentSchemaWithReflector(r *jsonschema.Reflector, t reflect.Type, registry map[string]any, seen map[reflect.Type]string) string {
+func (e *ApiMethods) addComponentSchemaWithReflector(r *jsonschema.Reflector, t reflect.Type, registry map[string]any, seen map[reflect.Type]string, collisions map[string]bool) string {
 	if t == nil {
 		// Represent "any" as an unconstrained schema.
 		return e.ensureNamedComponentAny(registry, "Any", map[string]any{})
@@ -266,16 +351,7 @@ func (e *ApiMethods) addComponentSchemaWithReflector(r *jsonschema.Reflector, t 
 		return name
 	}
 
-	name := e.typeName(ut)
-
-	// Check for name collision with a different type
-	for existingType, existingName := range seen {
-		if existingName == name && existingType != ut {
-			panic("OpenAPI type name collision: multiple types named '" + name + "' from different packages. " +
-				"First: " + existingType.PkgPath() + "." + existingType.Name() + ", " +
-				"Second: " + ut.PkgPath() + "." + ut.Name())
-		}
-	}
+	name := e.typeName(ut, collisions)
 
 	seen[ut] = name // mark early
 
@@ -292,7 +368,8 @@ func (e *ApiMethods) addComponentSchemaWithReflector(r *jsonschema.Reflector, t 
 	return name
 }
 
-func (e *ApiMethods) typeName(t reflect.Type) string {
+// baseTypeName returns just the type name without any package prefix
+func (e *ApiMethods) baseTypeName(t reflect.Type) string {
 	switch t.Kind() {
 	case reflect.Struct:
 		if t.Name() != "" {
@@ -306,6 +383,30 @@ func (e *ApiMethods) typeName(t reflect.Type) string {
 		}
 		return sanitizeName(t.String())
 	}
+}
+
+// typeName returns the OpenAPI component name, with package prefix if there's a collision
+func (e *ApiMethods) typeName(t reflect.Type, collisions map[string]bool) string {
+	baseName := e.baseTypeName(t)
+
+	if collisions[baseName] {
+		// Add package prefix to disambiguate
+		pkgPath := t.PkgPath()
+		if pkgPath != "" {
+			// Get last segment of package path and capitalize it
+			pkgName := pkgPath
+			if idx := strings.LastIndex(pkgPath, "/"); idx >= 0 {
+				pkgName = pkgPath[idx+1:]
+			}
+			// Capitalize first letter
+			if len(pkgName) > 0 {
+				pkgName = strings.ToUpper(pkgName[:1]) + pkgName[1:]
+			}
+			return pkgName + baseName
+		}
+	}
+
+	return baseName
 }
 
 // ensureNamedComponentAny registers a literal under a fixed name if not present.
