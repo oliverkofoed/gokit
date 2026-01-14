@@ -287,22 +287,9 @@ func IsRefreshTokenValid[TUser any](c *web.Context, path string, loadUser func(u
 	return false
 }
 
-// ValidateAccessToken validates the access token from the Authorization header,
-func ValidateAccessToken[TUser any](c *web.Context, loadUser func(userId int64) (TUser, *Sessions), saveUser func(user TUser, sessions *Sessions)) TUser {
+// ValidateAccessToken validates an access token string (hex-encoded).
+func ValidateAccessToken[TUser any](accessTokenHex string, loadUser func(userId int64) (TUser, *Sessions), saveUser func(user TUser, sessions *Sessions)) TUser {
 	var zero TUser
-
-	// Get access token from Authorization header
-	authHeader := c.Request.Header.Get("Authorization")
-	if authHeader == "" {
-		return zero
-	}
-
-	// Extract Bearer token
-	const prefix = "Bearer "
-	if !strings.HasPrefix(authHeader, prefix) {
-		return zero
-	}
-	accessTokenHex := strings.TrimPrefix(authHeader, prefix)
 
 	// Decode access token from hex (48 bytes: 8 userID + 20 random + 20 parent hash)
 	accessToken, err := hex.DecodeString(accessTokenHex)
@@ -331,4 +318,24 @@ func ValidateAccessToken[TUser any](c *web.Context, loadUser func(userId int64) 
 	}
 
 	return zero
+}
+
+// ValidateAuthorizationAccessToken validates the access token from the Authorization header.
+func ValidateAuthorizationAccessToken[TUser any](c *web.Context, loadUser func(userId int64) (TUser, *Sessions), saveUser func(user TUser, sessions *Sessions)) TUser {
+	var zero TUser
+
+	// Get access token from Authorization header
+	authHeader := c.Request.Header.Get("Authorization")
+	if authHeader == "" {
+		return zero
+	}
+
+	// Extract Bearer token
+	const prefix = "Bearer "
+	if !strings.HasPrefix(authHeader, prefix) {
+		return zero
+	}
+	accessTokenHex := strings.TrimPrefix(authHeader, prefix)
+
+	return ValidateAccessToken(accessTokenHex, loadUser, saveUser)
 }
