@@ -123,6 +123,12 @@ func (s *Sessions) Bytes() []byte {
 	if err != nil {
 		panic(err)
 	}
+	if buf == nil {
+		// An empty session set encodes to a nil slice, which database drivers
+		// (lib/pq >= 1.11) send as SQL NULL - breaking NOT NULL columns. Always
+		// hand back a non-nil slice so it stores as empty bytes instead.
+		return []byte{}
+	}
 	return buf
 }
 
