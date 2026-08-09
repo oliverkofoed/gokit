@@ -24,9 +24,31 @@ func NoError(t *testing.T, err error) {
 }
 
 func NotNil(t *testing.T, value interface{}) {
-	if value == nil {
+	if isNil(value) {
 		fail(t, "Values should not be nil.")
 	}
+}
+
+func Nil(t *testing.T, value interface{}) {
+	if !isNil(value) {
+		fail(t, "Value should be nil, but was "+fmt.Sprintf("%v", value))
+	}
+}
+
+// isNil reports whether a value is nil, including the case a plain `== nil`
+// misses: a nil pointer placed in an interface still carries its type, so the
+// interface is not nil and `value == nil` is false. That made NotNil pass for
+// every typed nil ever handed to it — an assertion that could not fail.
+func isNil(value interface{}) bool {
+	if value == nil {
+		return true
+	}
+	v := reflect.ValueOf(value)
+	switch v.Kind() {
+	case reflect.Ptr, reflect.Map, reflect.Slice, reflect.Chan, reflect.Func, reflect.Interface, reflect.UnsafePointer:
+		return v.IsNil()
+	}
+	return false
 }
 func Equal(t *testing.T, value interface{}, expected interface{}) {
 	if !reflect.DeepEqual(value, expected) {
