@@ -75,6 +75,70 @@ func (e *ApiMethods) RegisterJsonFormatter(f TypeFormatter) {
 	e.jsonConfig = config
 }
 
+// readerType is the marker that makes an endpoint multipart: an args field of
+// this type is a file upload rather than a value.
+var readerType = reflect.TypeOf((*io.Reader)(nil)).Elem()
+
+// jsonFieldName is the name a field answers to on the wire — its json tag, or
+// its own name when it has none.
+func jsonFieldName(field reflect.StructField) string {
+	if tag := field.Tag.Get("json"); tag != "" {
+		if name := strings.Split(tag, ",")[0]; name != "" {
+			return name
+		}
+	}
+	return field.Name
+}
+
+// setFieldFromForm decodes one multipart form value into one args field.
+//
+// A form value is a bare string — `1f4`, `renamed`, `1786350550` — while every
+// other decode path in this package speaks json, registered formatters
+// included. So the value is offered to the json decoder twice: as it arrived,
+// and as a json string literal. Whichever parses first wins, and which one is
+// tried first is decided by the field rather than by the text:
+//
+//   - For a string field the text *is* the value, so the quoted form leads.
+//     Raw-first would read `123` as a number, `null` as nothing at all and
+//     `"quoted"` as `quoted` — three ways to quietly rewrite what was typed.
+//   - Everything else is a json literal first and a string second. That second
+//     attempt is what carries formatters whose wire shape is a string:
+//     Int64HexFormatter writes `"1f4"`, and no form on earth sends the quotes.
+//     Without it such a field stays zero, and a zero id reads downstream as
+//     "no such row" rather than as "never parsed".
+//
+// Both attempts go through the configured json, so a type with a registered
+// codec is decoded by that codec — which assigning a string directly, as this
+// used to do, silently skipped.
+func setFieldFromForm(cfg jsoniter.API, fieldType reflect.Type, fieldVal reflect.Value, formVal string) {
+	// Marshalling a string cannot fail; the error is checked rather than
+	// ignored so that a config which somehow does fail leaves the raw attempt
+	// standing instead of feeding the decoder an empty document.
+	quoted, err := cfg.Marshal(formVal)
+	if err != nil {
+		quoted = nil
+	}
+
+	attempts := [][]byte{[]byte(formVal), quoted}
+	if fieldType.Kind() == reflect.String {
+		attempts = [][]byte{quoted, []byte(formVal)}
+	}
+
+	for _, attempt := range attempts {
+		if len(attempt) == 0 {
+			continue
+		}
+		ptr := reflect.New(fieldType)
+		if err := cfg.Unmarshal(attempt, ptr.Interface()); err == nil {
+			fieldVal.Set(ptr.Elem())
+			return
+		}
+	}
+
+	// Neither shape parsed: the field keeps its zero value. A codec that
+	// rejects its input is answering the question, and this is its answer.
+}
+
 type jsonFormatterExtension struct {
 	jsoniter.DummyExtension
 	formatter TypeFormatter
@@ -126,7 +190,7 @@ func Action[TArgs any, TResult any](handler func(c *web.Context, args TArgs) (*T
 	argsType := reflect.TypeOf((*TArgs)(nil)).Elem()
 	if argsType.Kind() == reflect.Struct {
 		for i := 0; i < argsType.NumField(); i++ {
-			if argsType.Field(i).Type == reflect.TypeOf((*io.Reader)(nil)).Elem() {
+			if argsType.Field(i).Type == readerType {
 				hasFile = true
 				break
 			}
@@ -196,58 +260,19 @@ func Action[TArgs any, TResult any](handler func(c *web.Context, args TArgs) (*T
 					for i := 0; i < val.NumField(); i++ {
 						field := typ.Field(i)
 						fieldVal := val.Field(i)
+						name := jsonFieldName(field)
 
-						// Get name from json tag
-						name := field.Name
-						if tag := field.Tag.Get("json"); tag != "" {
-							parts := strings.Split(tag, ",")
-							if parts[0] != "" {
-								name = parts[0]
-							}
-						}
-
-						if field.Type == reflect.TypeOf((*io.Reader)(nil)).Elem() {
-							file, _, err := c.Request.FormFile(name)
-							if err == nil {
+						if field.Type == readerType {
+							if file, _, err := c.Request.FormFile(name); err == nil {
 								fieldVal.Set(reflect.ValueOf(file))
 							}
-						} else {
-							formVal := c.Request.FormValue(name)
-							if formVal != "" {
-								// Handle different types
-								switch field.Type.Kind() {
-								case reflect.String:
-									fieldVal.SetString(formVal)
-								case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-									// We could use strconv here, but JSON unmarshal is safer/easier for all types
-									var v any
-									if err := e.jsonConfig.Unmarshal([]byte(formVal), &v); err == nil {
-										// This might be tricky because Unmarshal unmarshals numbers to float64
-										// Let's try direct unmarshal to the field type
-										vPtr := reflect.New(field.Type).Interface()
-										if err := e.jsonConfig.Unmarshal([]byte(formVal), vPtr); err == nil {
-											fieldVal.Set(reflect.ValueOf(vPtr).Elem())
-										}
-									} else {
-										// Fallback for plain strings that aren't quoted JSON strings?
-										// If it's an int, json.Unmarshal("123", &i) works.
-										// If it's a string, json.Unmarshal("foo", &s) fails, needs "\"foo\"".
-										// But for multipart/form-data, usually strings are just sent as is.
-										// So if unmarshal fails and it's a string, use the value directly?
-										// But we already handled String kind above.
-										// What about Int? json.Unmarshal("123") works.
-									}
-								default:
-									// Complex types (structs, slices, maps) or primitives
-									vPtr := reflect.New(field.Type).Interface()
-									if err := e.jsonConfig.Unmarshal([]byte(formVal), vPtr); err == nil {
-										fieldVal.Set(reflect.ValueOf(vPtr).Elem())
-									} else if field.Type.Kind() == reflect.String {
-										// If unmarshal failed and it's a string, it might be a raw string
-										fieldVal.SetString(formVal)
-									}
-								}
-							}
+							continue
+						}
+
+						// An absent field and an empty one are the same thing here:
+						// the zero value, which is what the field already holds.
+						if formVal := c.Request.FormValue(name); formVal != "" {
+							setFieldFromForm(e.jsonConfig, field.Type, fieldVal, formVal)
 						}
 					}
 

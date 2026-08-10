@@ -2,7 +2,6 @@ package openapikit
 
 import (
 	"encoding/json"
-	"io"
 	"reflect"
 	"regexp"
 	"strings"
@@ -287,7 +286,7 @@ func (e *ApiMethods) generateFreshSchema() OpenAPISchema {
 		}
 		if argsType.Kind() == reflect.Struct {
 			for i := 0; i < argsType.NumField(); i++ {
-				if argsType.Field(i).Type == reflect.TypeOf((*io.Reader)(nil)).Elem() {
+				if argsType.Field(i).Type == readerType {
 					hasFile = true
 					break
 				}
