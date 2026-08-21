@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:streamGenerateContent?alt=sse",
+        "header": {
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Goog-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "héllo 日本語 👨‍👩‍👧‍👦 🇩🇰 🧑‍🚀"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "generationConfig": {
+            "maxOutputTokens": 2048
+          },
+          "systemInstruction": {
+            "parts": [
+              {
+                "text": "Reply with exactly the text the user gives you, nothing else."
+              }
+            ]
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Alt-Svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "Content-Disposition": [
+            "attachment"
+          ],
+          "Content-Type": [
+            "text/event-stream"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:25:07 GMT"
+          ],
+          "Server": [
+            "scaffolding on HTTPServer2"
+          ],
+          "Server-Timing": [
+            "gfet4t7; dur=928"
+          ],
+          "Vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Frame-Options": [
+            "SAMEORIGIN"
+          ],
+          "X-Xss-Protection": [
+            "0"
+          ]
+        },
+        "chunks": [
+          "data: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"héllo 日本語 👨\\u200d👩\\u200d👧\\u200d👦 🇩🇰 🧑\\u200d🚀\"}],\"role\": \"model\"},\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 34,\"candidatesTokenCount\": 20,\"totalTokenCount\": 191,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 34}],\"thoughtsTokenCount\": 137,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"EgOGarOZNt_4vdIP4KWKwAo\"}\r\n\r\ndata: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"\",\"thoughtSignature\": \"Eq4FCqsFARFNMg+REiRy7xWe4ggHWBgE1/LDCWXCG/Bv55LNJG00MHpoxQe3XKbgIOkdCdaAxvF3pqQlk/8IEX7QmpSCIWSeu/O5v6YN3HuSMjRhU4xKOC5HKcxceLaNJCcYfEgWPoh33ZTIBvvTWaVkKFkXNx0XZMksBcIQ/zDCpukTy4BoaptamvPERrEkRcRyzorPP8rFM+WXps/2AktyVvF059mf54O6HZhm7cGNzm3Ia1P39jEmLr5tfFyLfVLQ4QWXT+E2S3Ruv6FF2uX63Pf81ghAnX8c1x1l4JHujlFTZkbN6ZVGuLGJot6l6P5HYq6uND53n8Kb3FeE9/cJZeEO3Vt4uc8TSwxtq8lN4qrvWeQEpJ1ufBSLYWvMfwqY+BQKAGsDJ8aroirVt5xDxKHEQ+kTCDkFoFC6HprhsUyMpgXNqFpvkEGmbKiPnrW+s69RWIvnjpuVr9azeb9HTGqP6S926cmQKWxB5dUA0+cIgfWpyfKYRw7M0DUWNjhwn/bMxeg0leOxI2dzxJ1QFGkToG4ikdRBS589zJTyNTCr1h1qwB6+ZanTcrQjs6Wz5UAJQCkvE0ZNj3+XnhKaETMwP+EM+rnLJhBTeo9MZiktjiqe9VfaCEJhyvuJ5dH8U5qPF561hbDyxvAvwvyhDXVpsS7wsltIrusacgiEzqU0arK22CExCX3lJzBUf4Cf+1LmabfVRlDrsbIHvt6JDSgstnRiDM+ofWOMDghSqvBM8NfSojPKfb8qqRlGjDeEYeZL8EZjTE1v2Me9v+aVrHsLOlFMHQ1k50rgV6+k4SocBLo1NJGqMqdihHIlc+9eObxB2nebpwkdFm4gvauNVwkzrBQUGSQy/JUTnzljNFA0+EmcpIUKde/GjTf7YePzo/76Vlwi2JVIkkLOPt0=\"}],\"role\": \"model\"},\"finishReason\": \"STOP\",\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 34,\"candidatesTokenCount\": 20,\"totalTokenCount\": 191,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 34}],\"thoughtsTokenCount\": 137,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"EgOGarOZNt_4vdIP4KWKwAo\"}\r\n\r\n"
+        ]
+      }
+    }
+  ]
+}

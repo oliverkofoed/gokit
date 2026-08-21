@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:streamGenerateContent?alt=sse",
+        "header": {
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Goog-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "What is the capital of Denmark?"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "generationConfig": {
+            "maxOutputTokens": 2048
+          },
+          "systemInstruction": {
+            "parts": [
+              {
+                "text": "Answer in one short sentence. Be direct."
+              }
+            ]
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Alt-Svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "Content-Disposition": [
+            "attachment"
+          ],
+          "Content-Type": [
+            "text/event-stream"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:24:50 GMT"
+          ],
+          "Server": [
+            "scaffolding on HTTPServer2"
+          ],
+          "Server-Timing": [
+            "gfet4t7; dur=1193"
+          ],
+          "Vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Frame-Options": [
+            "SAMEORIGIN"
+          ],
+          "X-Xss-Protection": [
+            "0"
+          ]
+        },
+        "chunks": [
+          "data: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"The capital of Denmark is Copenhagen.\"}],\"role\": \"model\"},\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 17,\"candidatesTokenCount\": 7,\"totalTokenCount\": 100,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 17}],\"thoughtsTokenCount\": 76,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"AQOGaoKBIaXTvdIP14-62Ac\"}\r\n\r\ndata: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"\",\"thoughtSignature\": \"Et8DCtwDARFNMg/+MxT4g6zHgfjBawBMqE3rFFfhGYQpLILqHh2T3//tNC/R8LHniVqsHcbTCD/EM52iRLAkQu1GYKVqEyDfVuolCo1mfLOIQtC5kA791K5+9wyGLqa3yeooHhi49x9jM8/uknP+VAc59dxmzZB11yIIjbLBIT1oqiCCTSRWWFFLOs4kgc4cxANvQDLQklLPPVEfzucnsFH1yKP3zk/wIELeQ6IkzoLmVG/u2gbNVlGzVWPJSkgrmwl4zUDwq40QAA3pYv33SzD90L5jC+mbWJh4pSmi2Sbdgz3pRp81t825pdGpE4RyGCjmkVFWMcnrv8eoMgSRRLM19FOAagBsf7QF5sCnrkLUumhw/0OVaHSiu+TCjjR0IMM2XHqw8nivkdvS37llOGjW6VhU/Z9DWDCI6rRhOqBhZGF8z7wx66BJcudae1T8dfkKOzVCjzBHtFdaSQJgprV9tXdyTqjXktzUUUXPbPTZk6tqDc9Hq93AwfByMaNYg+Ujh6fP6tFDFdNJTqfr6tW1UDnRAbRBdu9TNcayaBpy5X/X1QawXLV27qlxmGhD78R3W+O7Z4y9usDU+K2qGcQ1xZXR+YsBnW+qFIX5dFyy5qvqfHIVSqYy2uh2qrLkqfY=\"}],\"role\": \"model\"},\"finishReason\": \"STOP\",\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 17,\"candidatesTokenCount\": 7,\"totalTokenCount\": 100,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 17}],\"thoughtsTokenCount\": 76,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"AQOGaoKBIaXTvdIP14-62Ac\"}\r\n\r\n"
+        ]
+      }
+    }
+  ]
+}

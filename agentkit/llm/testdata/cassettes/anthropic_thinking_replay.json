@@ -1,0 +1,323 @@
+{
+  "version": 1,
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "header": {
+          "Anthropic-Version": [
+            "2023-06-01"
+          ],
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "max_tokens": 4096,
+          "messages": [
+            {
+              "content": [
+                {
+                  "cache_control": {
+                    "type": "ephemeral"
+                  },
+                  "text": "A shop sells pens at 7 kr and pads at 23 kr. I buy 3 pens and 2 pads. What do I pay?",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-haiku-4-5",
+          "stream": true,
+          "system": [
+            {
+              "cache_control": {
+                "type": "ephemeral"
+              },
+              "text": "Think it through, then give the number only.",
+              "type": "text"
+            }
+          ],
+          "thinking": {
+            "budget_tokens": 2048,
+            "type": "enabled"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Anthropic-Organization-Id": [
+            "REDACTED"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Limit": [
+            "10000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Remaining": [
+            "10000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Reset": [
+            "2026-08-19T19:26:55Z"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Limit": [
+            "2000000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Remaining": [
+            "2000000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Reset": [
+            "2026-08-19T19:26:55Z"
+          ],
+          "Anthropic-Ratelimit-Requests-Limit": [
+            "10000"
+          ],
+          "Anthropic-Ratelimit-Requests-Remaining": [
+            "9999"
+          ],
+          "Anthropic-Ratelimit-Requests-Reset": [
+            "2026-08-19T19:26:55Z"
+          ],
+          "Anthropic-Ratelimit-Tokens-Limit": [
+            "12000000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Remaining": [
+            "12000000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Reset": [
+            "2026-08-19T19:26:55Z"
+          ],
+          "Anthropic-Workspace-Id": [
+            "REDACTED"
+          ],
+          "Cache-Control": [
+            "no-cache"
+          ],
+          "Cf-Cache-Status": [
+            "DYNAMIC"
+          ],
+          "Cf-Ray": [
+            "REDACTED"
+          ],
+          "Content-Security-Policy": [
+            "default-src 'none'; frame-ancestors 'none'"
+          ],
+          "Content-Type": [
+            "text/event-stream; charset=utf-8"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:26:56 GMT"
+          ],
+          "Request-Id": [
+            "REDACTED"
+          ],
+          "Server": [
+            "cloudflare"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "Traceresponse": [
+            "00-9c48b8d15b29eb5676f475ed1f0db355-2d769f1c1323c505-01"
+          ],
+          "Vary": [
+            "Accept-Encoding"
+          ],
+          "X-Robots-Tag": [
+            "none"
+          ]
+        },
+        "chunks": [
+          "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"model\":\"claude-haiku-4-5-20251001\",\"id\":\"msg_011CeCf5ueJ3HxR1ExYC362r\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"stop_reason\":null,\"stop_sequence\":null,\"stop_details\":null,\"usage\":{\"input_tokens\":85,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":5,\"service_tier\":\"standard\",\"inference_geo\":\"not_available\"}}       }\n\n",
+          "event: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"thinking\",\"thinking\":\"\",\"signature\":\"\"}     }\n\n",
+          "event: ping\ndata: {\"type\": \"ping\"}\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"Let me calculate the cost\"}    }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\":\\n\\nPens: 3 pens × 7 kr = 21 kr\\nPads: 2 pads × 23 kr = 46 kr\\n\\nTotal: 21 kr + 46 kr = 67 kr\"}     }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"signature_delta\",\"signature\":\"EvICCpoBCBAYAipAlCtJBf/GWB1A3Y9ooQz3m1TB6FUZ+WP3Ut+4mcyhNItAYKfq41rzrw3OQUlaxgSSmlszq+LPGH74oEibAFvwwDIZY2xhdWRlLWhhaWt1LTQtNS0yMDI1MTAwMTgAQgh0aGlua2luZ1okYjVlYzNiMWMtZmNmMi00YTgyLWJiN2MtMGI3MWY1ZmU4ODlkqAGAh5jUBhIMthEjF402HxoU2QM9GgzyhnkoJ8zvFRi53w4iMFcdeEiMCrVfyntv6B2xPCflutuo5HdCXwWj/HOBp3/j0xl3UJPcYfxn/j35u3xa3CqEAdRG250wMTSGoNpXuEMgt2ayMaoxugtFIAThjLyMwivByOtr5TpLOmNrbntXJdziS9LadPSRcsns8oYyiS79X0HUKUNxNzwYDvcheg3yI5rWFTok9FOD/vsVj1BucB/JcCNZQFRj/Q8vDF5Q9JakXRCd9XIJAEu0Qel913iieIrdPNhcrRgB\"}         }\n\n",
+          "event: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":0       }\n\n",
+          "event: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":1,\"content_block\":{\"type\":\"text\",\"text\":\"\"}  }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"3 pens × 7 kr = 21 kr\\n2 \"}     }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"pads × 23 kr = 46 kr\\nTotal: 21 + 46 = 67 kr\\n\\n67\"}       }\n\n",
+          "event: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":1       }\n\n",
+          "event: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\",\"stop_sequence\":null,\"stop_details\":null},\"usage\":{\"input_tokens\":85,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":120,\"output_tokens_details\":{\"thinking_tokens\":69}} }\n\n",
+          "event: message_stop\ndata: {\"type\":\"message_stop\"            }\n\n"
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "header": {
+          "Anthropic-Version": [
+            "2023-06-01"
+          ],
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "max_tokens": 4096,
+          "messages": [
+            {
+              "content": [
+                {
+                  "text": "A shop sells pens at 7 kr and pads at 23 kr. I buy 3 pens and 2 pads. What do I pay?",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            },
+            {
+              "content": [
+                {
+                  "signature": "EvICCpoBCBAYAipAlCtJBf/GWB1A3Y9ooQz3m1TB6FUZ+WP3Ut+4mcyhNItAYKfq41rzrw3OQUlaxgSSmlszq+LPGH74oEibAFvwwDIZY2xhdWRlLWhhaWt1LTQtNS0yMDI1MTAwMTgAQgh0aGlua2luZ1okYjVlYzNiMWMtZmNmMi00YTgyLWJiN2MtMGI3MWY1ZmU4ODlkqAGAh5jUBhIMthEjF402HxoU2QM9GgzyhnkoJ8zvFRi53w4iMFcdeEiMCrVfyntv6B2xPCflutuo5HdCXwWj/HOBp3/j0xl3UJPcYfxn/j35u3xa3CqEAdRG250wMTSGoNpXuEMgt2ayMaoxugtFIAThjLyMwivByOtr5TpLOmNrbntXJdziS9LadPSRcsns8oYyiS79X0HUKUNxNzwYDvcheg3yI5rWFTok9FOD/vsVj1BucB/JcCNZQFRj/Q8vDF5Q9JakXRCd9XIJAEu0Qel913iieIrdPNhcrRgB",
+                  "thinking": "Let me calculate the cost:\n\nPens: 3 pens × 7 kr = 21 kr\nPads: 2 pads × 23 kr = 46 kr\n\nTotal: 21 kr + 46 kr = 67 kr",
+                  "type": "thinking"
+                },
+                {
+                  "text": "3 pens × 7 kr = 21 kr\n2 pads × 23 kr = 46 kr\nTotal: 21 + 46 = 67 kr\n\n67",
+                  "type": "text"
+                }
+              ],
+              "role": "assistant"
+            },
+            {
+              "content": [
+                {
+                  "cache_control": {
+                    "type": "ephemeral"
+                  },
+                  "text": "And if I add one more pad?",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-haiku-4-5",
+          "stream": true,
+          "system": [
+            {
+              "cache_control": {
+                "type": "ephemeral"
+              },
+              "text": "Think it through, then give the number only.",
+              "type": "text"
+            }
+          ],
+          "thinking": {
+            "budget_tokens": 2048,
+            "type": "enabled"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Anthropic-Organization-Id": [
+            "REDACTED"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Limit": [
+            "10000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Remaining": [
+            "10000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Reset": [
+            "2026-08-19T19:26:56Z"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Limit": [
+            "2000000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Remaining": [
+            "2000000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Reset": [
+            "2026-08-19T19:26:56Z"
+          ],
+          "Anthropic-Ratelimit-Requests-Limit": [
+            "10000"
+          ],
+          "Anthropic-Ratelimit-Requests-Remaining": [
+            "9999"
+          ],
+          "Anthropic-Ratelimit-Requests-Reset": [
+            "2026-08-19T19:26:56Z"
+          ],
+          "Anthropic-Ratelimit-Tokens-Limit": [
+            "12000000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Remaining": [
+            "12000000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Reset": [
+            "2026-08-19T19:26:56Z"
+          ],
+          "Anthropic-Workspace-Id": [
+            "REDACTED"
+          ],
+          "Cache-Control": [
+            "no-cache"
+          ],
+          "Cf-Cache-Status": [
+            "DYNAMIC"
+          ],
+          "Cf-Ray": [
+            "REDACTED"
+          ],
+          "Content-Security-Policy": [
+            "default-src 'none'; frame-ancestors 'none'"
+          ],
+          "Content-Type": [
+            "text/event-stream; charset=utf-8"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:26:57 GMT"
+          ],
+          "Request-Id": [
+            "REDACTED"
+          ],
+          "Server": [
+            "cloudflare"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "Traceresponse": [
+            "00-da08f47c6c5d2fe2fa0f763f266792fe-226bf833e659e807-01"
+          ],
+          "Vary": [
+            "Accept-Encoding"
+          ],
+          "X-Robots-Tag": [
+            "none"
+          ]
+        },
+        "chunks": [
+          "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"model\":\"claude-haiku-4-5-20251001\",\"id\":\"msg_011CeCf5zguLmYfVHknzBaSK\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"stop_reason\":null,\"stop_sequence\":null,\"stop_details\":null,\"usage\":{\"input_tokens\":146,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":5,\"service_tier\":\"standard\",\"inference_geo\":\"not_available\"}}   }\n\n",
+          "event: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"thinking\",\"thinking\":\"\",\"signature\":\"\"} }\n\n",
+          "event: ping\ndata: {\"type\": \"ping\"}\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"The user is asking what\"}  }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" they pay if they add one more pad to their previous purchase.\\n\\nThey already paid 67 kr for 3 pens and 2 pads.\\n\\nNow\"}       }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" they're adding one more pad, which costs 23 kr.\\n\\nSo the new total is: 67 + 23 = 90 kr\\n\\nThe\"}     }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" question asks for the number only based on the instruction \\\"give the number only.\\\"\"}               }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"signature_delta\",\"signature\":\"ErYECpoBCBAYAipAjQXyOo0Yi+6LLcFzLxkaQ9XOnH/phAeqKtkGLSvO7Ck2sXqwVo6T7kOLaDqX8euO3LBXNiYJwqZ/zfR6d7UgujIZY2xhdWRlLWhhaWt1LTQtNS0yMDI1MTAwMTgAQgh0aGlua2luZ1okYjVlYzNiMWMtZmNmMi00YTgyLWJiN2MtMGI3MWY1ZmU4ODlkqAGCh5jUBhIMyMiGmgda/78rG65gGgynuRoobzeWPAOwNIciME05RnAx3YJXm5A8OenNI1BxqS1Ji7cZUMQP4v8E/SQLIVM3GZhCDidcU1APO4WUTSrIAko/rTg3ERvLstXDAtRZyiq1KpAqfuF1esBD5Q1eDG53ys5XRZYrBa6Vpj3ulLPNM08j74l5E2wcreUBjTGDoSOoZlvMo1Cx59hFaW9AHe3ryZxf/ZmbuwY8av1jZWf3wm0RpIC9v0flhvZM6eLNuHpm0E8JuphOCYRxjFbPd0x9F1YMboSa322qDpL4Iy6oL5Z1RbUd83YvW6/QGisSE4lHDhus+x1Z8LGNNaUqjzRT74YH+ufov3SYxrNzVyAFVRdmVcXunx0DpIEFePU+qvlZ5P6HbF6JYbfFMBzwO9bG/5XaWJWgk9fABnh5rw/DqZCCv1NDhHAuzMUGFHlVPfUS1KYEdO/sVNJEBfXE7LWgSxGhNNgTzy57meTjTZzTMUI82/gBohfYE3Zz2LnaGT/HN43ILL4sCuI+usqB2CQQ2YpwGeAPA+0YAQ==\"}              }\n\n",
+          "event: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":0       }\n\n",
+          "event: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":1,\"content_block\":{\"type\":\"text\",\"text\":\"\"}        }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"90\"}}\n\n",
+          "event: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":1      }\n\n",
+          "event: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\",\"stop_sequence\":null,\"stop_details\":null},\"usage\":{\"input_tokens\":146,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":104,\"output_tokens_details\":{\"thinking_tokens\":98}}      }\n\n",
+          "event: message_stop\ndata: {\"type\":\"message_stop\"     }\n\n"
+        ]
+      }
+    }
+  ]
+}

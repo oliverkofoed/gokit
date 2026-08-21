@@ -1,0 +1,230 @@
+{
+  "version": 1,
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:streamGenerateContent?alt=sse",
+        "header": {
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Goog-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "What is the weather in Copenhagen right now?"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "generationConfig": {
+            "maxOutputTokens": 2048
+          },
+          "systemInstruction": {
+            "parts": [
+              {
+                "text": "Use the tools you are given. Do not ask follow-up questions."
+              }
+            ]
+          },
+          "tools": [
+            {
+              "functionDeclarations": [
+                {
+                  "description": "Get the current weather for a city.",
+                  "name": "get_weather",
+                  "parameters": {
+                    "properties": {
+                      "city": {
+                        "description": "City name, e.g. Copenhagen",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "city"
+                    ],
+                    "type": "object"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Alt-Svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "Content-Disposition": [
+            "attachment"
+          ],
+          "Content-Type": [
+            "text/event-stream"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:24:53 GMT"
+          ],
+          "Server": [
+            "scaffolding on HTTPServer2"
+          ],
+          "Server-Timing": [
+            "gfet4t7; dur=973"
+          ],
+          "Vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Frame-Options": [
+            "SAMEORIGIN"
+          ],
+          "X-Xss-Protection": [
+            "0"
+          ]
+        },
+        "chunks": [
+          "data: {\"candidates\": [{\"content\": {\"parts\": [{\"functionCall\": {\"name\": \"get_weather\",\"args\": {\"city\": \"Copenhagen\"},\"id\": \"call_328867\"},\"thoughtSignature\": \"EqcCCqQCARFNMg++djMtwhy0ILNVBBe8mipcu8O/Jwj3GGN6b4FE5j7yay39JzwCWRV64c4ZHQR2/nNOGNqYQW10NDMJ7rRPhBS939iWsTO6mtCKu1lG4m19OX3HQj893o0Lz2avpAhNsBFeysv2H86VYWBoHeV6PEm2gv152FeMSt5lw1pF5SpEfyAVx18MkcGao9pTvV57n/ZR2DyGxb6bd9fAX4NHw9Q8RF/ETXnBUkeMcT3/pP4UO5n+oJvpAcZ8GuKSBCY1IvHt+e+NVY8QOM/CyUWHLiT0BaGH1kmODIoTlsRNqJizzTTeI/YuF6d7hijTc0Q6MYvI3fa1pXUVds8JJzYO4HvvPobH6q1SrxYhA4v4e4diUP6tBgXFT8cupmSSod47/w==\"}],\"role\": \"model\"},\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 83,\"candidatesTokenCount\": 17,\"totalTokenCount\": 143,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 83}],\"thoughtsTokenCount\": 43,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"BQOGat6LCtuZvdIP_4q0sQE\"}\r\n\r\ndata: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"\"}],\"role\": \"model\"},\"finishReason\": \"STOP\",\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 83,\"candidatesTokenCount\": 17,\"totalTokenCount\": 143,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 83}],\"thoughtsTokenCount\": 43,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"BQOGat6LCtuZvdIP_4q0sQE\"}\r\n\r\n"
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:streamGenerateContent?alt=sse",
+        "header": {
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Goog-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "What is the weather in Copenhagen right now?"
+                }
+              ],
+              "role": "user"
+            },
+            {
+              "parts": [
+                {
+                  "functionCall": {
+                    "args": {
+                      "city": "Copenhagen"
+                    },
+                    "id": "call_328867",
+                    "name": "get_weather"
+                  },
+                  "thoughtSignature": "EqcCCqQCARFNMg++djMtwhy0ILNVBBe8mipcu8O/Jwj3GGN6b4FE5j7yay39JzwCWRV64c4ZHQR2/nNOGNqYQW10NDMJ7rRPhBS939iWsTO6mtCKu1lG4m19OX3HQj893o0Lz2avpAhNsBFeysv2H86VYWBoHeV6PEm2gv152FeMSt5lw1pF5SpEfyAVx18MkcGao9pTvV57n/ZR2DyGxb6bd9fAX4NHw9Q8RF/ETXnBUkeMcT3/pP4UO5n+oJvpAcZ8GuKSBCY1IvHt+e+NVY8QOM/CyUWHLiT0BaGH1kmODIoTlsRNqJizzTTeI/YuF6d7hijTc0Q6MYvI3fa1pXUVds8JJzYO4HvvPobH6q1SrxYhA4v4e4diUP6tBgXFT8cupmSSod47/w=="
+                }
+              ],
+              "role": "model"
+            },
+            {
+              "parts": [
+                {
+                  "functionResponse": {
+                    "id": "call_328867",
+                    "name": "get_weather",
+                    "response": {
+                      "output": "{\"temp_c\":18,\"conditions\":\"light rain\"}"
+                    }
+                  }
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "generationConfig": {
+            "maxOutputTokens": 2048
+          },
+          "systemInstruction": {
+            "parts": [
+              {
+                "text": "Use the tools you are given. Do not ask follow-up questions."
+              }
+            ]
+          },
+          "tools": [
+            {
+              "functionDeclarations": [
+                {
+                  "description": "Get the current weather for a city.",
+                  "name": "get_weather",
+                  "parameters": {
+                    "properties": {
+                      "city": {
+                        "description": "City name, e.g. Copenhagen",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "city"
+                    ],
+                    "type": "object"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Alt-Svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "Content-Disposition": [
+            "attachment"
+          ],
+          "Content-Type": [
+            "text/event-stream"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:24:55 GMT"
+          ],
+          "Server": [
+            "scaffolding on HTTPServer2"
+          ],
+          "Server-Timing": [
+            "gfet4t7; dur=1198"
+          ],
+          "Vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Frame-Options": [
+            "SAMEORIGIN"
+          ],
+          "X-Xss-Protection": [
+            "0"
+          ]
+        },
+        "chunks": [
+          "data: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"The current weather in Copenhagen is 18°C with light rain.\"}],\"role\": \"model\"},\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 126,\"candidatesTokenCount\": 15,\"totalTokenCount\": 170,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 126}],\"thoughtsTokenCount\": 29,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"BgOGat6KDPKIvdIPus2M-Qc\"}\r\n\r\ndata: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"\",\"thoughtSignature\": \"Eu8BCuwBARFNMg9lqyxgAKsBniuWAep5wEI0nWmkWQCHIV0sQI0dPHWGhqvsItnV3JGA96jcv0RkEBFyo3Z2dHjpowACDqURfORSh9OcgaDpi7py4HQV2PKnoyud+/6cdJXu8jwZ7VqvXKH1zrmEVXlAJV5iaadMpMPnBykTJV0mI3Qx+w7MUvhRY7e7PiQ1HNdfl3Lt4D5aKSiWI25NlYYEA7+8uyWhv7gmLpSTzF2paYHXF2+bhN22qPkCJH0Y5FIA77YttSHZCxgnNEnfBbqr/w033FV/swXT8GSpmrCgDC4UbZ16j3FBGiLEqk5BXyE=\"}],\"role\": \"model\"},\"finishReason\": \"STOP\",\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 169,\"candidatesTokenCount\": 15,\"totalTokenCount\": 213,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 169}],\"thoughtsTokenCount\": 29,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"BgOGat6KDPKIvdIPus2M-Qc\"}\r\n\r\n"
+        ]
+      }
+    }
+  ]
+}

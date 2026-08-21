@@ -1,0 +1,143 @@
+{
+  "version": 1,
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "header": {
+          "Anthropic-Version": [
+            "2023-06-01"
+          ],
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "max_tokens": 64,
+          "messages": [
+            {
+              "content": [
+                {
+                  "text": "What colour is this image? Answer with a single word.",
+                  "type": "text"
+                },
+                {
+                  "cache_control": {
+                    "type": "ephemeral"
+                  },
+                  "source": {
+                    "data": "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAHUlEQVR4nGK5I2LDQApgIkn1qIZRDUNKAyAAAP//0nUBT3dZ/MAAAAAASUVORK5CYII=",
+                    "media_type": "image/png",
+                    "type": "base64"
+                  },
+                  "type": "image"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-haiku-4-5",
+          "stream": true,
+          "temperature": 0
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Anthropic-Organization-Id": [
+            "REDACTED"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Limit": [
+            "10000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Remaining": [
+            "10000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Reset": [
+            "2026-08-19T19:26:58Z"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Limit": [
+            "2000000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Remaining": [
+            "2000000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Reset": [
+            "2026-08-19T19:26:58Z"
+          ],
+          "Anthropic-Ratelimit-Requests-Limit": [
+            "10000"
+          ],
+          "Anthropic-Ratelimit-Requests-Remaining": [
+            "9999"
+          ],
+          "Anthropic-Ratelimit-Requests-Reset": [
+            "2026-08-19T19:26:58Z"
+          ],
+          "Anthropic-Ratelimit-Tokens-Limit": [
+            "12000000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Remaining": [
+            "12000000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Reset": [
+            "2026-08-19T19:26:58Z"
+          ],
+          "Anthropic-Workspace-Id": [
+            "REDACTED"
+          ],
+          "Cache-Control": [
+            "no-cache"
+          ],
+          "Cf-Cache-Status": [
+            "DYNAMIC"
+          ],
+          "Cf-Ray": [
+            "REDACTED"
+          ],
+          "Content-Security-Policy": [
+            "default-src 'none'; frame-ancestors 'none'"
+          ],
+          "Content-Type": [
+            "text/event-stream; charset=utf-8"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:26:58 GMT"
+          ],
+          "Request-Id": [
+            "REDACTED"
+          ],
+          "Server": [
+            "cloudflare"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "Traceresponse": [
+            "00-86c20a5453deb15dd2b0be150e415622-8b865d3c875010e7-01"
+          ],
+          "Vary": [
+            "Accept-Encoding"
+          ],
+          "X-Robots-Tag": [
+            "none"
+          ]
+        },
+        "chunks": [
+          "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"model\":\"claude-haiku-4-5-20251001\",\"id\":\"msg_011CeCf67s1PJQRA31sqeDTV\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"stop_reason\":null,\"stop_sequence\":null,\"stop_details\":null,\"usage\":{\"input_tokens\":23,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":2,\"service_tier\":\"standard\",\"inference_geo\":\"not_available\"}}             }\n\n",
+          "event: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"text\",\"text\":\"\"}            }\n\n",
+          "event: ping\ndata: {\"type\": \"ping\"}\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"Mag\"}   }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"enta\"}      }\n\n",
+          "event: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":0 }\n\n",
+          "event: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\",\"stop_sequence\":null,\"stop_details\":null},\"usage\":{\"input_tokens\":23,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":6}              }\n\n",
+          "event: message_stop\ndata: {\"type\":\"message_stop\"              }\n\n"
+        ]
+      }
+    }
+  ]
+}

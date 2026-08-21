@@ -1,0 +1,182 @@
+{
+  "version": 1,
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:streamGenerateContent?alt=sse",
+        "header": {
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Goog-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "A shop sells pens at 7 kr and pads at 23 kr. I buy 3 pens and 2 pads. What do I pay?"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "generationConfig": {
+            "maxOutputTokens": 4096,
+            "thinkingConfig": {
+              "includeThoughts": true,
+              "thinkingLevel": "low"
+            }
+          },
+          "systemInstruction": {
+            "parts": [
+              {
+                "text": "Think it through, then give the number only."
+              }
+            ]
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Alt-Svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "Content-Disposition": [
+            "attachment"
+          ],
+          "Content-Type": [
+            "text/event-stream"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:24:57 GMT"
+          ],
+          "Server": [
+            "scaffolding on HTTPServer2"
+          ],
+          "Server-Timing": [
+            "gfet4t7; dur=995"
+          ],
+          "Vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Frame-Options": [
+            "SAMEORIGIN"
+          ],
+          "X-Xss-Protection": [
+            "0"
+          ]
+        },
+        "chunks": [
+          "data: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"67\"}],\"role\": \"model\"},\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 42,\"candidatesTokenCount\": 2,\"totalTokenCount\": 87,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 42}],\"thoughtsTokenCount\": 43,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"CAOGapjmNcaBvdIP25CluAc\"}\r\n\r\ndata: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"\",\"thoughtSignature\": \"EsoBCscBARFNMg+MeU8KpM3HpaPJCWgQMhdUhKrsyV0ruyzYpHHLRAwtTI6aF84KCFIKbNoau9zgC0LCryIppNZyBbL3FrI2dUBgv3PtaHb4SO3ydOyYf+LqRwTo2WFJcgejIqXc5Ry3gfaM6XXHvDogBANJnsap3FCjH96i2sH/IZQ6v2e1f6+hNvjWovGuW/lgJzgcJfhpyQJEo60zsFLh3hRnHObcjZtA+QCb+3/vEnky4G/4GPa1Avwj6aKG1/kG+zRh/rwSvGojfQ==\"}],\"role\": \"model\"},\"finishReason\": \"STOP\",\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 42,\"candidatesTokenCount\": 2,\"totalTokenCount\": 87,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 42}],\"thoughtsTokenCount\": 43,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"CAOGapjmNcaBvdIP25CluAc\"}\r\n\r\n"
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:streamGenerateContent?alt=sse",
+        "header": {
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Goog-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "A shop sells pens at 7 kr and pads at 23 kr. I buy 3 pens and 2 pads. What do I pay?"
+                }
+              ],
+              "role": "user"
+            },
+            {
+              "parts": [
+                {
+                  "text": "67",
+                  "thoughtSignature": "EsoBCscBARFNMg+MeU8KpM3HpaPJCWgQMhdUhKrsyV0ruyzYpHHLRAwtTI6aF84KCFIKbNoau9zgC0LCryIppNZyBbL3FrI2dUBgv3PtaHb4SO3ydOyYf+LqRwTo2WFJcgejIqXc5Ry3gfaM6XXHvDogBANJnsap3FCjH96i2sH/IZQ6v2e1f6+hNvjWovGuW/lgJzgcJfhpyQJEo60zsFLh3hRnHObcjZtA+QCb+3/vEnky4G/4GPa1Avwj6aKG1/kG+zRh/rwSvGojfQ=="
+                }
+              ],
+              "role": "model"
+            },
+            {
+              "parts": [
+                {
+                  "text": "And if I add one more pad?"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "generationConfig": {
+            "maxOutputTokens": 4096,
+            "thinkingConfig": {
+              "includeThoughts": true,
+              "thinkingLevel": "low"
+            }
+          },
+          "systemInstruction": {
+            "parts": [
+              {
+                "text": "Think it through, then give the number only."
+              }
+            ]
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Alt-Svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "Content-Disposition": [
+            "attachment"
+          ],
+          "Content-Type": [
+            "text/event-stream"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:24:58 GMT"
+          ],
+          "Server": [
+            "scaffolding on HTTPServer2"
+          ],
+          "Server-Timing": [
+            "gfet4t7; dur=927"
+          ],
+          "Vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Frame-Options": [
+            "SAMEORIGIN"
+          ],
+          "X-Xss-Protection": [
+            "0"
+          ]
+        },
+        "chunks": [
+          "data: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"90\"}],\"role\": \"model\"},\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 54,\"candidatesTokenCount\": 2,\"totalTokenCount\": 89,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 54}],\"thoughtsTokenCount\": 33,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"CQOGapKpOq64vdIP64CUqQY\"}\r\n\r\ndata: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"\",\"thoughtSignature\": \"Er4BCrsBARFNMg+jbVUV8+5D+FG21aREt+SyF2p0l7VUwjaaxG/abU60py+ryr6mSORZAjIrGp2bNg8IrV3XXa9txK3vbH4NVDGIiA7Q6DGGXS1bPBJXP0iRQMCj4cXwmw8DCXoA7q2Ik3F9KgejrPTFFrmvInw7QhXQR8lGIiaaaWsf8w7CT+Llg1A3L+j0MGfYqSWOhloWoheObG3cbybDb9/eFVuUcKvBZQT9tqvfyxDXb+GRHHcwS/9zF/SjCA==\"}],\"role\": \"model\"},\"finishReason\": \"STOP\",\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 97,\"candidatesTokenCount\": 2,\"totalTokenCount\": 132,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 97}],\"thoughtsTokenCount\": 33,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"CQOGapKpOq64vdIP64CUqQY\"}\r\n\r\n"
+        ]
+      }
+    }
+  ]
+}

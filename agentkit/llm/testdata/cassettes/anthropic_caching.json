@@ -1,0 +1,284 @@
+{
+  "version": 1,
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "header": {
+          "Anthropic-Version": [
+            "2023-06-01"
+          ],
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "max_tokens": 128,
+          "messages": [
+            {
+              "content": [
+                {
+                  "cache_control": {
+                    "type": "ephemeral"
+                  },
+                  "text": "Which manual section covers topic 007?",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-haiku-4-5",
+          "stream": true,
+          "system": [
+            {
+              "cache_control": {
+                "type": "ephemeral"
+              },
+              "text": "You are the reference assistant for a fictional Go library named widgetkit.\nRule 000: when the user asks about widgetkit topic 000, answer in one sentence and cite manual section 000.\nRule 001: when the user asks about widgetkit topic 001, answer in one sentence and cite manual section 001.\nRule 002: when the user asks about widgetkit topic 002, answer in one sentence and cite manual section 002.\nRule 003: when the user asks about widgetkit topic 003, answer in one sentence and cite manual section 003.\nRule 004: when the user asks about widgetkit topic 004, answer in one sentence and cite manual section 004.\nRule 005: when the user asks about widgetkit topic 005, answer in one sentence and cite manual section 005.\nRule 006: when the user asks about widgetkit topic 006, answer in one sentence and cite manual section 006.\nRule 007: when the user asks about widgetkit topic 007, answer in one sentence and cite manual section 007.\nRule 008: when the user asks about widgetkit topic 008, answer in one sentence and cite manual section 008.\nRule 009: when the user asks about widgetkit topic 009, answer in one sentence and cite manual section 009.\nRule 010: when the user asks about widgetkit topic 010, answer in one sentence and cite manual section 010.\nRule 011: when the user asks about widgetkit topic 011, answer in one sentence and cite manual section 011.\nRule 012: when the user asks about widgetkit topic 012, answer in one sentence and cite manual section 012.\nRule 013: when the user asks about widgetkit topic 013, answer in one sentence and cite manual section 013.\nRule 014: when the user asks about widgetkit topic 014, answer in one sentence and cite manual section 014.\nRule 015: when the user asks about widgetkit topic 015, answer in one sentence and cite manual section 015.\nRule 016: when the user asks about widgetkit topic 016, answer in one sentence and cite manual section 016.\nRule 017: when the user asks about widgetkit topic 017, answer in one sentence and cite manual section 017.\nRule 018: when the user asks about widgetkit topic 018, answer in one sentence and cite manual section 018.\nRule 019: when the user asks about widgetkit topic 019, answer in one sentence and cite manual section 019.\nRule 020: when the user asks about widgetkit topic 020, answer in one sentence and cite manual section 020.\nRule 021: when the user asks about widgetkit topic 021, answer in one sentence and cite manual section 021.\nRule 022: when the user asks about widgetkit topic 022, answer in one sentence and cite manual section 022.\nRule 023: when the user asks about widgetkit topic 023, answer in one sentence and cite manual section 023.\nRule 024: when the user asks about widgetkit topic 024, answer in one sentence and cite manual section 024.\nRule 025: when the user asks about widgetkit topic 025, answer in one sentence and cite manual section 025.\nRule 026: when the user asks about widgetkit topic 026, answer in one sentence and cite manual section 026.\nRule 027: when the user asks about widgetkit topic 027, answer in one sentence and cite manual section 027.\nRule 028: when the user asks about widgetkit topic 028, answer in one sentence and cite manual section 028.\nRule 029: when the user asks about widgetkit topic 029, answer in one sentence and cite manual section 029.\nRule 030: when the user asks about widgetkit topic 030, answer in one sentence and cite manual section 030.\nRule 031: when the user asks about widgetkit topic 031, answer in one sentence and cite manual section 031.\nRule 032: when the user asks about widgetkit topic 032, answer in one sentence and cite manual section 032.\nRule 033: when the user asks about widgetkit topic 033, answer in one sentence and cite manual section 033.\nRule 034: when the user asks about widgetkit topic 034, answer in one sentence and cite manual section 034.\nRule 035: when the user asks about widgetkit topic 035, answer in one sentence and cite manual section 035.\nRule 036: when the user asks about widgetkit topic 036, answer in one sentence and cite manual section 036.\nRule 037: when the user asks about widgetkit topic 037, answer in one sentence and cite manual section 037.\nRule 038: when the user asks about widgetkit topic 038, answer in one sentence and cite manual section 038.\nRule 039: when the user asks about widgetkit topic 039, answer in one sentence and cite manual section 039.\nRule 040: when the user asks about widgetkit topic 040, answer in one sentence and cite manual section 040.\nRule 041: when the user asks about widgetkit topic 041, answer in one sentence and cite manual section 041.\nRule 042: when the user asks about widgetkit topic 042, answer in one sentence and cite manual section 042.\nRule 043: when the user asks about widgetkit topic 043, answer in one sentence and cite manual section 043.\nRule 044: when the user asks about widgetkit topic 044, answer in one sentence and cite manual section 044.\nRule 045: when the user asks about widgetkit topic 045, answer in one sentence and cite manual section 045.\nRule 046: when the user asks about widgetkit topic 046, answer in one sentence and cite manual section 046.\nRule 047: when the user asks about widgetkit topic 047, answer in one sentence and cite manual section 047.\nRule 048: when the user asks about widgetkit topic 048, answer in one sentence and cite manual section 048.\nRule 049: when the user asks about widgetkit topic 049, answer in one sentence and cite manual section 049.\nRule 050: when the user asks about widgetkit topic 050, answer in one sentence and cite manual section 050.\nRule 051: when the user asks about widgetkit topic 051, answer in one sentence and cite manual section 051.\nRule 052: when the user asks about widgetkit topic 052, answer in one sentence and cite manual section 052.\nRule 053: when the user asks about widgetkit topic 053, answer in one sentence and cite manual section 053.\nRule 054: when the user asks about widgetkit topic 054, answer in one sentence and cite manual section 054.\nRule 055: when the user asks about widgetkit topic 055, answer in one sentence and cite manual section 055.\nRule 056: when the user asks about widgetkit topic 056, answer in one sentence and cite manual section 056.\nRule 057: when the user asks about widgetkit topic 057, answer in one sentence and cite manual section 057.\nRule 058: when the user asks about widgetkit topic 058, answer in one sentence and cite manual section 058.\nRule 059: when the user asks about widgetkit topic 059, answer in one sentence and cite manual section 059.\nRule 060: when the user asks about widgetkit topic 060, answer in one sentence and cite manual section 060.\nRule 061: when the user asks about widgetkit topic 061, answer in one sentence and cite manual section 061.\nRule 062: when the user asks about widgetkit topic 062, answer in one sentence and cite manual section 062.\nRule 063: when the user asks about widgetkit topic 063, answer in one sentence and cite manual section 063.\nRule 064: when the user asks about widgetkit topic 064, answer in one sentence and cite manual section 064.\nRule 065: when the user asks about widgetkit topic 065, answer in one sentence and cite manual section 065.\nRule 066: when the user asks about widgetkit topic 066, answer in one sentence and cite manual section 066.\nRule 067: when the user asks about widgetkit topic 067, answer in one sentence and cite manual section 067.\nRule 068: when the user asks about widgetkit topic 068, answer in one sentence and cite manual section 068.\nRule 069: when the user asks about widgetkit topic 069, answer in one sentence and cite manual section 069.\nRule 070: when the user asks about widgetkit topic 070, answer in one sentence and cite manual section 070.\nRule 071: when the user asks about widgetkit topic 071, answer in one sentence and cite manual section 071.\nRule 072: when the user asks about widgetkit topic 072, answer in one sentence and cite manual section 072.\nRule 073: when the user asks about widgetkit topic 073, answer in one sentence and cite manual section 073.\nRule 074: when the user asks about widgetkit topic 074, answer in one sentence and cite manual section 074.\nRule 075: when the user asks about widgetkit topic 075, answer in one sentence and cite manual section 075.\nRule 076: when the user asks about widgetkit topic 076, answer in one sentence and cite manual section 076.\nRule 077: when the user asks about widgetkit topic 077, answer in one sentence and cite manual section 077.\nRule 078: when the user asks about widgetkit topic 078, answer in one sentence and cite manual section 078.\nRule 079: when the user asks about widgetkit topic 079, answer in one sentence and cite manual section 079.\nRule 080: when the user asks about widgetkit topic 080, answer in one sentence and cite manual section 080.\nRule 081: when the user asks about widgetkit topic 081, answer in one sentence and cite manual section 081.\nRule 082: when the user asks about widgetkit topic 082, answer in one sentence and cite manual section 082.\nRule 083: when the user asks about widgetkit topic 083, answer in one sentence and cite manual section 083.\nRule 084: when the user asks about widgetkit topic 084, answer in one sentence and cite manual section 084.\nRule 085: when the user asks about widgetkit topic 085, answer in one sentence and cite manual section 085.\nRule 086: when the user asks about widgetkit topic 086, answer in one sentence and cite manual section 086.\nRule 087: when the user asks about widgetkit topic 087, answer in one sentence and cite manual section 087.\nRule 088: when the user asks about widgetkit topic 088, answer in one sentence and cite manual section 088.\nRule 089: when the user asks about widgetkit topic 089, answer in one sentence and cite manual section 089.\nRule 090: when the user asks about widgetkit topic 090, answer in one sentence and cite manual section 090.\nRule 091: when the user asks about widgetkit topic 091, answer in one sentence and cite manual section 091.\nRule 092: when the user asks about widgetkit topic 092, answer in one sentence and cite manual section 092.\nRule 093: when the user asks about widgetkit topic 093, answer in one sentence and cite manual section 093.\nRule 094: when the user asks about widgetkit topic 094, answer in one sentence and cite manual section 094.\nRule 095: when the user asks about widgetkit topic 095, answer in one sentence and cite manual section 095.\nRule 096: when the user asks about widgetkit topic 096, answer in one sentence and cite manual section 096.\nRule 097: when the user asks about widgetkit topic 097, answer in one sentence and cite manual section 097.\nRule 098: when the user asks about widgetkit topic 098, answer in one sentence and cite manual section 098.\nRule 099: when the user asks about widgetkit topic 099, answer in one sentence and cite manual section 099.\nRule 100: when the user asks about widgetkit topic 100, answer in one sentence and cite manual section 100.\nRule 101: when the user asks about widgetkit topic 101, answer in one sentence and cite manual section 101.\nRule 102: when the user asks about widgetkit topic 102, answer in one sentence and cite manual section 102.\nRule 103: when the user asks about widgetkit topic 103, answer in one sentence and cite manual section 103.\nRule 104: when the user asks about widgetkit topic 104, answer in one sentence and cite manual section 104.\nRule 105: when the user asks about widgetkit topic 105, answer in one sentence and cite manual section 105.\nRule 106: when the user asks about widgetkit topic 106, answer in one sentence and cite manual section 106.\nRule 107: when the user asks about widgetkit topic 107, answer in one sentence and cite manual section 107.\nRule 108: when the user asks about widgetkit topic 108, answer in one sentence and cite manual section 108.\nRule 109: when the user asks about widgetkit topic 109, answer in one sentence and cite manual section 109.\nRule 110: when the user asks about widgetkit topic 110, answer in one sentence and cite manual section 110.\nRule 111: when the user asks about widgetkit topic 111, answer in one sentence and cite manual section 111.\nRule 112: when the user asks about widgetkit topic 112, answer in one sentence and cite manual section 112.\nRule 113: when the user asks about widgetkit topic 113, answer in one sentence and cite manual section 113.\nRule 114: when the user asks about widgetkit topic 114, answer in one sentence and cite manual section 114.\nRule 115: when the user asks about widgetkit topic 115, answer in one sentence and cite manual section 115.\nRule 116: when the user asks about widgetkit topic 116, answer in one sentence and cite manual section 116.\nRule 117: when the user asks about widgetkit topic 117, answer in one sentence and cite manual section 117.\nRule 118: when the user asks about widgetkit topic 118, answer in one sentence and cite manual section 118.\nRule 119: when the user asks about widgetkit topic 119, answer in one sentence and cite manual section 119.\nRule 120: when the user asks about widgetkit topic 120, answer in one sentence and cite manual section 120.\nRule 121: when the user asks about widgetkit topic 121, answer in one sentence and cite manual section 121.\nRule 122: when the user asks about widgetkit topic 122, answer in one sentence and cite manual section 122.\nRule 123: when the user asks about widgetkit topic 123, answer in one sentence and cite manual section 123.\nRule 124: when the user asks about widgetkit topic 124, answer in one sentence and cite manual section 124.\nRule 125: when the user asks about widgetkit topic 125, answer in one sentence and cite manual section 125.\nRule 126: when the user asks about widgetkit topic 126, answer in one sentence and cite manual section 126.\nRule 127: when the user asks about widgetkit topic 127, answer in one sentence and cite manual section 127.\nRule 128: when the user asks about widgetkit topic 128, answer in one sentence and cite manual section 128.\nRule 129: when the user asks about widgetkit topic 129, answer in one sentence and cite manual section 129.\nRule 130: when the user asks about widgetkit topic 130, answer in one sentence and cite manual section 130.\nRule 131: when the user asks about widgetkit topic 131, answer in one sentence and cite manual section 131.\nRule 132: when the user asks about widgetkit topic 132, answer in one sentence and cite manual section 132.\nRule 133: when the user asks about widgetkit topic 133, answer in one sentence and cite manual section 133.\nRule 134: when the user asks about widgetkit topic 134, answer in one sentence and cite manual section 134.\nRule 135: when the user asks about widgetkit topic 135, answer in one sentence and cite manual section 135.\nRule 136: when the user asks about widgetkit topic 136, answer in one sentence and cite manual section 136.\nRule 137: when the user asks about widgetkit topic 137, answer in one sentence and cite manual section 137.\nRule 138: when the user asks about widgetkit topic 138, answer in one sentence and cite manual section 138.\nRule 139: when the user asks about widgetkit topic 139, answer in one sentence and cite manual section 139.\nRule 140: when the user asks about widgetkit topic 140, answer in one sentence and cite manual section 140.\nRule 141: when the user asks about widgetkit topic 141, answer in one sentence and cite manual section 141.\nRule 142: when the user asks about widgetkit topic 142, answer in one sentence and cite manual section 142.\nRule 143: when the user asks about widgetkit topic 143, answer in one sentence and cite manual section 143.\nRule 144: when the user asks about widgetkit topic 144, answer in one sentence and cite manual section 144.\nRule 145: when the user asks about widgetkit topic 145, answer in one sentence and cite manual section 145.\nRule 146: when the user asks about widgetkit topic 146, answer in one sentence and cite manual section 146.\nRule 147: when the user asks about widgetkit topic 147, answer in one sentence and cite manual section 147.\nRule 148: when the user asks about widgetkit topic 148, answer in one sentence and cite manual section 148.\nRule 149: when the user asks about widgetkit topic 149, answer in one sentence and cite manual section 149.\nRule 150: when the user asks about widgetkit topic 150, answer in one sentence and cite manual section 150.\nRule 151: when the user asks about widgetkit topic 151, answer in one sentence and cite manual section 151.\nRule 152: when the user asks about widgetkit topic 152, answer in one sentence and cite manual section 152.\nRule 153: when the user asks about widgetkit topic 153, answer in one sentence and cite manual section 153.\nRule 154: when the user asks about widgetkit topic 154, answer in one sentence and cite manual section 154.\nRule 155: when the user asks about widgetkit topic 155, answer in one sentence and cite manual section 155.\nRule 156: when the user asks about widgetkit topic 156, answer in one sentence and cite manual section 156.\nRule 157: when the user asks about widgetkit topic 157, answer in one sentence and cite manual section 157.\nRule 158: when the user asks about widgetkit topic 158, answer in one sentence and cite manual section 158.\nRule 159: when the user asks about widgetkit topic 159, answer in one sentence and cite manual section 159.\nRule 160: when the user asks about widgetkit topic 160, answer in one sentence and cite manual section 160.\nRule 161: when the user asks about widgetkit topic 161, answer in one sentence and cite manual section 161.\nRule 162: when the user asks about widgetkit topic 162, answer in one sentence and cite manual section 162.\nRule 163: when the user asks about widgetkit topic 163, answer in one sentence and cite manual section 163.\nRule 164: when the user asks about widgetkit topic 164, answer in one sentence and cite manual section 164.\nRule 165: when the user asks about widgetkit topic 165, answer in one sentence and cite manual section 165.\nRule 166: when the user asks about widgetkit topic 166, answer in one sentence and cite manual section 166.\nRule 167: when the user asks about widgetkit topic 167, answer in one sentence and cite manual section 167.\nRule 168: when the user asks about widgetkit topic 168, answer in one sentence and cite manual section 168.\nRule 169: when the user asks about widgetkit topic 169, answer in one sentence and cite manual section 169.\nRule 170: when the user asks about widgetkit topic 170, answer in one sentence and cite manual section 170.\nRule 171: when the user asks about widgetkit topic 171, answer in one sentence and cite manual section 171.\nRule 172: when the user asks about widgetkit topic 172, answer in one sentence and cite manual section 172.\nRule 173: when the user asks about widgetkit topic 173, answer in one sentence and cite manual section 173.\nRule 174: when the user asks about widgetkit topic 174, answer in one sentence and cite manual section 174.\nRule 175: when the user asks about widgetkit topic 175, answer in one sentence and cite manual section 175.\nRule 176: when the user asks about widgetkit topic 176, answer in one sentence and cite manual section 176.\nRule 177: when the user asks about widgetkit topic 177, answer in one sentence and cite manual section 177.\nRule 178: when the user asks about widgetkit topic 178, answer in one sentence and cite manual section 178.\nRule 179: when the user asks about widgetkit topic 179, answer in one sentence and cite manual section 179.\nRule 180: when the user asks about widgetkit topic 180, answer in one sentence and cite manual section 180.\nRule 181: when the user asks about widgetkit topic 181, answer in one sentence and cite manual section 181.\nRule 182: when the user asks about widgetkit topic 182, answer in one sentence and cite manual section 182.\nRule 183: when the user asks about widgetkit topic 183, answer in one sentence and cite manual section 183.\nRule 184: when the user asks about widgetkit topic 184, answer in one sentence and cite manual section 184.\nRule 185: when the user asks about widgetkit topic 185, answer in one sentence and cite manual section 185.\nRule 186: when the user asks about widgetkit topic 186, answer in one sentence and cite manual section 186.\nRule 187: when the user asks about widgetkit topic 187, answer in one sentence and cite manual section 187.\nRule 188: when the user asks about widgetkit topic 188, answer in one sentence and cite manual section 188.\nRule 189: when the user asks about widgetkit topic 189, answer in one sentence and cite manual section 189.\nRule 190: when the user asks about widgetkit topic 190, answer in one sentence and cite manual section 190.\nRule 191: when the user asks about widgetkit topic 191, answer in one sentence and cite manual section 191.\nRule 192: when the user asks about widgetkit topic 192, answer in one sentence and cite manual section 192.\nRule 193: when the user asks about widgetkit topic 193, answer in one sentence and cite manual section 193.\nRule 194: when the user asks about widgetkit topic 194, answer in one sentence and cite manual section 194.\nRule 195: when the user asks about widgetkit topic 195, answer in one sentence and cite manual section 195.\nRule 196: when the user asks about widgetkit topic 196, answer in one sentence and cite manual section 196.\nRule 197: when the user asks about widgetkit topic 197, answer in one sentence and cite manual section 197.\nRule 198: when the user asks about widgetkit topic 198, answer in one sentence and cite manual section 198.\nRule 199: when the user asks about widgetkit topic 199, answer in one sentence and cite manual section 199.\n",
+              "type": "text"
+            }
+          ],
+          "temperature": 0
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Anthropic-Organization-Id": [
+            "REDACTED"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Limit": [
+            "10000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Remaining": [
+            "9997000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Reset": [
+            "2026-08-19T19:27:07Z"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Limit": [
+            "2000000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Remaining": [
+            "2000000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Reset": [
+            "2026-08-19T19:27:07Z"
+          ],
+          "Anthropic-Ratelimit-Requests-Limit": [
+            "10000"
+          ],
+          "Anthropic-Ratelimit-Requests-Remaining": [
+            "9999"
+          ],
+          "Anthropic-Ratelimit-Requests-Reset": [
+            "2026-08-19T19:27:07Z"
+          ],
+          "Anthropic-Ratelimit-Tokens-Limit": [
+            "12000000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Remaining": [
+            "11997000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Reset": [
+            "2026-08-19T19:27:07Z"
+          ],
+          "Anthropic-Workspace-Id": [
+            "REDACTED"
+          ],
+          "Cache-Control": [
+            "no-cache"
+          ],
+          "Cf-Cache-Status": [
+            "DYNAMIC"
+          ],
+          "Cf-Ray": [
+            "REDACTED"
+          ],
+          "Content-Security-Policy": [
+            "default-src 'none'; frame-ancestors 'none'"
+          ],
+          "Content-Type": [
+            "text/event-stream; charset=utf-8"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:27:07 GMT"
+          ],
+          "Request-Id": [
+            "REDACTED"
+          ],
+          "Server": [
+            "cloudflare"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "Traceresponse": [
+            "00-f71ee2a309bf78ba86883420f5c110c3-0f6645cf84212ce8-01"
+          ],
+          "Vary": [
+            "Accept-Encoding"
+          ],
+          "X-Robots-Tag": [
+            "none"
+          ]
+        },
+        "chunks": [
+          "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"model\":\"claude-haiku-4-5-20251001\",\"id\":\"msg_011CeCf6kgp4QQ4zGojU5tYb\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"stop_reason\":null,\"stop_sequence\":null,\"stop_details\":null,\"usage\":{\"input_tokens\":3,\"cache_creation_input_tokens\":5627,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":5627,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":1,\"service_tier\":\"standard\",\"inference_geo\":\"not_available\"}}}\n\n",
+          "event: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"text\",\"text\":\"\"}       }\n\n",
+          "event: ping\ndata: {\"type\": \"ping\"}\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"According\"}      }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" to the rules provided, manual section 007 covers widgetkit topic 007.\"}       }\n\n",
+          "event: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":0    }\n\n",
+          "event: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\",\"stop_sequence\":null,\"stop_details\":null},\"usage\":{\"input_tokens\":3,\"cache_creation_input_tokens\":5627,\"cache_read_input_tokens\":0,\"output_tokens\":22}       }\n\n",
+          "event: message_stop\ndata: {\"type\":\"message_stop\"         }\n\n"
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "header": {
+          "Anthropic-Version": [
+            "2023-06-01"
+          ],
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "max_tokens": 128,
+          "messages": [
+            {
+              "content": [
+                {
+                  "cache_control": {
+                    "type": "ephemeral"
+                  },
+                  "text": "Which manual section covers topic 042?",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-haiku-4-5",
+          "stream": true,
+          "system": [
+            {
+              "cache_control": {
+                "type": "ephemeral"
+              },
+              "text": "You are the reference assistant for a fictional Go library named widgetkit.\nRule 000: when the user asks about widgetkit topic 000, answer in one sentence and cite manual section 000.\nRule 001: when the user asks about widgetkit topic 001, answer in one sentence and cite manual section 001.\nRule 002: when the user asks about widgetkit topic 002, answer in one sentence and cite manual section 002.\nRule 003: when the user asks about widgetkit topic 003, answer in one sentence and cite manual section 003.\nRule 004: when the user asks about widgetkit topic 004, answer in one sentence and cite manual section 004.\nRule 005: when the user asks about widgetkit topic 005, answer in one sentence and cite manual section 005.\nRule 006: when the user asks about widgetkit topic 006, answer in one sentence and cite manual section 006.\nRule 007: when the user asks about widgetkit topic 007, answer in one sentence and cite manual section 007.\nRule 008: when the user asks about widgetkit topic 008, answer in one sentence and cite manual section 008.\nRule 009: when the user asks about widgetkit topic 009, answer in one sentence and cite manual section 009.\nRule 010: when the user asks about widgetkit topic 010, answer in one sentence and cite manual section 010.\nRule 011: when the user asks about widgetkit topic 011, answer in one sentence and cite manual section 011.\nRule 012: when the user asks about widgetkit topic 012, answer in one sentence and cite manual section 012.\nRule 013: when the user asks about widgetkit topic 013, answer in one sentence and cite manual section 013.\nRule 014: when the user asks about widgetkit topic 014, answer in one sentence and cite manual section 014.\nRule 015: when the user asks about widgetkit topic 015, answer in one sentence and cite manual section 015.\nRule 016: when the user asks about widgetkit topic 016, answer in one sentence and cite manual section 016.\nRule 017: when the user asks about widgetkit topic 017, answer in one sentence and cite manual section 017.\nRule 018: when the user asks about widgetkit topic 018, answer in one sentence and cite manual section 018.\nRule 019: when the user asks about widgetkit topic 019, answer in one sentence and cite manual section 019.\nRule 020: when the user asks about widgetkit topic 020, answer in one sentence and cite manual section 020.\nRule 021: when the user asks about widgetkit topic 021, answer in one sentence and cite manual section 021.\nRule 022: when the user asks about widgetkit topic 022, answer in one sentence and cite manual section 022.\nRule 023: when the user asks about widgetkit topic 023, answer in one sentence and cite manual section 023.\nRule 024: when the user asks about widgetkit topic 024, answer in one sentence and cite manual section 024.\nRule 025: when the user asks about widgetkit topic 025, answer in one sentence and cite manual section 025.\nRule 026: when the user asks about widgetkit topic 026, answer in one sentence and cite manual section 026.\nRule 027: when the user asks about widgetkit topic 027, answer in one sentence and cite manual section 027.\nRule 028: when the user asks about widgetkit topic 028, answer in one sentence and cite manual section 028.\nRule 029: when the user asks about widgetkit topic 029, answer in one sentence and cite manual section 029.\nRule 030: when the user asks about widgetkit topic 030, answer in one sentence and cite manual section 030.\nRule 031: when the user asks about widgetkit topic 031, answer in one sentence and cite manual section 031.\nRule 032: when the user asks about widgetkit topic 032, answer in one sentence and cite manual section 032.\nRule 033: when the user asks about widgetkit topic 033, answer in one sentence and cite manual section 033.\nRule 034: when the user asks about widgetkit topic 034, answer in one sentence and cite manual section 034.\nRule 035: when the user asks about widgetkit topic 035, answer in one sentence and cite manual section 035.\nRule 036: when the user asks about widgetkit topic 036, answer in one sentence and cite manual section 036.\nRule 037: when the user asks about widgetkit topic 037, answer in one sentence and cite manual section 037.\nRule 038: when the user asks about widgetkit topic 038, answer in one sentence and cite manual section 038.\nRule 039: when the user asks about widgetkit topic 039, answer in one sentence and cite manual section 039.\nRule 040: when the user asks about widgetkit topic 040, answer in one sentence and cite manual section 040.\nRule 041: when the user asks about widgetkit topic 041, answer in one sentence and cite manual section 041.\nRule 042: when the user asks about widgetkit topic 042, answer in one sentence and cite manual section 042.\nRule 043: when the user asks about widgetkit topic 043, answer in one sentence and cite manual section 043.\nRule 044: when the user asks about widgetkit topic 044, answer in one sentence and cite manual section 044.\nRule 045: when the user asks about widgetkit topic 045, answer in one sentence and cite manual section 045.\nRule 046: when the user asks about widgetkit topic 046, answer in one sentence and cite manual section 046.\nRule 047: when the user asks about widgetkit topic 047, answer in one sentence and cite manual section 047.\nRule 048: when the user asks about widgetkit topic 048, answer in one sentence and cite manual section 048.\nRule 049: when the user asks about widgetkit topic 049, answer in one sentence and cite manual section 049.\nRule 050: when the user asks about widgetkit topic 050, answer in one sentence and cite manual section 050.\nRule 051: when the user asks about widgetkit topic 051, answer in one sentence and cite manual section 051.\nRule 052: when the user asks about widgetkit topic 052, answer in one sentence and cite manual section 052.\nRule 053: when the user asks about widgetkit topic 053, answer in one sentence and cite manual section 053.\nRule 054: when the user asks about widgetkit topic 054, answer in one sentence and cite manual section 054.\nRule 055: when the user asks about widgetkit topic 055, answer in one sentence and cite manual section 055.\nRule 056: when the user asks about widgetkit topic 056, answer in one sentence and cite manual section 056.\nRule 057: when the user asks about widgetkit topic 057, answer in one sentence and cite manual section 057.\nRule 058: when the user asks about widgetkit topic 058, answer in one sentence and cite manual section 058.\nRule 059: when the user asks about widgetkit topic 059, answer in one sentence and cite manual section 059.\nRule 060: when the user asks about widgetkit topic 060, answer in one sentence and cite manual section 060.\nRule 061: when the user asks about widgetkit topic 061, answer in one sentence and cite manual section 061.\nRule 062: when the user asks about widgetkit topic 062, answer in one sentence and cite manual section 062.\nRule 063: when the user asks about widgetkit topic 063, answer in one sentence and cite manual section 063.\nRule 064: when the user asks about widgetkit topic 064, answer in one sentence and cite manual section 064.\nRule 065: when the user asks about widgetkit topic 065, answer in one sentence and cite manual section 065.\nRule 066: when the user asks about widgetkit topic 066, answer in one sentence and cite manual section 066.\nRule 067: when the user asks about widgetkit topic 067, answer in one sentence and cite manual section 067.\nRule 068: when the user asks about widgetkit topic 068, answer in one sentence and cite manual section 068.\nRule 069: when the user asks about widgetkit topic 069, answer in one sentence and cite manual section 069.\nRule 070: when the user asks about widgetkit topic 070, answer in one sentence and cite manual section 070.\nRule 071: when the user asks about widgetkit topic 071, answer in one sentence and cite manual section 071.\nRule 072: when the user asks about widgetkit topic 072, answer in one sentence and cite manual section 072.\nRule 073: when the user asks about widgetkit topic 073, answer in one sentence and cite manual section 073.\nRule 074: when the user asks about widgetkit topic 074, answer in one sentence and cite manual section 074.\nRule 075: when the user asks about widgetkit topic 075, answer in one sentence and cite manual section 075.\nRule 076: when the user asks about widgetkit topic 076, answer in one sentence and cite manual section 076.\nRule 077: when the user asks about widgetkit topic 077, answer in one sentence and cite manual section 077.\nRule 078: when the user asks about widgetkit topic 078, answer in one sentence and cite manual section 078.\nRule 079: when the user asks about widgetkit topic 079, answer in one sentence and cite manual section 079.\nRule 080: when the user asks about widgetkit topic 080, answer in one sentence and cite manual section 080.\nRule 081: when the user asks about widgetkit topic 081, answer in one sentence and cite manual section 081.\nRule 082: when the user asks about widgetkit topic 082, answer in one sentence and cite manual section 082.\nRule 083: when the user asks about widgetkit topic 083, answer in one sentence and cite manual section 083.\nRule 084: when the user asks about widgetkit topic 084, answer in one sentence and cite manual section 084.\nRule 085: when the user asks about widgetkit topic 085, answer in one sentence and cite manual section 085.\nRule 086: when the user asks about widgetkit topic 086, answer in one sentence and cite manual section 086.\nRule 087: when the user asks about widgetkit topic 087, answer in one sentence and cite manual section 087.\nRule 088: when the user asks about widgetkit topic 088, answer in one sentence and cite manual section 088.\nRule 089: when the user asks about widgetkit topic 089, answer in one sentence and cite manual section 089.\nRule 090: when the user asks about widgetkit topic 090, answer in one sentence and cite manual section 090.\nRule 091: when the user asks about widgetkit topic 091, answer in one sentence and cite manual section 091.\nRule 092: when the user asks about widgetkit topic 092, answer in one sentence and cite manual section 092.\nRule 093: when the user asks about widgetkit topic 093, answer in one sentence and cite manual section 093.\nRule 094: when the user asks about widgetkit topic 094, answer in one sentence and cite manual section 094.\nRule 095: when the user asks about widgetkit topic 095, answer in one sentence and cite manual section 095.\nRule 096: when the user asks about widgetkit topic 096, answer in one sentence and cite manual section 096.\nRule 097: when the user asks about widgetkit topic 097, answer in one sentence and cite manual section 097.\nRule 098: when the user asks about widgetkit topic 098, answer in one sentence and cite manual section 098.\nRule 099: when the user asks about widgetkit topic 099, answer in one sentence and cite manual section 099.\nRule 100: when the user asks about widgetkit topic 100, answer in one sentence and cite manual section 100.\nRule 101: when the user asks about widgetkit topic 101, answer in one sentence and cite manual section 101.\nRule 102: when the user asks about widgetkit topic 102, answer in one sentence and cite manual section 102.\nRule 103: when the user asks about widgetkit topic 103, answer in one sentence and cite manual section 103.\nRule 104: when the user asks about widgetkit topic 104, answer in one sentence and cite manual section 104.\nRule 105: when the user asks about widgetkit topic 105, answer in one sentence and cite manual section 105.\nRule 106: when the user asks about widgetkit topic 106, answer in one sentence and cite manual section 106.\nRule 107: when the user asks about widgetkit topic 107, answer in one sentence and cite manual section 107.\nRule 108: when the user asks about widgetkit topic 108, answer in one sentence and cite manual section 108.\nRule 109: when the user asks about widgetkit topic 109, answer in one sentence and cite manual section 109.\nRule 110: when the user asks about widgetkit topic 110, answer in one sentence and cite manual section 110.\nRule 111: when the user asks about widgetkit topic 111, answer in one sentence and cite manual section 111.\nRule 112: when the user asks about widgetkit topic 112, answer in one sentence and cite manual section 112.\nRule 113: when the user asks about widgetkit topic 113, answer in one sentence and cite manual section 113.\nRule 114: when the user asks about widgetkit topic 114, answer in one sentence and cite manual section 114.\nRule 115: when the user asks about widgetkit topic 115, answer in one sentence and cite manual section 115.\nRule 116: when the user asks about widgetkit topic 116, answer in one sentence and cite manual section 116.\nRule 117: when the user asks about widgetkit topic 117, answer in one sentence and cite manual section 117.\nRule 118: when the user asks about widgetkit topic 118, answer in one sentence and cite manual section 118.\nRule 119: when the user asks about widgetkit topic 119, answer in one sentence and cite manual section 119.\nRule 120: when the user asks about widgetkit topic 120, answer in one sentence and cite manual section 120.\nRule 121: when the user asks about widgetkit topic 121, answer in one sentence and cite manual section 121.\nRule 122: when the user asks about widgetkit topic 122, answer in one sentence and cite manual section 122.\nRule 123: when the user asks about widgetkit topic 123, answer in one sentence and cite manual section 123.\nRule 124: when the user asks about widgetkit topic 124, answer in one sentence and cite manual section 124.\nRule 125: when the user asks about widgetkit topic 125, answer in one sentence and cite manual section 125.\nRule 126: when the user asks about widgetkit topic 126, answer in one sentence and cite manual section 126.\nRule 127: when the user asks about widgetkit topic 127, answer in one sentence and cite manual section 127.\nRule 128: when the user asks about widgetkit topic 128, answer in one sentence and cite manual section 128.\nRule 129: when the user asks about widgetkit topic 129, answer in one sentence and cite manual section 129.\nRule 130: when the user asks about widgetkit topic 130, answer in one sentence and cite manual section 130.\nRule 131: when the user asks about widgetkit topic 131, answer in one sentence and cite manual section 131.\nRule 132: when the user asks about widgetkit topic 132, answer in one sentence and cite manual section 132.\nRule 133: when the user asks about widgetkit topic 133, answer in one sentence and cite manual section 133.\nRule 134: when the user asks about widgetkit topic 134, answer in one sentence and cite manual section 134.\nRule 135: when the user asks about widgetkit topic 135, answer in one sentence and cite manual section 135.\nRule 136: when the user asks about widgetkit topic 136, answer in one sentence and cite manual section 136.\nRule 137: when the user asks about widgetkit topic 137, answer in one sentence and cite manual section 137.\nRule 138: when the user asks about widgetkit topic 138, answer in one sentence and cite manual section 138.\nRule 139: when the user asks about widgetkit topic 139, answer in one sentence and cite manual section 139.\nRule 140: when the user asks about widgetkit topic 140, answer in one sentence and cite manual section 140.\nRule 141: when the user asks about widgetkit topic 141, answer in one sentence and cite manual section 141.\nRule 142: when the user asks about widgetkit topic 142, answer in one sentence and cite manual section 142.\nRule 143: when the user asks about widgetkit topic 143, answer in one sentence and cite manual section 143.\nRule 144: when the user asks about widgetkit topic 144, answer in one sentence and cite manual section 144.\nRule 145: when the user asks about widgetkit topic 145, answer in one sentence and cite manual section 145.\nRule 146: when the user asks about widgetkit topic 146, answer in one sentence and cite manual section 146.\nRule 147: when the user asks about widgetkit topic 147, answer in one sentence and cite manual section 147.\nRule 148: when the user asks about widgetkit topic 148, answer in one sentence and cite manual section 148.\nRule 149: when the user asks about widgetkit topic 149, answer in one sentence and cite manual section 149.\nRule 150: when the user asks about widgetkit topic 150, answer in one sentence and cite manual section 150.\nRule 151: when the user asks about widgetkit topic 151, answer in one sentence and cite manual section 151.\nRule 152: when the user asks about widgetkit topic 152, answer in one sentence and cite manual section 152.\nRule 153: when the user asks about widgetkit topic 153, answer in one sentence and cite manual section 153.\nRule 154: when the user asks about widgetkit topic 154, answer in one sentence and cite manual section 154.\nRule 155: when the user asks about widgetkit topic 155, answer in one sentence and cite manual section 155.\nRule 156: when the user asks about widgetkit topic 156, answer in one sentence and cite manual section 156.\nRule 157: when the user asks about widgetkit topic 157, answer in one sentence and cite manual section 157.\nRule 158: when the user asks about widgetkit topic 158, answer in one sentence and cite manual section 158.\nRule 159: when the user asks about widgetkit topic 159, answer in one sentence and cite manual section 159.\nRule 160: when the user asks about widgetkit topic 160, answer in one sentence and cite manual section 160.\nRule 161: when the user asks about widgetkit topic 161, answer in one sentence and cite manual section 161.\nRule 162: when the user asks about widgetkit topic 162, answer in one sentence and cite manual section 162.\nRule 163: when the user asks about widgetkit topic 163, answer in one sentence and cite manual section 163.\nRule 164: when the user asks about widgetkit topic 164, answer in one sentence and cite manual section 164.\nRule 165: when the user asks about widgetkit topic 165, answer in one sentence and cite manual section 165.\nRule 166: when the user asks about widgetkit topic 166, answer in one sentence and cite manual section 166.\nRule 167: when the user asks about widgetkit topic 167, answer in one sentence and cite manual section 167.\nRule 168: when the user asks about widgetkit topic 168, answer in one sentence and cite manual section 168.\nRule 169: when the user asks about widgetkit topic 169, answer in one sentence and cite manual section 169.\nRule 170: when the user asks about widgetkit topic 170, answer in one sentence and cite manual section 170.\nRule 171: when the user asks about widgetkit topic 171, answer in one sentence and cite manual section 171.\nRule 172: when the user asks about widgetkit topic 172, answer in one sentence and cite manual section 172.\nRule 173: when the user asks about widgetkit topic 173, answer in one sentence and cite manual section 173.\nRule 174: when the user asks about widgetkit topic 174, answer in one sentence and cite manual section 174.\nRule 175: when the user asks about widgetkit topic 175, answer in one sentence and cite manual section 175.\nRule 176: when the user asks about widgetkit topic 176, answer in one sentence and cite manual section 176.\nRule 177: when the user asks about widgetkit topic 177, answer in one sentence and cite manual section 177.\nRule 178: when the user asks about widgetkit topic 178, answer in one sentence and cite manual section 178.\nRule 179: when the user asks about widgetkit topic 179, answer in one sentence and cite manual section 179.\nRule 180: when the user asks about widgetkit topic 180, answer in one sentence and cite manual section 180.\nRule 181: when the user asks about widgetkit topic 181, answer in one sentence and cite manual section 181.\nRule 182: when the user asks about widgetkit topic 182, answer in one sentence and cite manual section 182.\nRule 183: when the user asks about widgetkit topic 183, answer in one sentence and cite manual section 183.\nRule 184: when the user asks about widgetkit topic 184, answer in one sentence and cite manual section 184.\nRule 185: when the user asks about widgetkit topic 185, answer in one sentence and cite manual section 185.\nRule 186: when the user asks about widgetkit topic 186, answer in one sentence and cite manual section 186.\nRule 187: when the user asks about widgetkit topic 187, answer in one sentence and cite manual section 187.\nRule 188: when the user asks about widgetkit topic 188, answer in one sentence and cite manual section 188.\nRule 189: when the user asks about widgetkit topic 189, answer in one sentence and cite manual section 189.\nRule 190: when the user asks about widgetkit topic 190, answer in one sentence and cite manual section 190.\nRule 191: when the user asks about widgetkit topic 191, answer in one sentence and cite manual section 191.\nRule 192: when the user asks about widgetkit topic 192, answer in one sentence and cite manual section 192.\nRule 193: when the user asks about widgetkit topic 193, answer in one sentence and cite manual section 193.\nRule 194: when the user asks about widgetkit topic 194, answer in one sentence and cite manual section 194.\nRule 195: when the user asks about widgetkit topic 195, answer in one sentence and cite manual section 195.\nRule 196: when the user asks about widgetkit topic 196, answer in one sentence and cite manual section 196.\nRule 197: when the user asks about widgetkit topic 197, answer in one sentence and cite manual section 197.\nRule 198: when the user asks about widgetkit topic 198, answer in one sentence and cite manual section 198.\nRule 199: when the user asks about widgetkit topic 199, answer in one sentence and cite manual section 199.\n",
+              "type": "text"
+            }
+          ],
+          "temperature": 0
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Anthropic-Organization-Id": [
+            "REDACTED"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Limit": [
+            "10000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Remaining": [
+            "9997000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Reset": [
+            "2026-08-19T19:27:07Z"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Limit": [
+            "2000000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Remaining": [
+            "2000000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Reset": [
+            "2026-08-19T19:27:07Z"
+          ],
+          "Anthropic-Ratelimit-Requests-Limit": [
+            "10000"
+          ],
+          "Anthropic-Ratelimit-Requests-Remaining": [
+            "9999"
+          ],
+          "Anthropic-Ratelimit-Requests-Reset": [
+            "2026-08-19T19:27:07Z"
+          ],
+          "Anthropic-Ratelimit-Tokens-Limit": [
+            "12000000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Remaining": [
+            "11997000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Reset": [
+            "2026-08-19T19:27:07Z"
+          ],
+          "Anthropic-Workspace-Id": [
+            "REDACTED"
+          ],
+          "Cache-Control": [
+            "no-cache"
+          ],
+          "Cf-Cache-Status": [
+            "DYNAMIC"
+          ],
+          "Cf-Ray": [
+            "REDACTED"
+          ],
+          "Content-Security-Policy": [
+            "default-src 'none'; frame-ancestors 'none'"
+          ],
+          "Content-Type": [
+            "text/event-stream; charset=utf-8"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:27:08 GMT"
+          ],
+          "Request-Id": [
+            "REDACTED"
+          ],
+          "Server": [
+            "cloudflare"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "Traceresponse": [
+            "00-5d78077921c9ff86e2003ab21d6f6994-41f5d6c8d9150d06-01"
+          ],
+          "Vary": [
+            "Accept-Encoding"
+          ],
+          "X-Robots-Tag": [
+            "none"
+          ]
+        },
+        "chunks": [
+          "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"model\":\"claude-haiku-4-5-20251001\",\"id\":\"msg_011CeCf6pD9KfuxXKTjJ5By3\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"stop_reason\":null,\"stop_sequence\":null,\"stop_details\":null,\"usage\":{\"input_tokens\":3,\"cache_creation_input_tokens\":10,\"cache_read_input_tokens\":5617,\"cache_creation\":{\"ephemeral_5m_input_tokens\":10,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":1,\"service_tier\":\"standard\",\"inference_geo\":\"not_available\"}}              }\n\n",
+          "event: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"text\",\"text\":\"\"}     }\n\n",
+          "event: ping\ndata: {\"type\": \"ping\"}\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"According\"}               }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" to the rules provided\"}     }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\", manual section 042 covers widgetkit topic 042.\"} }\n\n",
+          "event: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":0 }\n\n",
+          "event: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\",\"stop_sequence\":null,\"stop_details\":null},\"usage\":{\"input_tokens\":3,\"cache_creation_input_tokens\":10,\"cache_read_input_tokens\":5617,\"output_tokens\":22}   }\n\n",
+          "event: message_stop\ndata: {\"type\":\"message_stop\"             }\n\n"
+        ]
+      }
+    }
+  ]
+}

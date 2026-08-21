@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "header": {
+          "Authorization": [
+            "REDACTED"
+          ],
+          "Content-Type": [
+            "application/json"
+          ]
+        },
+        "body_json": {
+          "max_completion_tokens": 2048,
+          "messages": [
+            {
+              "content": [
+                {
+                  "text": "What colour is this image? Answer with a single word.",
+                  "type": "text"
+                },
+                {
+                  "image_url": {
+                    "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAHUlEQVR4nGK5I2LDQApgIkn1qIZRDUNKAyAAAP//0nUBT3dZ/MAAAAAASUVORK5CYII="
+                  },
+                  "type": "image_url"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "gpt-5.6-luna",
+          "reasoning_effort": "none",
+          "stream": true,
+          "stream_options": {
+            "include_usage": true
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Access-Control-Expose-Headers": [
+            "X-Request-ID",
+            "CF-Ray",
+            "CF-Ray"
+          ],
+          "Alt-Svc": [
+            "h3=\":443\"; ma=86400"
+          ],
+          "Cf-Cache-Status": [
+            "DYNAMIC"
+          ],
+          "Cf-Ray": [
+            "REDACTED"
+          ],
+          "Content-Type": [
+            "text/event-stream; charset=utf-8"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:18:34 GMT"
+          ],
+          "Openai-Organization": [
+            "REDACTED"
+          ],
+          "Openai-Processing-Ms": [
+            "469"
+          ],
+          "Openai-Project": [
+            "REDACTED"
+          ],
+          "Openai-Version": [
+            "2020-10-01"
+          ],
+          "Server": [
+            "cloudflare"
+          ],
+          "Set-Cookie": [
+            "REDACTED"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Openai-Proxy-Wasm": [
+            "v0.1"
+          ],
+          "X-Ratelimit-Limit-Input-Images": [
+            "50000"
+          ],
+          "X-Ratelimit-Limit-Requests": [
+            "5000"
+          ],
+          "X-Ratelimit-Limit-Tokens": [
+            "4000000"
+          ],
+          "X-Ratelimit-Remaining-Input-Images": [
+            "49999"
+          ],
+          "X-Ratelimit-Remaining-Requests": [
+            "4999"
+          ],
+          "X-Ratelimit-Remaining-Tokens": [
+            "3999219"
+          ],
+          "X-Ratelimit-Reset-Input-Images": [
+            "1ms"
+          ],
+          "X-Ratelimit-Reset-Requests": [
+            "12ms"
+          ],
+          "X-Ratelimit-Reset-Tokens": [
+            "11ms"
+          ],
+          "X-Request-Id": [
+            "REDACTED"
+          ]
+        },
+        "chunks": [
+          "data: {\"id\":\"chatcmpl-EEg5yRYGAdWsd0CzYn4zpb0c5bfaS\",\"object\":\"chat.completion.chunk\",\"created\":1787167114,\"model\":\"gpt-5.6-luna\",\"service_tier\":\"default\",\"system_fingerprint\":null,\"choices\":[{\"index\":0,\"delta\":{\"role\":\"assistant\",\"content\":\"\",\"refusal\":null},\"finish_reason\":null}],\"usage\":null,\"obfuscation\":\"dQ1W8Eu6GggbgH\"}\n\ndata: {\"id\":\"chatcmpl-EEg5yRYGAdWsd0CzYn4zpb0c5bfaS\",\"object\":\"chat.completion.chunk\",\"created\":1787167114,\"model\":\"gpt-5.6-luna\",\"service_tier\":\"default\",\"system_fingerprint\":null,\"choices\":[{\"index\":0,\"delta\":{\"content\":\"Red\"},\"finish_reason\":null}],\"usage\":null,\"obfuscation\":\"Ea38I04cHUWzp\"}\n\ndata: {\"id\":\"chatcmpl-EEg5yRYGAdWsd0CzYn4zpb0c5bfaS\",\"object\":\"chat.completion.chunk\",\"created\":1787167114,\"model\":\"gpt-5.6-luna\",\"service_tier\":\"default\",\"system_fingerprint\":null,\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}],\"usage\":null,\"obfuscation\":\"izSroKquwz\"}\n\ndata: {\"id\":\"chatcmpl-EEg5yRYGAdWsd0CzYn4zpb0c5bfaS\",\"object\":\"chat.completion.chunk\",\"created\":1787167114,\"model\":\"gpt-5.6-luna\",\"service_tier\":\"default\",\"system_fingerprint\":null,\"choices\":[],\"usage\":{\"prompt_tokens\":19,\"completion_tokens\":4,\"total_tokens\":23,\"prompt_tokens_details\":{\"cached_tokens\":0,\"audio_tokens\":0},\"completion_tokens_details\":{\"reasoning_tokens\":0,\"audio_tokens\":0,\"accepted_prediction_tokens\":0,\"rejected_prediction_tokens\":0}},\"obfuscation\":\"\"}\n\ndata: [DONE]\n\n"
+        ]
+      }
+    }
+  ]
+}

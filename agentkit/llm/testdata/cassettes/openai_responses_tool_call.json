@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/responses",
+        "header": {
+          "Authorization": [
+            "REDACTED"
+          ],
+          "Content-Type": [
+            "application/json"
+          ]
+        },
+        "body_json": {
+          "include": [
+            "reasoning.encrypted_content"
+          ],
+          "input": [
+            {
+              "content": [
+                {
+                  "text": "What is the weather in Copenhagen right now?",
+                  "type": "input_text"
+                }
+              ],
+              "role": "user",
+              "type": "message"
+            }
+          ],
+          "instructions": "Use the tools you are given. Do not ask follow-up questions.",
+          "max_output_tokens": 2048,
+          "model": "gpt-5.6-luna",
+          "store": false,
+          "stream": true,
+          "tools": [
+            {
+              "description": "Get the current weather for a city.",
+              "name": "get_weather",
+              "parameters": {
+                "properties": {
+                  "city": {
+                    "description": "City name, e.g. Copenhagen",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "city"
+                ],
+                "type": "object"
+              },
+              "strict": false,
+              "type": "function"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Access-Control-Expose-Headers": [
+            "X-Request-ID",
+            "CF-Ray",
+            "CF-Ray"
+          ],
+          "Alt-Svc": [
+            "h3=\":443\"; ma=86400"
+          ],
+          "Cf-Cache-Status": [
+            "DYNAMIC"
+          ],
+          "Cf-Ray": [
+            "REDACTED"
+          ],
+          "Content-Type": [
+            "text/event-stream; charset=utf-8"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:18:45 GMT"
+          ],
+          "Openai-Organization": [
+            "REDACTED"
+          ],
+          "Openai-Processing-Ms": [
+            "175"
+          ],
+          "Openai-Project": [
+            "REDACTED"
+          ],
+          "Openai-Version": [
+            "2020-10-01"
+          ],
+          "Server": [
+            "cloudflare"
+          ],
+          "Set-Cookie": [
+            "REDACTED"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Ratelimit-Limit-Requests": [
+            "5000"
+          ],
+          "X-Ratelimit-Limit-Tokens": [
+            "4000000"
+          ],
+          "X-Ratelimit-Remaining-Requests": [
+            "4999"
+          ],
+          "X-Ratelimit-Remaining-Tokens": [
+            "3999485"
+          ],
+          "X-Ratelimit-Reset-Requests": [
+            "12ms"
+          ],
+          "X-Ratelimit-Reset-Tokens": [
+            "7ms"
+          ],
+          "X-Request-Id": [
+            "REDACTED"
+          ]
+        },
+        "chunks": [
+          "event: response.created\ndata: {\"type\":\"response.created\",\"response\":{\"id\":\"resp_0ce0a76c990c9e48016a860195b744819587e0514be141fb80\",\"object\":\"response\",\"created_at\":1787167125,\"status\":\"in_progress\",\"background\":false,\"completed_at\":null,\"error\":null,\"frequency_penalty\":0.0,\"incomplete_details\":null,\"instructions\":\"Use the tools you are given. Do not ask follow-up questions.\",\"max_output_tokens\":2048,\"max_tool_calls\":null,\"model\":\"gpt-5.6-luna\",\"moderation\":null,\"output\":[],\"parallel_tool_calls\":true,\"presence_penalty\":0.0,\"previous_response_id\":null,\"prompt_cache_key\":null,\"prompt_cache_retention\":\"24h\",\"reasoning\":{\"context\":\"all_turns\",\"effort\":\"medium\",\"mode\":\"standard\",\"summary\":null},\"safety_identifier\":null,\"service_tier\":\"auto\",\"store\":false,\"temperature\":1.0,\"text\":{\"format\":{\"type\":\"text\"},\"verbosity\":\"medium\"},\"tool_choice\":\"auto\",\"tool_usage\":{\"image_gen\":{\"input_tokens\":0,\"input_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"output_tokens\":0,\"output_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"total_tokens\":0},\"web_search\":{\"num_requests\":0}},\"tools\":[{\"type\":\"function\",\"description\":\"Get the current weather for a city.\",\"name\":\"get_weather\",\"output_schema\":null,\"parameters\":{\"type\":\"object\",\"properties\":{\"city\":{\"type\":\"string\",\"description\":\"City name, e.g. Copenhagen\"}},\"required\":[\"city\"]},\"strict\":false}],\"top_logprobs\":0,\"top_p\":0.98,\"truncation\":\"disabled\",\"usage\":null,\"user\":null,\"metadata\":{}},\"sequence_number\":0}\n\n",
+          "event: response.in_progress\ndata: {\"type\":\"response.in_progress\",\"response\":{\"id\":\"resp_0ce0a76c990c9e48016a860195b744819587e0514be141fb80\",\"object\":\"response\",\"created_at\":1787167125,\"status\":\"in_progress\",\"background\":false,\"completed_at\":null,\"error\":null,\"frequency_penalty\":0.0,\"incomplete_details\":null,\"instructions\":\"Use the tools you are given. Do not ask follow-up questions.\",\"max_output_tokens\":2048,\"max_tool_calls\":null,\"model\":\"gpt-5.6-luna\",\"moderation\":null,\"output\":[],\"parallel_tool_calls\":true,\"presence_penalty\":0.0,\"previous_response_id\":null,\"prompt_cache_key\":null,\"prompt_cache_retention\":\"24h\",\"reasoning\":{\"context\":\"all_turns\",\"effort\":\"medium\",\"mode\":\"standard\",\"summary\":null},\"safety_identifier\":null,\"service_tier\":\"auto\",\"store\":false,\"temperature\":1.0,\"text\":{\"format\":{\"type\":\"text\"},\"verbosity\":\"medium\"},\"tool_choice\":\"auto\",\"tool_usage\":{\"image_gen\":{\"input_tokens\":0,\"input_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"output_tokens\":0,\"output_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"total_tokens\":0},\"web_search\":{\"num_requests\":0}},\"tools\":[{\"type\":\"function\",\"description\":\"Get the current weather for a city.\",\"name\":\"get_weather\",\"output_schema\":null,\"parameters\":{\"type\":\"object\",\"properties\":{\"city\":{\"type\":\"string\",\"description\":\"City name, e.g. Copenhagen\"}},\"required\":[\"city\"]},\"strict\":false}],\"top_logprobs\":0,\"top_p\":0.98,\"truncation\":\"disabled\",\"usage\":null,\"user\":null,\"metadata\":{}},\"sequence_number\":1}\n\n",
+          "event: response.output_item.added\ndata: {\"type\":\"response.output_item.added\",\"item\":{\"id\":\"fc_0ce0a76c990c9e48016a86019641b08195b983bff80fe9d538\",\"type\":\"function_call\",\"status\":\"in_progress\",\"arguments\":\"\",\"call_id\":\"call_ZV3knZGsPwLqH72WTn0n7nbz\",\"name\":\"get_weather\"},\"output_index\":0,\"sequence_number\":2}\n\n",
+          "event: response.function_call_arguments.delta\ndata: {\"type\":\"response.function_call_arguments.delta\",\"delta\":\"{\\\"\",\"item_id\":\"fc_0ce0a76c990c9e48016a86019641b08195b983bff80fe9d538\",\"obfuscation\":\"G3eZyfoMGRqPoX\",\"output_index\":0,\"sequence_number\":3}\n\nevent: response.function_call_arguments.delta\ndata: {\"type\":\"response.function_call_arguments.delta\",\"delta\":\"city\",\"item_id\":\"fc_0ce0a76c990c9e48016a86019641b08195b983bff80fe9d538\",\"obfuscation\":\"QRiQsnhdQsSb\",\"output_index\":0,\"sequence_number\":4}\n\nevent: response.function_call_arguments.delta\ndata: {\"type\":\"response.function_call_arguments.delta\",\"delta\":\"\\\":\\\"\",\"item_id\":\"fc_0ce0a76c990c9e48016a86019641b08195b983bff80fe9d538\",\"obfuscation\":\"zX9IjEqcNi5ZE\",\"output_index\":0,\"sequence_number\":5}\n\nevent: response.function_call_arguments.delta\ndata: {\"type\":\"response.function_call_arguments.delta\",\"delta\":\"C\",\"item_id\":\"fc_0ce0a76c990c9e48016a86019641b08195b983bff80fe9d538\",\"obfuscation\":\"syJpi2sNvuiCpE3\",\"output_index\":0,\"sequence_number\":6}\n\nevent: response.function_call_arguments.delta\ndata: {\"type\":\"response.function_call_arguments.delta\",\"delta\":\"openhagen\",\"item_id\":\"fc_0ce0a76c990c9e48016a86019641b08195b983bff80fe9d538\",\"obfuscation\":\"iuWK1uE\",\"output_index\":0,\"sequence_number\":7}\n\nevent: response.function_call_arguments.delta\ndata: {\"type\":\"response.function_call_arguments.delta\",\"delta\":\"\\\"}\",\"item_id\":\"fc_0ce0a76c990c9e48016a86019641b08195b983bff80fe9d538\",\"obfuscation\":\"w2zBLMHkyggk3Z\",\"output_index\":0,\"sequence_number\":8}\n\nevent: response.function_call_arguments.done\ndata: {\"type\":\"response.function_call_arguments.done\",\"arguments\":\"{\\\"city\\\":\\\"Copenhagen\\\"}\",\"item_id\":\"fc_0ce0a76c990c9e48016a86019641b08195b983bff80fe9d538\",\"output_index\":0,\"sequence_number\":9}\n\nevent: response.output_item.done\ndata: {\"type\":\"response.output_item.done\",\"item\":{\"id\":\"fc_0ce0a76c990c9e48016a86019641b08195b983bff80fe9d538\",\"type\":\"function_call\",\"status\":\"completed\",\"arguments\":\"{\\\"city\\\":\\\"Copenhagen\\\"}\",\"call_id\":\"call_ZV3knZGsPwLqH72WTn0n7nbz\",\"name\":\"get_weather\"},\"output_index\":0,\"sequence_number\":10}\n\n",
+          "event: response.completed\ndata: {\"type\":\"response.completed\",\"response\":{\"id\":\"resp_0ce0a76c990c9e48016a860195b744819587e0514be141fb80\",\"object\":\"response\",\"created_at\":1787167125,\"status\":\"completed\",\"background\":false,\"completed_at\":1787167126,\"error\":null,\"frequency_penalty\":0.0,\"incomplete_details\":null,\"instructions\":\"Use the tools you are given. Do not ask follow-up questions.\",\"max_output_tokens\":2048,\"max_tool_calls\":null,\"model\":\"gpt-5.6-luna\",\"moderation\":null,\"output\":[{\"id\":\"fc_0ce0a76c990c9e48016a86019641b08195b983bff80fe9d538\",\"type\":\"function_call\",\"status\":\"completed\",\"arguments\":\"{\\\"city\\\":\\\"Copenhagen\\\"}\",\"call_id\":\"call_ZV3knZGsPwLqH72WTn0n7nbz\",\"name\":\"get_weather\"}],\"parallel_tool_calls\":true,\"presence_penalty\":0.0,\"previous_response_id\":null,\"prompt_cache_key\":null,\"prompt_cache_retention\":\"24h\",\"reasoning\":{\"context\":\"all_turns\",\"effort\":\"medium\",\"mode\":\"standard\",\"summary\":null},\"safety_identifier\":null,\"service_tier\":\"default\",\"store\":false,\"temperature\":1.0,\"text\":{\"format\":{\"type\":\"text\"},\"verbosity\":\"medium\"},\"tool_choice\":\"auto\",\"tool_usage\":{\"image_gen\":{\"input_tokens\":0,\"input_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"output_tokens\":0,\"output_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"total_tokens\":0},\"web_search\":{\"num_requests\":0}},\"tools\":[{\"type\":\"function\",\"description\":\"Get the current weather for a city.\",\"name\":\"get_weather\",\"output_schema\":null,\"parameters\":{\"type\":\"object\",\"properties\":{\"city\":{\"type\":\"string\",\"description\":\"City name, e.g. Copenhagen\"}},\"required\":[\"city\"]},\"strict\":false}],\"top_logprobs\":0,\"top_p\":0.98,\"truncation\":\"disabled\",\"usage\":{\"input_tokens\":80,\"input_tokens_details\":{\"cache_write_tokens\":0,\"cached_tokens\":0},\"output_tokens\":19,\"output_tokens_details\":{\"reasoning_tokens\":0},\"total_tokens\":99},\"user\":null,\"metadata\":{}},\"sequence_number\":11}\n\n"
+        ]
+      }
+    }
+  ]
+}

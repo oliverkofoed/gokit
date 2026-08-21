@@ -1,0 +1,218 @@
+{
+  "version": 1,
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:streamGenerateContent?alt=sse",
+        "header": {
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Goog-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "Take a screenshot and tell me the dominant colour."
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "generationConfig": {
+            "maxOutputTokens": 2048
+          },
+          "systemInstruction": {
+            "parts": [
+              {
+                "text": "Use the tools you are given. Do not ask follow-up questions."
+              }
+            ]
+          },
+          "tools": [
+            {
+              "functionDeclarations": [
+                {
+                  "description": "Take a screenshot of the current page.",
+                  "name": "screenshot",
+                  "parameters": {
+                    "properties": {},
+                    "type": "object"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Alt-Svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "Content-Disposition": [
+            "attachment"
+          ],
+          "Content-Type": [
+            "text/event-stream"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:25:01 GMT"
+          ],
+          "Server": [
+            "scaffolding on HTTPServer2"
+          ],
+          "Server-Timing": [
+            "gfet4t7; dur=744"
+          ],
+          "Vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Frame-Options": [
+            "SAMEORIGIN"
+          ],
+          "X-Xss-Protection": [
+            "0"
+          ]
+        },
+        "chunks": [
+          "data: {\"candidates\": [{\"content\": {\"parts\": [{\"functionCall\": {\"name\": \"screenshot\",\"args\": {},\"id\": \"call_286473\"},\"thoughtSignature\": \"Es8BCswBARFNMg9EdfQNhqi+Xt1nqcgZ9Iidu0wQFYuTZnHpHXpA5XcHQq5yYpxLs3hPYee55Q5O++V3t7yc/e2LhZbq3HNcBWPKNGmjlTz0xLBI3XTrratpsKKr69v7RpfyHj261gxz7k0c4wG+3ufFjXzpM28Nmw8Lnlk/JQZP+Kifc5Z4ftq70qLuAHpMs3a84n8k/4g6PDdEqd5Jo/AiGqq8ti1+I2UNHj8X5qss51ygTvrfIUNxdlJ4QqhOI8dIXOYUQbV1ht0AMdVH2b1Z\"}],\"role\": \"model\"},\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 53,\"candidatesTokenCount\": 8,\"totalTokenCount\": 81,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 53}],\"thoughtsTokenCount\": 20,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"DAOGao6WM5b2vdIPl6-zyQI\"}\r\n\r\ndata: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"\"}],\"role\": \"model\"},\"finishReason\": \"STOP\",\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 53,\"candidatesTokenCount\": 8,\"totalTokenCount\": 81,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 53}],\"thoughtsTokenCount\": 20,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"DAOGao6WM5b2vdIPl6-zyQI\"}\r\n\r\n"
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:streamGenerateContent?alt=sse",
+        "header": {
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Goog-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "Take a screenshot and tell me the dominant colour."
+                }
+              ],
+              "role": "user"
+            },
+            {
+              "parts": [
+                {
+                  "functionCall": {
+                    "args": {},
+                    "id": "call_286473",
+                    "name": "screenshot"
+                  },
+                  "thoughtSignature": "Es8BCswBARFNMg9EdfQNhqi+Xt1nqcgZ9Iidu0wQFYuTZnHpHXpA5XcHQq5yYpxLs3hPYee55Q5O++V3t7yc/e2LhZbq3HNcBWPKNGmjlTz0xLBI3XTrratpsKKr69v7RpfyHj261gxz7k0c4wG+3ufFjXzpM28Nmw8Lnlk/JQZP+Kifc5Z4ftq70qLuAHpMs3a84n8k/4g6PDdEqd5Jo/AiGqq8ti1+I2UNHj8X5qss51ygTvrfIUNxdlJ4QqhOI8dIXOYUQbV1ht0AMdVH2b1Z"
+                }
+              ],
+              "role": "model"
+            },
+            {
+              "parts": [
+                {
+                  "functionResponse": {
+                    "id": "call_286473",
+                    "name": "screenshot",
+                    "response": {
+                      "output": "screenshot captured"
+                    }
+                  }
+                },
+                {
+                  "inlineData": {
+                    "data": "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAHUlEQVR4nGK5I2LDQApgIkn1qIZRDUNKAyAAAP//0nUBT3dZ/MAAAAAASUVORK5CYII=",
+                    "mimeType": "image/png"
+                  }
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "generationConfig": {
+            "maxOutputTokens": 2048
+          },
+          "systemInstruction": {
+            "parts": [
+              {
+                "text": "Use the tools you are given. Do not ask follow-up questions."
+              }
+            ]
+          },
+          "tools": [
+            {
+              "functionDeclarations": [
+                {
+                  "description": "Take a screenshot of the current page.",
+                  "name": "screenshot",
+                  "parameters": {
+                    "properties": {},
+                    "type": "object"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Alt-Svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "Content-Disposition": [
+            "attachment"
+          ],
+          "Content-Type": [
+            "text/event-stream"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:25:02 GMT"
+          ],
+          "Server": [
+            "scaffolding on HTTPServer2"
+          ],
+          "Server-Timing": [
+            "gfet4t7; dur=1098"
+          ],
+          "Vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Frame-Options": [
+            "SAMEORIGIN"
+          ],
+          "X-Xss-Protection": [
+            "0"
+          ]
+        },
+        "chunks": [
+          "data: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"The dominant colour is **red** (specifically\"}],\"role\": \"model\"},\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 74,\"candidatesTokenCount\": 9,\"totalTokenCount\": 111,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 74}],\"thoughtsTokenCount\": 28,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"DQOGaq6jKNv5xN8PtsXz6Q4\"}\r\n\r\ndata: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \" a crimson / raspberry red).\"}],\"role\": \"model\"},\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 1183,\"candidatesTokenCount\": 15,\"totalTokenCount\": 1226,\"promptTokensDetails\": [{\"modality\": \"IMAGE\",\"tokenCount\": 1089},{\"modality\": \"TEXT\",\"tokenCount\": 94}],\"thoughtsTokenCount\": 28,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"DQOGaq6jKNv5xN8PtsXz6Q4\"}\r\n\r\ndata: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"\",\"thoughtSignature\": \"Ev4BCvsBARFNMg/edYJk1tIrHGc+YMJfYEaGGG0X1T6uvHSGRARkAlVUv6pLCnfUSPeFxTcqnV3AqTvnh8DQib/xx9VQeu7GYsUMHKUrzZPUHwvcCe+fDeEvW0bqWDdHxg4JcwKQOjGYRKKOR/0y3p2tM2m14fQJ5WhDi1CTtiaeLUrH8rGK06fp9T9surZoePDHYnkrn4sCG8+eteGmJm5LBceIcSv4+Qd0H6q0ST46UnFQ2WxOP6KFplmOVD1VnjbmRieyn0UFjJH4hYPLfPrr5P4pGcRS8ole2FgpQr5hShb+p1DZVdwBuscWn+QcfZtUli1gldV8xz+uzYiB6NI=\"}],\"role\": \"model\"},\"finishReason\": \"STOP\",\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 1183,\"candidatesTokenCount\": 15,\"totalTokenCount\": 1226,\"promptTokensDetails\": [{\"modality\": \"IMAGE\",\"tokenCount\": 1089},{\"modality\": \"TEXT\",\"tokenCount\": 94}],\"thoughtsTokenCount\": 28,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"DQOGaq6jKNv5xN8PtsXz6Q4\"}\r\n\r\n"
+        ]
+      }
+    }
+  ]
+}

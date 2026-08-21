@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:streamGenerateContent?alt=sse",
+        "header": {
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Goog-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "What colour is this image? Answer with a single word."
+                },
+                {
+                  "inlineData": {
+                    "data": "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAHUlEQVR4nGK5I2LDQApgIkn1qIZRDUNKAyAAAP//0nUBT3dZ/MAAAAAASUVORK5CYII=",
+                    "mimeType": "image/png"
+                  }
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "generationConfig": {
+            "maxOutputTokens": 2048
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Alt-Svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "Content-Disposition": [
+            "attachment"
+          ],
+          "Content-Type": [
+            "text/event-stream"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:25:00 GMT"
+          ],
+          "Server": [
+            "scaffolding on HTTPServer2"
+          ],
+          "Server-Timing": [
+            "gfet4t7; dur=1861"
+          ],
+          "Vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Frame-Options": [
+            "SAMEORIGIN"
+          ],
+          "X-Xss-Protection": [
+            "0"
+          ]
+        },
+        "chunks": [
+          "data: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"Red\"}],\"role\": \"model\"},\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 13,\"candidatesTokenCount\": 1,\"totalTokenCount\": 99,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 13}],\"thoughtsTokenCount\": 85,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"CgOGauvvOOTkxN8PvInn6QQ\"}\r\n\r\ndata: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"\",\"thoughtSignature\": \"Eu8DCuwDARFNMg8BIjjK6Nt5IQaajHeVW3ihQsfxpqI+0Oy1nFlZd0kbU7Y+ww0DqIuixyJz+OazjUYT8I+lSUytLPE49Xiu91gIDp/Y5MDYp//pTCRS/D+hfyvW5spF1nzYGxT+J3eWmFeRNb37YgGY2NzmIa2xQWJ4O+CrcwwQhxYZJIPMPycvyYklXXyirXLVQ2aQW+DsOBllT8TZ8oymf7EG7uJ9GKyO9yMIVK5V6D8bk6b7Qh/9AvbliyVl2DTgRKHbt5Jdelba4os82FROFqsuoEU2pMrV7QI8wssREA0kJoqGOMcxh/RYXwY2ftwnsmXz9y0sZtFqhVc/QviuMlFWihsf8qtDasV5/dgDZBkxdjKiSioAd/q0VT402ARE1b2jJV24XpPpa2sYTcUKuy9zALEY5a/mpjlyQ4sYTfLNp7AWMh49LCwS8wDrtI646I0967lIcx1NP8rjy8b2oZIaZ/XyNm4zNuRKVD8KNpTjAsONRw+Yip6p7kn0O9BsZnEyTDQf2f8EpMJ5XnqdhTyXgnrIBZts4eSLarX1xW78ruzzOD57wNA5zeUSP5kWockJy7H3mjyVx2aUoqRYxuqf6ap45GtSbpRqkVheecXls5fS0XtH9hterHyevHgjzoa7XdBT/hiENziRHlW/\"}],\"role\": \"model\"},\"finishReason\": \"STOP\",\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 1102,\"candidatesTokenCount\": 1,\"totalTokenCount\": 1188,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 13},{\"modality\": \"IMAGE\",\"tokenCount\": 1089}],\"thoughtsTokenCount\": 85,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"CgOGauvvOOTkxN8PvInn6QQ\"}\r\n\r\n"
+        ]
+      }
+    }
+  ]
+}

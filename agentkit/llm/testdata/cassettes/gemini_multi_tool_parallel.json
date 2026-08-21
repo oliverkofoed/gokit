@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:streamGenerateContent?alt=sse",
+        "header": {
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Goog-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "What is the weather in Copenhagen and in Aarhus? Look up both."
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "generationConfig": {
+            "maxOutputTokens": 2048
+          },
+          "systemInstruction": {
+            "parts": [
+              {
+                "text": "Use the tools you are given. When several lookups are needed, request them all at once."
+              }
+            ]
+          },
+          "tools": [
+            {
+              "functionDeclarations": [
+                {
+                  "description": "Get the current weather for a city.",
+                  "name": "get_weather",
+                  "parameters": {
+                    "properties": {
+                      "city": {
+                        "description": "City name, e.g. Copenhagen",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "city"
+                    ],
+                    "type": "object"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Alt-Svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "Content-Disposition": [
+            "attachment"
+          ],
+          "Content-Type": [
+            "text/event-stream"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:25:03 GMT"
+          ],
+          "Server": [
+            "scaffolding on HTTPServer2"
+          ],
+          "Server-Timing": [
+            "gfet4t7; dur=886"
+          ],
+          "Vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Frame-Options": [
+            "SAMEORIGIN"
+          ],
+          "X-Xss-Protection": [
+            "0"
+          ]
+        },
+        "chunks": [
+          "data: {\"candidates\": [{\"content\": {\"parts\": [{\"functionCall\": {\"name\": \"get_weather\",\"args\": {\"city\": \"Copenhagen\"},\"id\": \"call_194954\"},\"thoughtSignature\": \"EuEDCt4DARFNMg+deOWGpPkD4/XLlMW1OEu6vnUpXdbE1JcMwVciUJ4HWrzQ1QxbDR4SmmOhohuVZX+HS2czz4lmjt6tj4QBh2hiqhfLRK3LlVjMDQ/eMBvhaze5vU7OWDzOGeahb4t9tPaLVJCse8MftrN7axq2KaAaGCQYVvlAPLOQMAFnetzWODGkG0Y7ZrZ8M0F3FBD+vNpD8XZZg/lHqFD76T3vhqhytLWn7tnTe8d+Bsk0J7LF7e3FlVzkZjG4MjgSytaVh+oN6ex/dfPY8Z4ITQpTnBE4o6pJBK4RpAqyape38LZENXC2qAgkbEdZuiCwi+yIbXJhJ0SOnPODYhy88vQOJ9hlRUh89xZMiOFx1bkkFH5dvi1c9CrKFMUUykxjNku+u3yiYQ82EYM+lhrDPcgmyic3Gq9SSq9HE7N+th3MNv95ZRF0Zqql6u9iYJjTFJf/rEBzJ7Ununhr4xpnOyDZbTM4Uy1uLIKcsrY5Wf71dA+nD1v9DvHQbErOaO75VmzREEYSOo8k6aaaXk/aPBC2cMxjHypBrm8NtcOq7M7ucceTmQHFofEvtCzv1M8JqDS5++1asVPehUy5jg5ncVITCHVgreWPQF+JQVTDlp2QYJTnmpSXWQ1cp1cd6g==\"}],\"role\": \"model\"},\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 93,\"candidatesTokenCount\": 17,\"totalTokenCount\": 186,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 93}],\"thoughtsTokenCount\": 76,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"DgOGaoOFNab7xN8Phsvi8A4\"}\r\n\r\ndata: {\"candidates\": [{\"content\": {\"parts\": [{\"functionCall\": {\"name\": \"get_weather\",\"args\": {\"city\": \"Aarhus\"},\"id\": \"call_194955\"}}],\"role\": \"model\"},\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 93,\"candidatesTokenCount\": 35,\"totalTokenCount\": 204,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 93}],\"thoughtsTokenCount\": 76,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"DgOGaoOFNab7xN8Phsvi8A4\"}\r\n\r\ndata: {\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"\"}],\"role\": \"model\"},\"finishReason\": \"STOP\",\"index\": 0}],\"usageMetadata\": {\"promptTokenCount\": 93,\"candidatesTokenCount\": 35,\"totalTokenCount\": 204,\"promptTokensDetails\": [{\"modality\": \"TEXT\",\"tokenCount\": 93}],\"thoughtsTokenCount\": 76,\"serviceTier\": \"standard\"},\"modelVersion\": \"gemini-3.7-flash\",\"responseId\": \"DgOGaoOFNab7xN8Phsvi8A4\"}\r\n\r\n"
+        ]
+      }
+    }
+  ]
+}

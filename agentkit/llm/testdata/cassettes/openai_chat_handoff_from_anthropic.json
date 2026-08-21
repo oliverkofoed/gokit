@@ -1,0 +1,183 @@
+{
+  "version": 1,
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "header": {
+          "Authorization": [
+            "REDACTED"
+          ],
+          "Content-Type": [
+            "application/json"
+          ]
+        },
+        "body_json": {
+          "max_completion_tokens": 2048,
+          "messages": [
+            {
+              "content": "Be brief.",
+              "role": "system"
+            },
+            {
+              "content": "What is the weather in Copenhagen right now?",
+              "role": "user"
+            },
+            {
+              "content": "\u003cthinking\u003e\nThe user wants current weather; call the tool.\n\u003c/thinking\u003e\n\nLet me look that up.",
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"city\":\"Copenhagen\"}",
+                    "name": "get_weather"
+                  },
+                  "id": "call_9xKpQr2Lm",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"temp_c\":18,\"conditions\":\"light rain\"}",
+              "role": "tool",
+              "tool_call_id": "call_9xKpQr2Lm"
+            },
+            {
+              "content": null,
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"city\":\"Aarhus\"}",
+                    "name": "get_weather"
+                  },
+                  "id": "call_7zBnWq4Tv",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "tool call was interrupted; no result available",
+              "role": "tool",
+              "tool_call_id": "call_7zBnWq4Tv"
+            },
+            {
+              "content": "Just summarise what you found for Copenhagen.",
+              "role": "user"
+            }
+          ],
+          "model": "gpt-5.6-luna",
+          "reasoning_effort": "none",
+          "stream": true,
+          "stream_options": {
+            "include_usage": true
+          },
+          "tools": [
+            {
+              "function": {
+                "description": "Get the current weather for a city.",
+                "name": "get_weather",
+                "parameters": {
+                  "properties": {
+                    "city": {
+                      "description": "City name, e.g. Copenhagen",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "city"
+                  ],
+                  "type": "object"
+                }
+              },
+              "type": "function"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Access-Control-Expose-Headers": [
+            "X-Request-ID",
+            "CF-Ray",
+            "CF-Ray"
+          ],
+          "Alt-Svc": [
+            "h3=\":443\"; ma=86400"
+          ],
+          "Cf-Cache-Status": [
+            "DYNAMIC"
+          ],
+          "Cf-Ray": [
+            "REDACTED"
+          ],
+          "Content-Type": [
+            "text/event-stream; charset=utf-8"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:18:43 GMT"
+          ],
+          "Openai-Organization": [
+            "REDACTED"
+          ],
+          "Openai-Processing-Ms": [
+            "828"
+          ],
+          "Openai-Project": [
+            "REDACTED"
+          ],
+          "Openai-Version": [
+            "2020-10-01"
+          ],
+          "Server": [
+            "cloudflare"
+          ],
+          "Set-Cookie": [
+            "REDACTED"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Openai-Proxy-Wasm": [
+            "v0.1"
+          ],
+          "X-Ratelimit-Limit-Requests": [
+            "5000"
+          ],
+          "X-Ratelimit-Limit-Tokens": [
+            "4000000"
+          ],
+          "X-Ratelimit-Remaining-Requests": [
+            "4999"
+          ],
+          "X-Ratelimit-Remaining-Tokens": [
+            "3999923"
+          ],
+          "X-Ratelimit-Reset-Requests": [
+            "12ms"
+          ],
+          "X-Ratelimit-Reset-Tokens": [
+            "1ms"
+          ],
+          "X-Request-Id": [
+            "REDACTED"
+          ]
+        },
+        "chunks": [
+          "data: {\"id\":\"chatcmpl-EEg67RVYk5oIrFEe7EudnLtkAFtgT\",\"object\":\"chat.completion.chunk\",\"created\":1787167123,\"model\":\"gpt-5.6-luna\",\"service_tier\":\"default\",\"system_fingerprint\":null,\"choices\":[{\"index\":0,\"delta\":{\"role\":\"assistant\",\"content\":\"\",\"refusal\":null},\"finish_reason\":null}],\"usage\":null,\"obfuscation\":\"OFc2auEOl40pzH\"}\n\ndata: {\"id\":\"chatcmpl-EEg67RVYk5oIrFEe7EudnLtkAFtgT\",\"object\":\"chat.completion.chunk\",\"created\":1787167123,\"model\":\"gpt-5.6-luna\",\"service_tier\":\"default\",\"system_fingerprint\":null,\"choices\":[{\"index\":0,\"delta\":{\"content\":\"C\"},\"finish_reason\":null}],\"usage\":null,\"obfuscation\":\"z7z2v8T8uwAK2jH\"}\n\ndata: {\"id\":\"chatcmpl-EEg67RVYk5oIrFEe7EudnLtkAFtgT\",\"object\":\"chat.completion.chunk\",\"created\":1787167123,\"model\":\"gpt-5.6-luna\",\"service_tier\":\"default\",\"system_fingerprint\":null,\"choices\":[{\"index\":0,\"delta\":{\"content\":\"openhagen\"},\"finish_reason\":null}],\"usage\":null,\"obfuscation\":\"qaQ0ws6\"}\n\ndata: {\"id\":\"chatcmpl-EEg67RVYk5oIrFEe7EudnLtkAFtgT\",\"object\":\"chat.completion.chunk\",\"created\":1787167123,\"model\":\"gpt-5.6-luna\",\"service_tier\":\"default\",\"system_fingerprint\":null,\"choices\":[{\"index\":0,\"delta\":{\"content\":\" is\"},\"finish_reason\":null}],\"usage\":null,\"obfuscation\":\"skyPVzVazF8FR\"}\n\n",
+          "data: {\"id\":\"chatcmpl-EEg67RVYk5oIrFEe7EudnLtkAFtgT\",\"object\":\"chat.completion.chunk\",\"created\":1787167123,\"model\":\"gpt-5.6-luna\",\"service_tier\":\"default\",\"system_fingerprint\":null,\"choices\":[{\"index\":0,\"delta\":{\"content\":\" currently\"},\"finish_reason\":null}],\"usage\":null,\"obfuscation\":\"QiXLss\"}\n\ndata: {\"id\":\"chatcmpl-EEg67RVYk5oIrFEe7EudnLtkAFtgT\",\"object\":\"chat.completion.chunk\",\"created\":1787167123,\"model\":\"gpt-5.6-luna\",\"service_tier\":\"default\",\"system_fingerprint\":null,\"choices\":[{\"index\":0,\"delta\":{\"content\":\" **\"},\"finish_reason\":null}],\"usage\":null,\"obfuscation\":\"pTYndXR7lncUH\"}\n\n",
+          "data: {\"id\":\"chatcmpl-EEg67RVYk5oIrFEe7EudnLtkAFtgT\",\"object\":\"chat.completion.chunk\",\"created\":1787167123,\"model\":\"gpt-5.6-luna\",\"service_tier\":\"default\",\"system_fingerprint\":null,\"choices\":[{\"index\":0,\"delta\":{\"content\":\"18\"},\"finish_reason\":null}],\"usage\":null,\"obfuscation\":\"34GhuLU8PsKvdE\"}\n\ndata: {\"id\":\"chatcmpl-EEg67RVYk5oIrFEe7EudnLtkAFtgT\",\"object\":\"chat.completion.chunk\",\"created\":1787167123,\"model\":\"gpt-5.6-luna\",\"service_tier\":\"default\",\"system_fingerprint\":null,\"choices\":[{\"index\":0,\"delta\":{\"content\":\"°C\"},\"finish_reason\":null}],\"usage\":null,\"obfuscation\":\"Ujup0iDbOoKdWt\"}\n\ndata: {\"id\":\"chatcmpl-EEg67RVYk5oIrFEe7EudnLtkAFtgT\",\"object\":\"chat.completion.chunk\",\"created\":1787167123,\"model\":\"gpt-5.6-luna\",\"service_tier\":\"default\",\"system_fingerprint\":null,\"choices\":[{\"index\":0,\"delta\":{\"content\":\" with\"},\"finish_reason\":null}],\"usage\":null,\"obfuscation\":\"pNpSViAX421\"}\n\n",
+          "data: {\"id\":\"chatcmpl-EEg67RVYk5oIrFEe7EudnLtkAFtgT\",\"object\":\"chat.completion.chunk\",\"created\":1787167123,\"model\":\"gpt-5.6-luna\",\"service_tier\":\"default\",\"system_fingerprint\":null,\"choices\":[{\"index\":0,\"delta\":{\"content\":\" light\"},\"finish_reason\":null}],\"usage\":null,\"obfuscation\":\"Pac4XewyI0\"}\n\ndata: {\"id\":\"chatcmpl-EEg67RVYk5oIrFEe7EudnLtkAFtgT\",\"object\":\"chat.completion.chunk\",\"created\":1787167123,\"model\":\"gpt-5.6-luna\",\"service_tier\":\"default\",\"system_fingerprint\":null,\"choices\":[{\"index\":0,\"delta\":{\"content\":\" rain\"},\"finish_reason\":null}],\"usage\":null,\"obfuscation\":\"FMTSx1xKTot\"}\n\n",
+          "data: {\"id\":\"chatcmpl-EEg67RVYk5oIrFEe7EudnLtkAFtgT\",\"object\":\"chat.completion.chunk\",\"created\":1787167123,\"model\":\"gpt-5.6-luna\",\"service_tier\":\"default\",\"system_fingerprint\":null,\"choices\":[{\"index\":0,\"delta\":{\"content\":\"**\"},\"finish_reason\":null}],\"usage\":null,\"obfuscation\":\"lP8QR6bBbcsYUz\"}\n\ndata: {\"id\":\"chatcmpl-EEg67RVYk5oIrFEe7EudnLtkAFtgT\",\"object\":\"chat.completion.chunk\",\"created\":1787167123,\"model\":\"gpt-5.6-luna\",\"service_tier\":\"default\",\"system_fingerprint\":null,\"choices\":[{\"index\":0,\"delta\":{\"content\":\".\"},\"finish_reason\":null}],\"usage\":null,\"obfuscation\":\"rbuGCaJAa3SVAkS\"}\n\n",
+          "data: {\"id\":\"chatcmpl-EEg67RVYk5oIrFEe7EudnLtkAFtgT\",\"object\":\"chat.completion.chunk\",\"created\":1787167123,\"model\":\"gpt-5.6-luna\",\"service_tier\":\"default\",\"system_fingerprint\":null,\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}],\"usage\":null,\"obfuscation\":\"CjyJMMhyX8\"}\n\ndata: {\"id\":\"chatcmpl-EEg67RVYk5oIrFEe7EudnLtkAFtgT\",\"object\":\"chat.completion.chunk\",\"created\":1787167123,\"model\":\"gpt-5.6-luna\",\"service_tier\":\"default\",\"system_fingerprint\":null,\"choices\":[],\"usage\":{\"prompt_tokens\":270,\"completion_tokens\":15,\"total_tokens\":285,\"prompt_tokens_details\":{\"cached_tokens\":0,\"cache_write_tokens\":0,\"audio_tokens\":0},\"completion_tokens_details\":{\"reasoning_tokens\":0,\"audio_tokens\":0,\"accepted_prediction_tokens\":0,\"rejected_prediction_tokens\":0}},\"obfuscation\":\"so0J8r\"}\n\n",
+          "data: [DONE]\n\n"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,279 @@
+{
+  "version": 1,
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/responses",
+        "header": {
+          "Authorization": [
+            "REDACTED"
+          ],
+          "Content-Type": [
+            "application/json"
+          ]
+        },
+        "body_json": {
+          "include": [
+            "reasoning.encrypted_content"
+          ],
+          "input": [
+            {
+              "content": [
+                {
+                  "text": "Take a screenshot and tell me the dominant colour.",
+                  "type": "input_text"
+                }
+              ],
+              "role": "user",
+              "type": "message"
+            }
+          ],
+          "instructions": "Use the tools you are given. Do not ask follow-up questions.",
+          "max_output_tokens": 2048,
+          "model": "gpt-5.6-luna",
+          "store": false,
+          "stream": true,
+          "tools": [
+            {
+              "description": "Take a screenshot of the current page.",
+              "name": "screenshot",
+              "parameters": {
+                "properties": {},
+                "type": "object"
+              },
+              "strict": false,
+              "type": "function"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Access-Control-Expose-Headers": [
+            "X-Request-ID",
+            "CF-Ray",
+            "CF-Ray"
+          ],
+          "Alt-Svc": [
+            "h3=\":443\"; ma=86400"
+          ],
+          "Cf-Cache-Status": [
+            "DYNAMIC"
+          ],
+          "Cf-Ray": [
+            "REDACTED"
+          ],
+          "Content-Type": [
+            "text/event-stream; charset=utf-8"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:18:55 GMT"
+          ],
+          "Openai-Organization": [
+            "REDACTED"
+          ],
+          "Openai-Processing-Ms": [
+            "166"
+          ],
+          "Openai-Project": [
+            "REDACTED"
+          ],
+          "Openai-Version": [
+            "2020-10-01"
+          ],
+          "Server": [
+            "cloudflare"
+          ],
+          "Set-Cookie": [
+            "REDACTED"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Ratelimit-Limit-Requests": [
+            "5000"
+          ],
+          "X-Ratelimit-Limit-Tokens": [
+            "4000000"
+          ],
+          "X-Ratelimit-Remaining-Requests": [
+            "4999"
+          ],
+          "X-Ratelimit-Remaining-Tokens": [
+            "3999500"
+          ],
+          "X-Ratelimit-Reset-Requests": [
+            "12ms"
+          ],
+          "X-Ratelimit-Reset-Tokens": [
+            "7ms"
+          ],
+          "X-Request-Id": [
+            "REDACTED"
+          ]
+        },
+        "chunks": [
+          "event: response.created\ndata: {\"type\":\"response.created\",\"response\":{\"id\":\"resp_07466225aadfa2e5016a86019f4c8c81979b270ec26d446688\",\"object\":\"response\",\"created_at\":1787167135,\"status\":\"in_progress\",\"background\":false,\"completed_at\":null,\"error\":null,\"frequency_penalty\":0.0,\"incomplete_details\":null,\"instructions\":\"Use the tools you are given. Do not ask follow-up questions.\",\"max_output_tokens\":2048,\"max_tool_calls\":null,\"model\":\"gpt-5.6-luna\",\"moderation\":null,\"output\":[],\"parallel_tool_calls\":true,\"presence_penalty\":0.0,\"previous_response_id\":null,\"prompt_cache_key\":null,\"prompt_cache_retention\":\"24h\",\"reasoning\":{\"context\":\"all_turns\",\"effort\":\"medium\",\"mode\":\"standard\",\"summary\":null},\"safety_identifier\":null,\"service_tier\":\"auto\",\"store\":false,\"temperature\":1.0,\"text\":{\"format\":{\"type\":\"text\"},\"verbosity\":\"medium\"},\"tool_choice\":\"auto\",\"tool_usage\":{\"image_gen\":{\"input_tokens\":0,\"input_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"output_tokens\":0,\"output_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"total_tokens\":0},\"web_search\":{\"num_requests\":0}},\"tools\":[{\"type\":\"function\",\"description\":\"Take a screenshot of the current page.\",\"name\":\"screenshot\",\"output_schema\":null,\"parameters\":{\"type\":\"object\",\"properties\":{}},\"strict\":false}],\"top_logprobs\":0,\"top_p\":0.98,\"truncation\":\"disabled\",\"usage\":null,\"user\":null,\"metadata\":{}},\"sequence_number\":0}\n\nevent: response.in_progress\ndata: {\"type\":\"response.in_progress\",\"response\":{\"id\":\"resp_07466225aadfa2e5016a86019f4c8c81979b270ec26d446688\",\"object\":\"response\",\"created_at\":1787167135,\"status\":\"in_progress\",\"background\":false,\"completed_at\":null,\"error\":null,\"frequency_penalty\":0.0,\"incomplete_details\":null,\"instructions\":\"Use the tools you are given. Do not ask follow-up questions.\",\"max_output_tokens\":2048,\"max_tool_calls\":null,\"model\":\"gpt-5.6-luna\",\"moderation\":null,\"output\":[],\"parallel_tool_calls\":true,\"presence_penalty\":0.0,\"previous_response_id\":null,\"prompt_cache_key\":null,\"prompt_cache_retention\":\"24h\",\"reasoning\":{\"context\":\"all_turns\",\"effort\":\"medium\",\"mode\":\"standard\",\"summary\":null},\"safety_identifier\":null,\"service_tier\":\"auto\",\"store\":false,\"temperature\":1.0,\"text\":{\"format\":{\"type\":\"text\"},\"verbosity\":\"medium\"},\"tool_choice\":\"auto\",\"tool_usage\":{\"image_gen\":{\"input_tokens\":0,\"input_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"output_tokens\":0,\"output_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"total_tokens\":0},\"web_search\":{\"num_requests\":0}},\"tools\":[{\"type\":\"function\",\"description\":\"Take a screenshot of the current page.\",\"name\":\"screenshot\",\"output_schema\":null,\"parameters\":{\"type\":\"object\",\"properties\":{}},\"strict\":false}],\"top_logprobs\":0,\"top_p\":0.98,\"truncation\":\"disabled\",\"usage\":null,\"user\":null,\"metadata\":{}},\"sequence_number\":1}\n\n",
+          "event: response.output_item.added\ndata: {\"type\":\"response.output_item.added\",\"item\":{\"id\":\"fc_07466225aadfa2e5016a8601a013bc8197b2fb96747ad0afec\",\"type\":\"function_call\",\"status\":\"in_progress\",\"arguments\":\"\",\"call_id\":\"call_CS4Qd0EWMLmZwDLYy2OGMwBd\",\"name\":\"screenshot\"},\"output_index\":0,\"sequence_number\":2}\n\nevent: response.function_call_arguments.delta\ndata: {\"type\":\"response.function_call_arguments.delta\",\"delta\":\"{}\",\"item_id\":\"fc_07466225aadfa2e5016a8601a013bc8197b2fb96747ad0afec\",\"obfuscation\":\"x35emEBiLY7o6p\",\"output_index\":0,\"sequence_number\":3}\n\nevent: response.function_call_arguments.done\ndata: {\"type\":\"response.function_call_arguments.done\",\"arguments\":\"{}\",\"item_id\":\"fc_07466225aadfa2e5016a8601a013bc8197b2fb96747ad0afec\",\"output_index\":0,\"sequence_number\":4}\n\nevent: response.output_item.done\ndata: {\"type\":\"response.output_item.done\",\"item\":{\"id\":\"fc_07466225aadfa2e5016a8601a013bc8197b2fb96747ad0afec\",\"type\":\"function_call\",\"status\":\"completed\",\"arguments\":\"{}\",\"call_id\":\"call_CS4Qd0EWMLmZwDLYy2OGMwBd\",\"name\":\"screenshot\"},\"output_index\":0,\"sequence_number\":5}\n\nevent: response.completed\ndata: {\"type\":\"response.completed\",\"response\":{\"id\":\"resp_07466225aadfa2e5016a86019f4c8c81979b270ec26d446688\",\"object\":\"response\",\"created_at\":1787167135,\"status\":\"completed\",\"background\":false,\"completed_at\":1787167136,\"error\":null,\"frequency_penalty\":0.0,\"incomplete_details\":null,\"instructions\":\"Use the tools you are given. Do not ask follow-up questions.\",\"max_output_tokens\":2048,\"max_tool_calls\":null,\"model\":\"gpt-5.6-luna\",\"moderation\":null,\"output\":[{\"id\":\"fc_07466225aadfa2e5016a8601a013bc8197b2fb96747ad0afec\",\"type\":\"function_call\",\"status\":\"completed\",\"arguments\":\"{}\",\"call_id\":\"call_CS4Qd0EWMLmZwDLYy2OGMwBd\",\"name\":\"screenshot\"}],\"parallel_tool_calls\":true,\"presence_penalty\":0.0,\"previous_response_id\":null,\"prompt_cache_key\":null,\"prompt_cache_retention\":\"24h\",\"reasoning\":{\"context\":\"all_turns\",\"effort\":\"medium\",\"mode\":\"standard\",\"summary\":null},\"safety_identifier\":null,\"service_tier\":\"default\",\"store\":false,\"temperature\":1.0,\"text\":{\"format\":{\"type\":\"text\"},\"verbosity\":\"medium\"},\"tool_choice\":\"auto\",\"tool_usage\":{\"image_gen\":{\"input_tokens\":0,\"input_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"output_tokens\":0,\"output_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"total_tokens\":0},\"web_search\":{\"num_requests\":0}},\"tools\":[{\"type\":\"function\",\"description\":\"Take a screenshot of the current page.\",\"name\":\"screenshot\",\"output_schema\":null,\"parameters\":{\"type\":\"object\",\"properties\":{}},\"strict\":false}],\"top_logprobs\":0,\"top_p\":0.98,\"truncation\":\"disabled\",\"usage\":{\"input_tokens\":65,\"input_tokens_details\":{\"cache_write_tokens\":0,\"cached_tokens\":0},\"output_tokens\":14,\"output_tokens_details\":{\"reasoning_tokens\":0},\"total_tokens\":79},\"user\":null,\"metadata\":{}},\"sequence_number\":6}\n\n"
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/responses",
+        "header": {
+          "Authorization": [
+            "REDACTED"
+          ],
+          "Content-Type": [
+            "application/json"
+          ]
+        },
+        "body_json": {
+          "include": [
+            "reasoning.encrypted_content"
+          ],
+          "input": [
+            {
+              "content": [
+                {
+                  "text": "Take a screenshot and tell me the dominant colour.",
+                  "type": "input_text"
+                }
+              ],
+              "role": "user",
+              "type": "message"
+            },
+            {
+              "arguments": "{}",
+              "call_id": "call_CS4Qd0EWMLmZwDLYy2OGMwBd",
+              "name": "screenshot",
+              "type": "function_call"
+            },
+            {
+              "call_id": "call_CS4Qd0EWMLmZwDLYy2OGMwBd",
+              "output": "screenshot captured",
+              "type": "function_call_output"
+            },
+            {
+              "content": [
+                {
+                  "image_url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAHUlEQVR4nGK5I2LDQApgIkn1qIZRDUNKAyAAAP//0nUBT3dZ/MAAAAAASUVORK5CYII=",
+                  "type": "input_image"
+                }
+              ],
+              "role": "user",
+              "type": "message"
+            }
+          ],
+          "instructions": "Use the tools you are given. Do not ask follow-up questions.",
+          "max_output_tokens": 2048,
+          "model": "gpt-5.6-luna",
+          "store": false,
+          "stream": true,
+          "tools": [
+            {
+              "description": "Take a screenshot of the current page.",
+              "name": "screenshot",
+              "parameters": {
+                "properties": {},
+                "type": "object"
+              },
+              "strict": false,
+              "type": "function"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Access-Control-Expose-Headers": [
+            "X-Request-ID",
+            "CF-Ray",
+            "CF-Ray"
+          ],
+          "Alt-Svc": [
+            "h3=\":443\"; ma=86400"
+          ],
+          "Cf-Cache-Status": [
+            "DYNAMIC"
+          ],
+          "Cf-Ray": [
+            "REDACTED"
+          ],
+          "Content-Type": [
+            "text/event-stream; charset=utf-8"
+          ],
+          "Date": [
+            "Wed, 19 Aug 2026 19:18:56 GMT"
+          ],
+          "Openai-Organization": [
+            "REDACTED"
+          ],
+          "Openai-Processing-Ms": [
+            "227"
+          ],
+          "Openai-Project": [
+            "REDACTED"
+          ],
+          "Openai-Version": [
+            "2020-10-01"
+          ],
+          "Server": [
+            "cloudflare"
+          ],
+          "Set-Cookie": [
+            "REDACTED"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Ratelimit-Limit-Requests": [
+            "5000"
+          ],
+          "X-Ratelimit-Limit-Tokens": [
+            "4000000"
+          ],
+          "X-Ratelimit-Remaining-Requests": [
+            "4999"
+          ],
+          "X-Ratelimit-Remaining-Tokens": [
+            "3999466"
+          ],
+          "X-Ratelimit-Reset-Requests": [
+            "12ms"
+          ],
+          "X-Ratelimit-Reset-Tokens": [
+            "8ms"
+          ],
+          "X-Request-Id": [
+            "REDACTED"
+          ]
+        },
+        "chunks": [
+          "event: response.created\ndata: {\"type\":\"response.created\",\"response\":{\"id\":\"resp_0aba562181011856016a8601a06e1487d1901f5dd1889deb59\",\"object\":\"response\",\"created_at\":1787167136,\"status\":\"in_progress\",\"background\":false,\"completed_at\":null,\"error\":null,\"frequency_penalty\":0.0,\"incomplete_details\":null,\"instructions\":\"Use the tools you are given. Do not ask follow-up questions.\",\"max_output_tokens\":2048,\"max_tool_calls\":null,\"model\":\"gpt-5.6-luna\",\"moderation\":null,\"output\":[],\"parallel_tool_calls\":true,\"presence_penalty\":0.0,\"previous_response_id\":null,\"prompt_cache_key\":null,\"prompt_cache_retention\":\"24h\",\"reasoning\":{\"context\":\"all_turns\",\"effort\":\"medium\",\"mode\":\"standard\",\"summary\":null},\"safety_identifier\":null,\"service_tier\":\"auto\",\"store\":false,\"temperature\":1.0,\"text\":{\"format\":{\"type\":\"text\"},\"verbosity\":\"medium\"},\"tool_choice\":\"auto\",\"tool_usage\":{\"image_gen\":{\"input_tokens\":0,\"input_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"output_tokens\":0,\"output_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"total_tokens\":0},\"web_search\":{\"num_requests\":0}},\"tools\":[{\"type\":\"function\",\"description\":\"Take a screenshot of the current page.\",\"name\":\"screenshot\",\"output_schema\":null,\"parameters\":{\"type\":\"object\",\"properties\":{}},\"strict\":false}],\"top_logprobs\":0,\"top_p\":0.98,\"truncation\":\"disabled\",\"usage\":null,\"user\":null,\"metadata\":{}},\"sequence_number\":0}\n\nevent: response.in_progress\ndata: {\"type\":\"response.in_progress\",\"response\":{\"id\":\"resp_0aba562181011856016a8601a06e1487d1901f5dd1889deb59\",\"object\":\"response\",\"created_at\":1787167136,\"status\":\"in_progress\",\"background\":false,\"completed_at\":null,\"error\":null,\"frequency_penalty\":0.0,\"incomplete_details\":null,\"instructions\":\"Use the tools you are given. Do not ask follow-up questions.\",\"max_output_tokens\":2048,\"max_tool_calls\":null,\"model\":\"gpt-5.6-luna\",\"moderation\":null,\"output\":[],\"parallel_tool_calls\":true,\"presence_penalty\":0.0,\"previous_response_id\":null,\"prompt_cache_key\":null,\"prompt_cache_retention\":\"24h\",\"reasoning\":{\"context\":\"all_turns\",\"effort\":\"medium\",\"mode\":\"standard\",\"summary\":null},\"safety_identifier\":null,\"service_tier\":\"auto\",\"store\":false,\"temperature\":1.0,\"text\":{\"format\":{\"type\":\"text\"},\"verbosity\":\"medium\"},\"tool_choice\":\"auto\",\"tool_usage\":{\"image_gen\":{\"input_tokens\":0,\"input_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"output_tokens\":0,\"output_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"total_tokens\":0},\"web_search\":{\"num_requests\":0}},\"tools\":[{\"type\":\"function\",\"description\":\"Take a screenshot of the current page.\",\"name\":\"screenshot\",\"output_schema\":null,\"parameters\":{\"type\":\"object\",\"properties\":{}},\"strict\":false}],\"top_logprobs\":0,\"top_p\":0.98,\"truncation\":\"disabled\",\"usage\":null,\"user\":null,\"metadata\":{}},\"sequence_number\":1}\n\n",
+          "event: response.output_item.added\ndata: {\"type\":\"response.output_item.added\",\"item\":{\"id\":\"rs_0aba562181011856016a8601a0ddd887d18dcda722d69486f4\",\"type\":\"reasoning\",\"content\":[],\"encrypted_content\":\"gAAAAABqhgGgLwn-O_5-VfcYW-Ax0uv8QdGFkiAlVWmhilvX2NDLPFS_kDlubTCmplr4v4wp3Sx8pOcsvEhLDQl3Wg16rpRPdRFG1BfO-uNdmZ85SQfBlXT36eBgijgSkg2ycy0qdZducaCA4HykV7RuUnNbK7RxlZoqB_g5Z5x4Fj_yHn_RsDAY_6ObR-_ZJybT6aUZZ5u3DimxEyVBpd4b56gi4ogrF3ycj60xxN4U34c7S2CQY6VMBatw2lKu-rZNx5-1e38ZEhYkcw_7to1ErHJP1AnjK701XnqEkY9XHoErqph8bJCgq1iLaR27X_sTTxINf4Y0PaYWt4JsvSh8_QHhr1ZuRv-PCDQcqkSH2Z3nL1jr7PpC9WinJLWUozURb7URtiUbDm-KXsJbKO73v_cIRBrY2ZTOX9dLrdSwmlo7LctuthO8Q7HOfE3ODbteGqEqmIOxSN2YY5EDQjcxi6idXgx1nlWiamwCj2i_8QzFbOjVxiY8n9ExWAH_xyaGfV9yBCt7dVXv94uibQUfK905gI1P6DTlkAawgKdV7QAOEphWaesJZ47WCHoU3BjYVlN239akTie4dC3rk96dELkFbloZUmXqMFVZ7cYMFUvDrmq-tYXQk8Dv6ARZS4ND-e4upRNV-Oe5O-VDLhMxQY1bopNz1qICxzJijxi6ip5M4debcbIvoY3RgB7tDsF5P08X8IYptUkMaC9vmkVXlYvwXso6m5xlEK23PXMFhTf8S210mI2YbeL02PDH7xOIbspkNXXhoUpr13K6GdH2MiNqYJhi4NLySkT5TM-WQbynMGpOYREV-fzeIeRm-ieHMyPFkBx5xh8kADwZcrVfNdpaYwgGwiZBuYR1HlrYgvSpd6YCBgsARcIZPung9ORPxmFHC9JcGE_qZiy9cVVfFGBnAyUD2wmtsbA1TxImWmXfNX5dHnQYkgH6fnMtCZGy-tOzyxeABq7_5JUFsLIyiasfdXp877vkUqhYBedV5-yTkoK1Q43YOffa2usA8NWUPG4yq6DfKGOdcKQLHhndLDUTuRITlUi-X-SOcaT0vtjwUo0Z78qAHJjvKkO5t4iBZ9DcOgoYS_gN3ZlZ1alymaiSfTCK5fhAs2xTIcBfwCfSvSCwgAzG0KHk8HkvM7xqBWlKsaGQZdR9L770OfpzOTpFYCkWuA==\",\"summary\":[]},\"output_index\":0,\"sequence_number\":2}\n\n",
+          "event: response.output_item.done\ndata: {\"type\":\"response.output_item.done\",\"item\":{\"id\":\"rs_0aba562181011856016a8601a0ddd887d18dcda722d69486f4\",\"type\":\"reasoning\",\"content\":[],\"encrypted_content\":\"gAAAAABqhgGhYWeLFUWaem4RuYAZexSx3iZ2w5aUiI2QpB-VH4dMJy-Cx1b_luOvCuWtVRnN4Ru56P5e6g_g-yNPNSpI1pS4dP71fOMPOyt4IQQet8zl7I7aeRcioEzlwQqb73fH_bverlGYLSrz2rnC0YH-hvkNfdSSBnHNgOccHZKoN1abb6shIBOujq_R_9K_11SNUXgY2NxYaCYOUb82EXV-sTz1O8xSZ_FzuJOX-lf_Q5gUWWG99JOxPp8oRTfpWvraGeAhgQiagrTbOrU-vBnFe6FcWXiENln8EScKnkgW4bg52hPGMtIdgziI9p0MAFJfZEaoDNMEtMvOnhLC3pWt4xjAR-Xo5x9GS7BPw-ZymRMCOjXdtlBuJTsFKL6thFtbddjuwm3GrCHLfa24rITbS1JPdvtISss6ziYZ1ozfuJnJMzRlGnvcv7o3M3VkFo4bgfpseP4YKNyml4s7n5k3KidJua48yD5ySUEN20a8oTX_8a_K81Z49WCFvB-TxhUsJB1P5FlAPVqHnfa1OqMN57InF7E21vbYfQQ8KcV_n8enAexBOZ-uT0i4g6ki8JcPdIKQseHLnMlrzzE9WmEyeSwkTVsZuX_SVAV70rAz-6TTc0G4tDIs5rf0dYqMiHnjnmAVCP2Yiw0HeK90rWtL506ix5sD9Ma64dQo6Z3YSWNfFoRCO6UpYwq-a_t6TQ8WX1rB1Z5qX9AciGPpyQXkJTAMRht_Fp19hbNx1-Ri3paibO2ojU2Gg-TQgZAWSL0hiSTptD8YQiM68gG_uDzZd-dvNKJisONGwZEFX0JLklwYkMqQ0msYW-Zoc--gJvp03EHCp8mt7MZ1J6-fEkVx78S2DROAb6SC8ZcYy0k3Nkc3hnZzucd6V03DbpDI4baOaTeP7ghXMyiooawV_UvyDRV2s8lYbuJVO7PU7Siofit91H91R0ht65Dr7HCNSuDMq0koPFGu_SKGWPM9AzFvKy5rkNOAzCX-x7q0_JAMaaAbxS3ci_03SKJkHW1Jpt23E-fPse1V2FD9TTdapU0E1k08LvRANpukRQ65djWoZxYakLj0A93Aj0RW_2dmtNPA6CIU3PBIlkPfzv-C-lMyjCC9x8CMloZ55tnxh9atfdrzaekW2CungYErVDdZEW_xboDDGrKoyWdAOUur9uuuSXEtTsiL8-HRFTv48CyxGgCdOba5usr89Di1h16-qCQyBCLcYxWavCm2s1kzxY72kRxSq9myYEVAS1pmdQvh-aIGKH3xRJ-znXIA1mpg1LwSLu-RJYs-uGuRDeFbrtxJmcfHKQ==\",\"summary\":[]},\"output_index\":0,\"sequence_number\":3}\n\nevent: response.output_item.added\ndata: {\"type\":\"response.output_item.added\",\"item\":{\"id\":\"msg_0aba562181011856016a8601a12a1887d1b332c42681584bc2\",\"type\":\"message\",\"status\":\"in_progress\",\"content\":[],\"phase\":\"final_answer\",\"role\":\"assistant\"},\"output_index\":1,\"sequence_number\":4}\n\nevent: response.content_part.added\ndata: {\"type\":\"response.content_part.added\",\"content_index\":0,\"item_id\":\"msg_0aba562181011856016a8601a12a1887d1b332c42681584bc2\",\"output_index\":1,\"part\":{\"type\":\"output_text\",\"annotations\":[],\"logprobs\":[],\"text\":\"\"},\"sequence_number\":5}\n\n",
+          "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"The\",\"item_id\":\"msg_0aba562181011856016a8601a12a1887d1b332c42681584bc2\",\"logprobs\":[],\"obfuscation\":\"jwNCEX1w5x2O0\",\"output_index\":1,\"sequence_number\":6}\n\n",
+          "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\" dominant\",\"item_id\":\"msg_0aba562181011856016a8601a12a1887d1b332c42681584bc2\",\"logprobs\":[],\"obfuscation\":\"U39fvHg\",\"output_index\":1,\"sequence_number\":7}\n\n",
+          "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\" colour\",\"item_id\":\"msg_0aba562181011856016a8601a12a1887d1b332c42681584bc2\",\"logprobs\":[],\"obfuscation\":\"hjIs3xcYu\",\"output_index\":1,\"sequence_number\":8}\n\nevent: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\" is\",\"item_id\":\"msg_0aba562181011856016a8601a12a1887d1b332c42681584bc2\",\"logprobs\":[],\"obfuscation\":\"NG5vduhw2Zqm4\",\"output_index\":1,\"sequence_number\":9}\n\n",
+          "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\" **\",\"item_id\":\"msg_0aba562181011856016a8601a12a1887d1b332c42681584bc2\",\"logprobs\":[],\"obfuscation\":\"cUj7ou4FxUjuD\",\"output_index\":1,\"sequence_number\":10}\n\n",
+          "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"bright\",\"item_id\":\"msg_0aba562181011856016a8601a12a1887d1b332c42681584bc2\",\"logprobs\":[],\"obfuscation\":\"bHYMl0rrD7\",\"output_index\":1,\"sequence_number\":11}\n\n",
+          "event: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\" crimson\",\"item_id\":\"msg_0aba562181011856016a8601a12a1887d1b332c42681584bc2\",\"logprobs\":[],\"obfuscation\":\"YEpvauet\",\"output_index\":1,\"sequence_number\":12}\n\nevent: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\" red\",\"item_id\":\"msg_0aba562181011856016a8601a12a1887d1b332c42681584bc2\",\"logprobs\":[],\"obfuscation\":\"JHUIxtot9wyj\",\"output_index\":1,\"sequence_number\":13}\n\nevent: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\"**\",\"item_id\":\"msg_0aba562181011856016a8601a12a1887d1b332c42681584bc2\",\"logprobs\":[],\"obfuscation\":\"GB5cOpt5aXRG4P\",\"output_index\":1,\"sequence_number\":14}\n\nevent: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"content_index\":0,\"delta\":\".\",\"item_id\":\"msg_0aba562181011856016a8601a12a1887d1b332c42681584bc2\",\"logprobs\":[],\"obfuscation\":\"Q9swgGtYQ5K9zaB\",\"output_index\":1,\"sequence_number\":15}\n\n",
+          "event: response.output_text.done\ndata: {\"type\":\"response.output_text.done\",\"content_index\":0,\"item_id\":\"msg_0aba562181011856016a8601a12a1887d1b332c42681584bc2\",\"logprobs\":[],\"output_index\":1,\"sequence_number\":16,\"text\":\"The dominant colour is **bright crimson red**.\"}\n\nevent: response.content_part.done\ndata: {\"type\":\"response.content_part.done\",\"content_index\":0,\"item_id\":\"msg_0aba562181011856016a8601a12a1887d1b332c42681584bc2\",\"output_index\":1,\"part\":{\"type\":\"output_text\",\"annotations\":[],\"logprobs\":[],\"text\":\"The dominant colour is **bright crimson red**.\"},\"sequence_number\":17}\n\nevent: response.output_item.done\ndata: {\"type\":\"response.output_item.done\",\"item\":{\"id\":\"msg_0aba562181011856016a8601a12a1887d1b332c42681584bc2\",\"type\":\"message\",\"status\":\"completed\",\"content\":[{\"type\":\"output_text\",\"annotations\":[],\"logprobs\":[],\"text\":\"The dominant colour is **bright crimson red**.\"}],\"phase\":\"final_answer\",\"role\":\"assistant\"},\"output_index\":1,\"sequence_number\":18}\n\n",
+          "event: response.completed\ndata: {\"type\":\"response.completed\",\"response\":{\"id\":\"resp_0aba562181011856016a8601a06e1487d1901f5dd1889deb59\",\"object\":\"response\",\"created_at\":1787167136,\"status\":\"completed\",\"background\":false,\"completed_at\":1787167137,\"error\":null,\"frequency_penalty\":0.0,\"incomplete_details\":null,\"instructions\":\"Use the tools you are given. Do not ask follow-up questions.\",\"max_output_tokens\":2048,\"max_tool_calls\":null,\"model\":\"gpt-5.6-luna\",\"moderation\":null,\"output\":[{\"id\":\"rs_0aba562181011856016a8601a0ddd887d18dcda722d69486f4\",\"type\":\"reasoning\",\"content\":[],\"encrypted_content\":\"gAAAAABqhgGh9vFvXUSxCwGwHukxcjPcXqenNP8dHMhdi43FUPEcEfcKN7GBGYya0qmIzIFDzxnEpaBhkvBnvoKWznBNb8LNBFwQrUPq6yhryN4FGGQn-UYS6nn0BvrDLwVH97HedoEX4i-FWihfLitW5Vti1hsR_AiUpSedyyJh2Wy8XQLnQYGLV_P2ILAnSAnttGTgAUBNP8uzWY-fZQ9lDijO5LY2rOwRamuArCunLKxaCehvJsj6kTWZLPEaAPvTKVHSdDEklcJ3I_lqYxlQrGr3hpj_bNuziY0CFh2wq0TzdJfP6IbD4KKQ9dXa9MMVSxykt31DraeT2yxxxeDtREI6k5ItAY8fwzMdKdos8u72jfxUyahDmGVfQsB0dhA1Jos1MXUsK2vdkgnVaN_uvK_iinFkcnxpMWoh9IBLtqSYBmqqkDs0fzPVXFSFx8WrGbYi3kZJTSMlvKmbySlLu2mvnn79ldTiBSPbWWyU_rcBx1Yg_oRMcJOdkmAOIqBKfeRc_4nqAFA-fhmghjquDXzK3YI7noId-SpgAJNkKIjeqVjSSRZeDoYwp_wE7MZs1Jzwb5oNYtPKLZJvS2wrBvtcGOayT5pi9VzSwkEdQ715Y_hEEJt5xLzmSsY2ziLmh1_l6bUkLB8Tx_8nfFG-DIVwQatV5mbrUXYGG0bLtKNNK7YUjZwndSsHcVRWfYglz881nVRCFxbUDucUJgaETIiAIa_zF243KbvQMOTobSUASndGp6TMneWa7O02eF5YwTcNN1lcDXqz2Cg5zg5dQdTomoaosQewy5X7itFvd-jNpkaPwQmWhuhn4-Ge9v3OjUlRNEFptV9sWxbC8PuRAsVfi1lqN7dpr6BlMT_3xsZj68kQlRiqMMQNKsKDxA1BWGAEwlhpvL_PoASqJ4E226ppV5lSUMlw-bHujN09658oPevfzqRDtqK74URVHdpxgmzcJiKg-Hfr4tGRzP-UjAFfYGB0m0uRKGHQB22lFIlqKNQLknN-Y8_Ij_qhQH0HWgJNGrH124hi3_PoY-LWCEmOnV6lTTiNj_XTOAc98E62CBKqSZw2GVhGAz5zqprCLMB6ba2XxClmbYSyWsF_4OWRBSLk1akENLuazu-XDf_Oa3VV3_cKSbduQWQ0I8Qx-NK1Zo7XDH42TtnSwDwe2CJum5dqqSPCWfA1lDc3vFHrpA8zdip1ugzPKE7IYkyuS8nIk4AaetzWfwVe48OUNoeWW0K2ETecteWIzs0K7aVnrdHtM_7nXFpQBizp4YqpE5GyZwiQm21C55o2WJ8QXoELYyA0DA==\",\"summary\":[]},{\"id\":\"msg_0aba562181011856016a8601a12a1887d1b332c42681584bc2\",\"type\":\"message\",\"status\":\"completed\",\"content\":[{\"type\":\"output_text\",\"annotations\":[],\"logprobs\":[],\"text\":\"The dominant colour is **bright crimson red**.\"}],\"phase\":\"final_answer\",\"role\":\"assistant\"}],\"parallel_tool_calls\":true,\"presence_penalty\":0.0,\"previous_response_id\":null,\"prompt_cache_key\":null,\"prompt_cache_retention\":\"24h\",\"reasoning\":{\"context\":\"all_turns\",\"effort\":\"medium\",\"mode\":\"standard\",\"summary\":null},\"safety_identifier\":null,\"service_tier\":\"default\",\"store\":false,\"temperature\":1.0,\"text\":{\"format\":{\"type\":\"text\"},\"verbosity\":\"medium\"},\"tool_choice\":\"auto\",\"tool_usage\":{\"image_gen\":{\"input_tokens\":0,\"input_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"output_tokens\":0,\"output_tokens_details\":{\"image_tokens\":0,\"text_tokens\":0},\"total_tokens\":0},\"web_search\":{\"num_requests\":0}},\"tools\":[{\"type\":\"function\",\"description\":\"Take a screenshot of the current page.\",\"name\":\"screenshot\",\"output_schema\":null,\"parameters\":{\"type\":\"object\",\"properties\":{}},\"strict\":false}],\"top_logprobs\":0,\"top_p\":0.98,\"truncation\":\"disabled\",\"usage\":{\"input_tokens\":100,\"input_tokens_details\":{\"cache_write_tokens\":0,\"cached_tokens\":0},\"output_tokens\":35,\"output_tokens_details\":{\"reasoning_tokens\":19},\"total_tokens\":135},\"user\":null,\"metadata\":{}},\"sequence_number\":19}\n\n"
+        ]
+      }
+    }
+  ]
+}
