@@ -79,6 +79,10 @@ type casProvider struct {
 	// asked for them), so the thinking scenario checks the signature alone.
 	NoThinkingText bool
 
+	// NoDocumentName marks protocols whose document part cannot carry a file
+	// name, so the document_input scenario does not assert one.
+	NoDocumentName bool
+
 	// Decode reads a recorded request into the normalized view. It receives
 	// the request URL too, since not every protocol puts everything in the
 	// body. It must fail the test if the protocol's expected fields are
@@ -121,12 +125,17 @@ type casMessage struct {
 	Role        string // "user" | "assistant"
 	Text        string
 	Images      []casImage
+	Documents   []casDocument
 	ToolCalls   []casToolCall
 	ToolResults []casToolResult
 	Thinking    []casThinkingBlock
 }
 
 type casImage struct{ MimeType, Data string }
+
+// casDocument is a document part as it appears on the wire. Name is empty on
+// protocols that have nowhere to carry a file name (gemini).
+type casDocument struct{ MimeType, Data, Name string }
 
 type casToolCall struct {
 	ID, Name string
@@ -180,6 +189,15 @@ func (v casView) allImages() []casImage {
 		for _, r := range m.ToolResults {
 			out = append(out, r.Images...)
 		}
+	}
+	return out
+}
+
+// allDocuments flattens every document across the encoded history.
+func (v casView) allDocuments() []casDocument {
+	var out []casDocument
+	for _, m := range v.Messages {
+		out = append(out, m.Documents...)
 	}
 	return out
 }
@@ -339,6 +357,23 @@ func casImageBlock() Block {
 	return Block{Type: BlockImage, MimeType: "image/png", Data: casPNG}
 }
 
+// casPDF is a one-page PDF whose only content is the text casPDFToken,
+// hardcoded for the same reason as casPNG: a generated fixture would change
+// with the generator and break cassette matching. Every provider is asked to
+// read the token back, which is what proves the document was parsed rather
+// than merely accepted.
+const casPDF = "JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCA2MTIgNzkyXSAvUmVzb3VyY2VzIDw8IC9Gb250IDw8IC9GMSA1IDAgUiA+PiA+PiAvQ29udGVudHMgNCAwIFIgPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0xlbmd0aCA0NCA+PgpzdHJlYW0KQlQgL0YxIDI0IFRmIDcyIDcwMCBUZCAoV0lER0VUS0lULTdRKSBUaiBFVAplbmRzdHJlYW0KZW5kb2JqCjUgMCBvYmoKPDwgL1R5cGUgL0ZvbnQgL1N1YnR5cGUgL1R5cGUxIC9CYXNlRm9udCAvSGVsdmV0aWNhID4+CmVuZG9iagp4cmVmCjAgNgowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMDkgMDAwMDAgbiAKMDAwMDAwMDA1OCAwMDAwMCBuIAowMDAwMDAwMTE1IDAwMDAwIG4gCjAwMDAwMDAyNDEgMDAwMDAgbiAKMDAwMDAwMDMzNCAwMDAwMCBuIAp0cmFpbGVyCjw8IC9TaXplIDYgL1Jvb3QgMSAwIFIgPj4Kc3RhcnR4cmVmCjQwNAolJUVPRgo="
+
+const (
+	casPDFToken = "WIDGETKIT-7Q"
+	casPDFName  = "widgetkit-code.pdf"
+	casPDFQ     = "Reply with the exact code written in this PDF and nothing else."
+)
+
+func casDocumentBlock() Block {
+	return Block{Type: BlockDocument, MimeType: "application/pdf", Name: casPDFName, Data: casPDF}
+}
+
 const (
 	casToolSystem = "Use the tools you are given. Do not ask follow-up questions."
 	casWeatherQ   = "What is the weather in Copenhagen right now?"
@@ -407,6 +442,7 @@ var casScenarios = []struct {
 	{"thinking_replay", casScenThinkingReplay},
 	{"image_input", casScenImageInput},
 	{"image_in_tool_result", casScenImageInToolResult},
+	{"document_input", casScenDocumentInput},
 	{"multi_tool_parallel", casScenMultiToolParallel},
 	{"error_400", casScenError400},
 	{"abort_mid_stream", casScenAbortMidStream},
@@ -777,6 +813,57 @@ func casScenImageInput(t *testing.T, p casProvider) {
 		t.Error("model returned no description of the image")
 	}
 	p.extra(t, "image_input", tee)
+}
+
+// casScenDocumentInput proves the document encoding of §8 against the live
+// endpoint: that the provider accepts the block shape at all, and that it
+// extracts the text, which is the only evidence the bytes arrived intact.
+func casScenDocumentInput(t *testing.T, p casProvider) {
+	c, tee := p.client(t, "document_input")
+
+	msg, err := c.Complete(context.Background(), Request{
+		Model: p.Model,
+		Messages: []Message{UserBlocks(
+			TextBlock(casPDFQ),
+			casDocumentBlock(),
+		)},
+		MaxTokens:   p.tokens(64),
+		Temperature: p.Temp,
+	})
+	if err != nil {
+		t.Fatalf("Complete: %v", err)
+	}
+
+	v := p.view(t, tee, 0)
+	docs := v.allDocuments()
+	if len(docs) != 1 {
+		t.Fatalf("documents on the wire = %d, want 1: %s", len(docs), v.Raw)
+	}
+	if docs[0].MimeType != "application/pdf" {
+		t.Errorf("mime type = %q", docs[0].MimeType)
+	}
+	if docs[0].Data != casPDF {
+		t.Error("document data does not match the input document")
+	}
+	// Gemini's inlineData part has nowhere to put a file name, so there is
+	// nothing to assert there; every other protocol carries one.
+	if !p.NoDocumentName && docs[0].Name != casPDFName {
+		t.Errorf("file name = %q, want %q", docs[0].Name, casPDFName)
+	}
+	// A document must never be encoded as an image: the mime type alone
+	// distinguishes them on gemini, and the block type everywhere else.
+	for _, img := range v.allImages() {
+		t.Errorf("document encoded as an image part: %+v", img)
+	}
+
+	if msg.StopReason != StopEnd {
+		t.Errorf("stop = %q", msg.StopReason)
+	}
+	if !strings.Contains(textOf(msg), casPDFToken) {
+		t.Errorf("answer %q does not contain %q — the provider did not read the document",
+			textOf(msg), casPDFToken)
+	}
+	p.extra(t, "document_input", tee)
 }
 
 func casScenImageInToolResult(t *testing.T, p casProvider) {

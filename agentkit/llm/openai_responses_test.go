@@ -709,3 +709,77 @@ func TestOpenAIResponsesInStreamError(t *testing.T) {
 		t.Errorf("last event = %v, want %v", last.Type, EventError)
 	}
 }
+
+func TestOpenAIResponsesDocumentInput(t *testing.T) {
+	tr := &captureTransport{chunks: oairTextStream("it is a spec")}
+	doc := DocumentBlock("application/pdf", "spec.pdf", []byte{1, 2, 3, 4})
+	req := Request{
+		Model:    oairModel(),
+		Messages: []Message{UserBlocks(TextBlock("what does this say?"), doc)},
+	}
+	oairRun(t, tr, req)
+
+	item := oairItemAt(t, oairInputItems(t, tr.lastBody(t)), 0)
+	content := item["content"].([]any)
+	if len(content) != 2 {
+		t.Fatalf("content = %v", content)
+	}
+	want := map[string]any{
+		"type":      "input_file",
+		"file_data": "data:application/pdf;base64," + doc.Data,
+		"filename":  "spec.pdf",
+	}
+	if !reflect.DeepEqual(content[1], want) {
+		t.Errorf("document part = %v\nwant          %v", content[1], want)
+	}
+}
+
+// TestOpenAIResponsesDocumentWithoutName omits the filename rather than
+// sending an empty one.
+func TestOpenAIResponsesDocumentWithoutName(t *testing.T) {
+	tr := &captureTransport{chunks: oairTextStream("ok")}
+	doc := DocumentBlock("application/pdf", "", []byte{1, 2, 3})
+	oairRun(t, tr, Request{
+		Model:    oairModel(),
+		Messages: []Message{UserBlocks(doc)},
+	})
+
+	item := oairItemAt(t, oairInputItems(t, tr.lastBody(t)), 0)
+	part := item["content"].([]any)[0].(map[string]any)
+	if _, has := part["filename"]; has {
+		t.Errorf("filename = %v, want the field omitted", part["filename"])
+	}
+	if part["file_data"] != "data:application/pdf;base64,"+doc.Data {
+		t.Errorf("file_data = %v", part["file_data"])
+	}
+}
+
+// TestOpenAIResponsesDocumentInToolResultDropped (R38): function_call_output
+// carries text only and images spill into a following user message; a
+// document has no such home on this protocol and is dropped.
+func TestOpenAIResponsesDocumentInToolResultDropped(t *testing.T) {
+	tr := &captureTransport{chunks: oairTextStream("done")}
+	oairRun(t, tr, Request{
+		Model: oairModel(),
+		Messages: []Message{
+			UserText("fetch the spec"),
+			{Role: RoleAssistant, Model: "gpt-5-mini", Blocks: []Block{
+				{Type: BlockToolCall, ID: "call_1", Name: "fetch", Args: json.RawMessage(`{}`)},
+			}},
+			ToolResultMessage("call_1", "fetch", false,
+				TextBlock("got it"), DocumentBlock("application/pdf", "spec.pdf", []byte{1, 2, 3})),
+		},
+	})
+
+	items := oairInputItems(t, tr.lastBody(t))
+	if len(items) != 3 {
+		t.Fatalf("input has %d items, want 3 with no spillover: %v", len(items), items)
+	}
+	out := oairItemAt(t, items, 2)
+	if out["type"] != "function_call_output" || out["output"] != "got it" {
+		t.Fatalf("function_call_output = %v", out)
+	}
+	if strings.Contains(string(tr.lastReq(t).Body), "AQID") {
+		t.Error("document bytes reached the wire from a tool result")
+	}
+}

@@ -31,6 +31,7 @@ func oaicModel(q Quirks) Model {
 		MaxOutput:     4096,
 		Reasoning:     true,
 		Vision:        true,
+		Documents:     true,
 		Headers:       map[string]string{"X-Extra": "1"},
 		Quirks:        q,
 	}
@@ -745,4 +746,75 @@ func TestOpenAIChatReasoningEffortNone(t *testing.T) {
 			t.Error("reasoning_effort sent to a non-reasoning model")
 		}
 	})
+}
+
+func TestOpenAIChatDocumentInput(t *testing.T) {
+	body := oaicRunPayload(t, Request{
+		Model: oaicModel(Quirks{}),
+		Messages: []Message{
+			UserBlocks(TextBlock("Read:"), DocumentBlock("application/pdf", "spec.pdf", []byte{1, 2, 3})),
+		},
+	})
+	msgs := oaicWireMessages(t, body)
+	parts, ok := msgs[0]["content"].([]any)
+	if !ok || len(parts) != 2 {
+		t.Fatalf("content = %v (want a 2-part array)", msgs[0]["content"])
+	}
+	fp := parts[1].(map[string]any)
+	if fp["type"] != "file" {
+		t.Fatalf("file part = %v", fp)
+	}
+	f := fp["file"].(map[string]any)
+	if f["file_data"] != "data:application/pdf;base64,AQID" {
+		t.Fatalf("file_data = %v", f["file_data"])
+	}
+	if f["filename"] != "spec.pdf" {
+		t.Fatalf("filename = %v", f["filename"])
+	}
+}
+
+// TestOpenAIChatDocumentWithoutName omits the filename rather than sending an
+// empty one.
+func TestOpenAIChatDocumentWithoutName(t *testing.T) {
+	body := oaicRunPayload(t, Request{
+		Model:    oaicModel(Quirks{}),
+		Messages: []Message{UserBlocks(TextBlock("Read:"), DocumentBlock("application/pdf", "", []byte{1, 2, 3}))},
+	})
+	parts := oaicWireMessages(t, body)[0]["content"].([]any)
+	f := parts[1].(map[string]any)["file"].(map[string]any)
+	if _, has := f["filename"]; has {
+		t.Errorf("filename = %v, want the field omitted", f["filename"])
+	}
+	if f["file_data"] != "data:application/pdf;base64,AQID" {
+		t.Errorf("file_data = %v", f["file_data"])
+	}
+}
+
+// TestOpenAIChatDocumentInToolResultDropped (R38): role:tool carries text
+// only and images spill into a following user message; a document has no
+// such home on this protocol and is dropped.
+func TestOpenAIChatDocumentInToolResultDropped(t *testing.T) {
+	body := oaicRunPayload(t, Request{
+		Model: oaicModel(Quirks{}),
+		Messages: []Message{
+			UserText("fetch the spec"),
+			{
+				Role:   RoleAssistant,
+				Model:  "oaic-test-model",
+				Blocks: []Block{{Type: BlockToolCall, ID: "call_1", Name: "fetch", Args: json.RawMessage(`{}`)}},
+			},
+			ToolResultMessage("call_1", "fetch", false,
+				TextBlock("got it"), DocumentBlock("application/pdf", "spec.pdf", []byte{1, 2, 3})),
+		},
+	})
+	msgs := oaicWireMessages(t, body)
+	if len(msgs) != 3 {
+		t.Fatalf("want 3 wire messages (user, assistant, tool) with no spillover, got %v", msgs)
+	}
+	if tm := msgs[2]; tm["role"] != "tool" || tm["content"] != "got it" {
+		t.Fatalf("tool message = %v", tm)
+	}
+	if raw := string(mustCasJSON(t, body)); strings.Contains(raw, "AQID") {
+		t.Error("document bytes reached the wire from a tool result")
+	}
 }

@@ -9,7 +9,8 @@ import (
 // Normalize applies history normalization (SPEC §5.3) to a copy of msgs, in
 // order: Kind removal (R37), orphaned tool calls (R16), cross-model thinking
 // handoff (R17), tool-call ID normalization (R18), empty content (R19),
-// vision downgrade (R20). The input is never mutated (R5).
+// vision downgrade (R20), document downgrade (R38). The input is never
+// mutated (R5).
 //
 // The Client applies it automatically before protocol encoding; it is
 // exported for test doubles (llmtest records the normalized, as-sent view)
@@ -33,6 +34,9 @@ func normalizeMessages(model Model, msgs []Message) []Message {
 	out = fixEmptyContent(out)
 	if !model.Vision {
 		out = downgradeImages(out)
+	}
+	if !model.Documents {
+		out = downgradeDocuments(out)
 	}
 	return out
 }
@@ -196,6 +200,24 @@ func fixEmptyContent(msgs []Message) []Message {
 		out = append(out, m)
 	}
 	return out
+}
+
+// downgradeDocuments (R38): a model that does not accept documents gets text
+// in their place. The name goes with it — a model told a document was left
+// out can ask for it another way, and one told nothing cannot.
+func downgradeDocuments(msgs []Message) []Message {
+	for i, m := range msgs {
+		for j, b := range m.Blocks {
+			if b.Type == BlockDocument {
+				if b.Name != "" {
+					msgs[i].Blocks[j] = TextBlock("[document " + b.Name + " omitted]")
+					continue
+				}
+				msgs[i].Blocks[j] = TextBlock("[document omitted]")
+			}
+		}
+	}
+	return msgs
 }
 
 // downgradeImages (R20): non-vision models get image blocks replaced by text.

@@ -25,6 +25,7 @@ func TestCassetteGemini(t *testing.T) {
 		// 3.x returns no thought part at all: the signature comes back on the
 		// content block, so there is no readable reasoning to assert.
 		NoThinkingText:  true,
+		NoDocumentName:  true, // inlineData has no field for a file name
 		MinOutputTokens: 2048, // 3.7 flash thinks by default and would spend a small cap on it
 		Decode:          gemDecodeCassette,
 		BadRequest: func(m Model) Request {
@@ -124,10 +125,16 @@ func gemDecodeCassette(t *testing.T, url string, body map[string]any) casView {
 			part := casMap(rawp)
 			switch {
 			case casMap(part["inlineData"]) != nil:
+				// One part type carries both; the mime type is the whole of
+				// the difference on this protocol (§8.4), and there is
+				// nowhere on it to put a file name.
 				blob := casMap(part["inlineData"])
-				msg.Images = append(msg.Images, casImage{
-					MimeType: casStr(blob["mimeType"]), Data: casStr(blob["data"]),
-				})
+				mime, data := casStr(blob["mimeType"]), casStr(blob["data"])
+				if strings.HasPrefix(mime, "image/") {
+					msg.Images = append(msg.Images, casImage{MimeType: mime, Data: data})
+				} else {
+					msg.Documents = append(msg.Documents, casDocument{MimeType: mime, Data: data})
+				}
 			case casMap(part["functionCall"]) != nil:
 				call := casMap(part["functionCall"])
 				msg.ToolCalls = append(msg.ToolCalls, casToolCall{

@@ -12,7 +12,7 @@ var ClaudeSonnet45 = Model{
 	BaseURL:       "https://api.anthropic.com",
 	Cost:          Cost{Input: 3, Output: 15, CacheRead: 0.30, CacheWrite: 3.75},
 	ContextWindow: 200_000, MaxOutput: 64_000,
-	Reasoning: true, Vision: true,
+	Reasoning: true, Vision: true, Documents: true,
 }
 
 var ClaudeOpus46 = Model{
@@ -21,7 +21,7 @@ var ClaudeOpus46 = Model{
 	BaseURL:       "https://api.anthropic.com",
 	Cost:          Cost{Input: 5, Output: 25, CacheRead: 0.50, CacheWrite: 6.25},
 	ContextWindow: 200_000, MaxOutput: 64_000,
-	Reasoning: true, Vision: true,
+	Reasoning: true, Vision: true, Documents: true,
 }
 
 var ClaudeHaiku45 = Model{
@@ -30,7 +30,7 @@ var ClaudeHaiku45 = Model{
 	BaseURL:       "https://api.anthropic.com",
 	Cost:          Cost{Input: 1, Output: 5, CacheRead: 0.10, CacheWrite: 1.25},
 	ContextWindow: 200_000, MaxOutput: 64_000,
-	Reasoning: true, Vision: true,
+	Reasoning: true, Vision: true, Documents: true,
 }
 
 var GPT5 = Model{
@@ -39,7 +39,7 @@ var GPT5 = Model{
 	BaseURL:       "https://api.openai.com/v1",
 	Cost:          Cost{Input: 1.25, Output: 10, CacheRead: 0.125},
 	ContextWindow: 400_000, MaxOutput: 128_000,
-	Reasoning: true, Vision: true,
+	Reasoning: true, Vision: true, Documents: true,
 }
 
 var GPT5Mini = Model{
@@ -48,7 +48,7 @@ var GPT5Mini = Model{
 	BaseURL:       "https://api.openai.com/v1",
 	Cost:          Cost{Input: 0.25, Output: 2, CacheRead: 0.025},
 	ContextWindow: 400_000, MaxOutput: 128_000,
-	Reasoning: true, Vision: true,
+	Reasoning: true, Vision: true, Documents: true,
 }
 
 var Gemini25Pro = Model{
@@ -57,7 +57,7 @@ var Gemini25Pro = Model{
 	BaseURL:       "https://generativelanguage.googleapis.com",
 	Cost:          Cost{Input: 1.25, Output: 10, CacheRead: 0.31},
 	ContextWindow: 1_048_576, MaxOutput: 65_536,
-	Reasoning: true, Vision: true,
+	Reasoning: true, Vision: true, Documents: true,
 }
 
 var Gemini25Flash = Model{
@@ -66,7 +66,7 @@ var Gemini25Flash = Model{
 	BaseURL:       "https://generativelanguage.googleapis.com",
 	Cost:          Cost{Input: 0.30, Output: 2.50, CacheRead: 0.075},
 	ContextWindow: 1_048_576, MaxOutput: 65_536,
-	Reasoning: true, Vision: true,
+	Reasoning: true, Vision: true, Documents: true,
 }
 
 var Gemini37Flash = Model{
@@ -75,7 +75,7 @@ var Gemini37Flash = Model{
 	BaseURL:       "https://generativelanguage.googleapis.com",
 	Cost:          Cost{Input: 0.75, Output: 3.75, CacheRead: 0.075},
 	ContextWindow: 1_048_576, MaxOutput: 65_536,
-	Reasoning: true, Vision: true,
+	Reasoning: true, Vision: true, Documents: true,
 	Quirks: Quirks{GeminiV3: true},
 }
 

@@ -183,6 +183,8 @@ func oairUserParts(blocks []Block) []any {
 			parts = append(parts, map[string]any{"type": "input_text", "text": b.Text})
 		case BlockImage:
 			parts = append(parts, oairImagePart(b))
+		case BlockDocument:
+			parts = append(parts, oairFilePart(b))
 		}
 	}
 	return parts
@@ -193,6 +195,18 @@ func oairImagePart(b Block) map[string]any {
 		"type":      "input_image",
 		"image_url": "data:" + b.MimeType + ";base64," + b.Data,
 	}
+}
+
+// oairFilePart encodes a document as an inline input_file (SPEC §8.3).
+func oairFilePart(b Block) map[string]any {
+	part := map[string]any{
+		"type":      "input_file",
+		"file_data": "data:" + b.MimeType + ";base64," + b.Data,
+	}
+	if b.Name != "" {
+		part["filename"] = b.Name
+	}
+	return part
 }
 
 func oairMessageItem(role string, content []any) map[string]any {

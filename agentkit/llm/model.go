@@ -62,6 +62,7 @@ type Model struct {
 	MaxOutput     int               `json:"max_output"`     // tokens; used when Request.MaxTokens == 0
 	Reasoning     bool              `json:"reasoning"`      // supports thinking/reasoning
 	Vision        bool              `json:"vision"`         // accepts image input
+	Documents     bool              `json:"documents"`      // accepts document (PDF) input
 	Headers       map[string]string `json:"headers,omitempty"`
 	Quirks        Quirks            `json:"quirks,omitempty"`
 }

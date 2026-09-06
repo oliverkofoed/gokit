@@ -143,7 +143,7 @@ func oaicMessages(req Request) []map[string]any {
 }
 
 // oaicUserContent encodes user blocks: a plain string when the message is a
-// single text block, otherwise an array of text/image_url parts.
+// single text block, otherwise an array of text/image_url/file parts.
 func oaicUserContent(blocks []Block) any {
 	if len(blocks) == 1 && blocks[0].Type == BlockText {
 		return blocks[0].Text
@@ -155,6 +155,8 @@ func oaicUserContent(blocks []Block) any {
 			parts = append(parts, oaicTextPart(b.Text))
 		case BlockImage:
 			parts = append(parts, oaicImagePart(b))
+		case BlockDocument:
+			parts = append(parts, oaicFilePart(b))
 		}
 	}
 	return parts
@@ -169,6 +171,17 @@ func oaicImagePart(b Block) map[string]any {
 		"type":      "image_url",
 		"image_url": map[string]any{"url": "data:" + b.MimeType + ";base64," + b.Data},
 	}
+}
+
+// oaicFilePart encodes a document as an inline file part (SPEC §8.2). The
+// name is sent as the filename: this protocol has nowhere else to put it,
+// and an endpoint that infers a type from the extension needs it.
+func oaicFilePart(b Block) map[string]any {
+	file := map[string]any{"file_data": "data:" + b.MimeType + ";base64," + b.Data}
+	if b.Name != "" {
+		file["filename"] = b.Name
+	}
+	return map[string]any{"type": "file", "file": file}
 }
 
 // oaicAssistantMessage encodes an assistant message: text content (or null)

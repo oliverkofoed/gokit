@@ -111,6 +111,12 @@ func anthDecodeCassette(t *testing.T, _ string, body map[string]any) casView {
 				msg.Images = append(msg.Images, casImage{
 					MimeType: casStr(src["media_type"]), Data: casStr(src["data"]),
 				})
+			case "document":
+				src := casMap(b["source"])
+				msg.Documents = append(msg.Documents, casDocument{
+					MimeType: casStr(src["media_type"]), Data: casStr(src["data"]),
+					Name: casStr(b["title"]),
+				})
 			case "tool_use":
 				msg.ToolCalls = append(msg.ToolCalls, casToolCall{
 					ID: casStr(b["id"]), Name: casStr(b["name"]),

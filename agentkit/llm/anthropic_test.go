@@ -760,3 +760,97 @@ func TestAnthropicCassetteRoundtrip(t *testing.T) {
 		t.Errorf("usage: replayed %+v, recorded %+v", replayed.Usage, recorded.Usage)
 	}
 }
+
+func TestAnthropicDocumentInput(t *testing.T) {
+	tr := &captureTransport{chunks: anthBasicChunks()}
+	c := anthClient(tr)
+
+	if _, err := c.Complete(context.Background(), Request{
+		Model: ClaudeSonnet45,
+		Messages: []Message{UserBlocks(
+			TextBlock("what does this say?"),
+			DocumentBlock("application/pdf", "spec.pdf", []byte{1, 2, 3}),
+		)},
+	}); err != nil {
+		t.Fatalf("Complete: %v", err)
+	}
+
+	body := tr.lastBody(t)
+	if got := anthGet(t, body, "messages", 0, "content", 1, "type"); got != "document" {
+		t.Errorf("content[1].type = %v", got)
+	}
+	if got := anthGet(t, body, "messages", 0, "content", 1, "source", "type"); got != "base64" {
+		t.Errorf("source.type = %v", got)
+	}
+	if got := anthGet(t, body, "messages", 0, "content", 1, "source", "media_type"); got != "application/pdf" {
+		t.Errorf("source.media_type = %v", got)
+	}
+	if got := anthGet(t, body, "messages", 0, "content", 1, "source", "data"); got != "AQID" {
+		t.Errorf("source.data = %v", got)
+	}
+	if got := anthGet(t, body, "messages", 0, "content", 1, "title"); got != "spec.pdf" {
+		t.Errorf("title = %v", got)
+	}
+}
+
+// TestAnthropicDocumentWithoutName omits the title rather than sending an
+// empty one: the field is optional and a blank title is not a file name.
+func TestAnthropicDocumentWithoutName(t *testing.T) {
+	tr := &captureTransport{chunks: anthBasicChunks()}
+	c := anthClient(tr)
+
+	if _, err := c.Complete(context.Background(), Request{
+		Model:    ClaudeSonnet45,
+		Messages: []Message{UserBlocks(DocumentBlock("application/pdf", "", []byte{1, 2, 3}))},
+	}); err != nil {
+		t.Fatalf("Complete: %v", err)
+	}
+
+	doc := anthGet(t, tr.lastBody(t), "messages", 0, "content", 0).(map[string]any)
+	if doc["type"] != "document" {
+		t.Fatalf("block = %v", doc)
+	}
+	if _, has := doc["title"]; has {
+		t.Errorf("title = %v, want the field omitted", doc["title"])
+	}
+}
+
+// TestAnthropicDocumentInToolResultDropped (R38): tool_result content carries
+// text and images only, so a document placed there is dropped rather than
+// sent as a block type the endpoint rejects.
+func TestAnthropicDocumentInToolResultDropped(t *testing.T) {
+	tr := &captureTransport{chunks: anthBasicChunks()}
+	c := anthClient(tr)
+
+	history := []Message{
+		UserText("fetch the spec"),
+		{Role: RoleAssistant, Model: "claude-sonnet-4-5", Blocks: []Block{
+			{Type: BlockToolCall, ID: "call_1", Name: "fetch", Args: json.RawMessage(`{}`)},
+		}},
+		ToolResultMessage("call_1", "fetch", false,
+			TextBlock("got it"),
+			DocumentBlock("application/pdf", "spec.pdf", []byte{1, 2, 3}),
+			ImageBlock("image/jpeg", []byte{9, 8, 7}),
+		),
+	}
+	if _, err := c.Complete(context.Background(), Request{Model: ClaudeSonnet45, Messages: history}); err != nil {
+		t.Fatalf("Complete: %v", err)
+	}
+
+	body := tr.lastBody(t)
+	nested := anthGet(t, body, "messages", 2, "content", 0, "content").([]any)
+	if len(nested) != 2 {
+		t.Fatalf("tool_result content = %d blocks, want 2 (text, image): %v", len(nested), nested)
+	}
+	for i, raw := range nested {
+		if got := raw.(map[string]any)["type"]; got == "document" {
+			t.Errorf("tool_result content[%d] is a document; it must be dropped", i)
+		}
+	}
+	if got := nested[0].(map[string]any)["text"]; got != "got it" {
+		t.Errorf("nested text = %v", got)
+	}
+	if got := nested[1].(map[string]any)["type"]; got != "image" {
+		t.Errorf("nested[1].type = %v, want image", got)
+	}
+}

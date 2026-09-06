@@ -58,7 +58,8 @@ type anthTool struct {
 	CacheControl *anthCacheControl `json:"cache_control,omitempty"`
 }
 
-type anthImageSource struct {
+// anthSource carries the bytes of an image or a document block.
+type anthSource struct {
 	Type      string `json:"type"`
 	MediaType string `json:"media_type"`
 	Data      string `json:"data"`
@@ -75,8 +76,9 @@ type anthBlock struct {
 	Thinking  string `json:"thinking,omitempty"`
 	Signature string `json:"signature,omitempty"`
 	Data      string `json:"data,omitempty"`
-	// image
-	Source *anthImageSource `json:"source,omitempty"`
+	// image / document
+	Source *anthSource `json:"source,omitempty"`
+	Title  string      `json:"title,omitempty"` // document
 	// tool_use
 	ID    string          `json:"id,omitempty"`
 	Name  string          `json:"name,omitempty"`
@@ -192,7 +194,11 @@ func anthUserBlocks(blocks []Block) []anthBlock {
 		case BlockText:
 			out = append(out, anthBlock{Type: "text", Text: b.Text})
 		case BlockImage:
-			out = append(out, anthBlock{Type: "image", Source: &anthImageSource{
+			out = append(out, anthBlock{Type: "image", Source: &anthSource{
+				Type: "base64", MediaType: b.MimeType, Data: b.Data,
+			}})
+		case BlockDocument:
+			out = append(out, anthBlock{Type: "document", Title: b.Name, Source: &anthSource{
 				Type: "base64", MediaType: b.MimeType, Data: b.Data,
 			}})
 		}
@@ -200,12 +206,26 @@ func anthUserBlocks(blocks []Block) []anthBlock {
 	return out
 }
 
+// anthToolResultContent encodes the blocks of a tool result. A tool_result
+// carries text and images only, so a document block is dropped here (R38)
+// rather than sent to an endpoint that rejects the block type.
+func anthToolResultContent(blocks []Block) []anthBlock {
+	kept := make([]Block, 0, len(blocks))
+	for _, b := range blocks {
+		if b.Type == BlockDocument {
+			continue
+		}
+		kept = append(kept, b)
+	}
+	return anthUserBlocks(kept)
+}
+
 func anthToolResultBlock(m Message) anthBlock {
 	return anthBlock{
 		Type:      "tool_result",
 		ToolUseID: m.ToolCallID,
 		IsError:   m.IsError,
-		Content:   anthUserBlocks(m.Blocks),
+		Content:   anthToolResultContent(m.Blocks),
 	}
 }
 

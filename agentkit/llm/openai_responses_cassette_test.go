@@ -19,7 +19,7 @@ var oairLunaModel = Model{
 	BaseURL:       "https://api.openai.com/v1",
 	Cost:          Cost{Input: 0.20, Output: 1.20, CacheRead: 0.02},
 	ContextWindow: 1_050_000, MaxOutput: 128_000,
-	Reasoning: true, Vision: true,
+	Reasoning: true, Vision: true, Documents: true,
 }
 
 func TestCassetteOpenAIResponses(t *testing.T) {
@@ -111,6 +111,11 @@ func oairDecodeCassette(t *testing.T, _ string, body map[string]any) casView {
 					msg.Text += casStr(part["text"])
 				case "input_image":
 					msg.Images = append(msg.Images, casDataURI(casStr(part["image_url"])))
+				case "input_file":
+					f := casDataURI(casStr(part["file_data"]))
+					msg.Documents = append(msg.Documents, casDocument{
+						MimeType: f.MimeType, Data: f.Data, Name: casStr(part["filename"]),
+					})
 				}
 			}
 			v.Messages = append(v.Messages, msg)

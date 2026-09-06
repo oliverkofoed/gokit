@@ -201,7 +201,9 @@ func gemUserParts(m Message) []gemPart {
 		switch b.Type {
 		case BlockText:
 			parts = append(parts, gemPart{Text: b.Text})
-		case BlockImage:
+		case BlockImage, BlockDocument:
+			// Gemini takes both as inline data; the mime type is the whole of
+			// the difference on this protocol (SPEC §8.4).
 			parts = append(parts, gemPart{InlineData: &gemBlob{MimeType: b.MimeType, Data: b.Data}})
 		}
 	}

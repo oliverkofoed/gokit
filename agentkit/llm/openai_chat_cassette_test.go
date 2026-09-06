@@ -18,7 +18,7 @@ var oaicCassetteModel = Model{
 	BaseURL:       "https://api.openai.com/v1",
 	Cost:          Cost{Input: 0.20, Output: 1.20, CacheRead: 0.02},
 	ContextWindow: 1_050_000, MaxOutput: 128_000,
-	Reasoning: true, Vision: true,
+	Reasoning: true, Vision: true, Documents: true,
 	// Luna reasons by default, and /v1/chat/completions rejects function
 	// tools unless reasoning is explicitly off: "Function tools with
 	// reasoning_effort are not supported for gpt-5.6-luna ... set
@@ -128,6 +128,12 @@ func oaicDecodeCassette(t *testing.T, _ string, body map[string]any) casView {
 					msg.Text += casStr(part["text"])
 				case "image_url":
 					msg.Images = append(msg.Images, casDataURI(casStr(casMap(part["image_url"])["url"])))
+				case "file":
+					f := casMap(part["file"])
+					img := casDataURI(casStr(f["file_data"]))
+					msg.Documents = append(msg.Documents, casDocument{
+						MimeType: img.MimeType, Data: img.Data, Name: casStr(f["filename"]),
+					})
 				}
 			}
 		}

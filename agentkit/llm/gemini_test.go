@@ -21,7 +21,7 @@ func gemModel() Model {
 		BaseURL:       "https://gem.example.com",
 		Cost:          Cost{Input: 1, Output: 2, CacheRead: 0.5},
 		ContextWindow: 100_000, MaxOutput: 4096,
-		Reasoning: true, Vision: true,
+		Reasoning: true, Vision: true, Documents: true,
 		Headers: map[string]string{"X-Gem-Extra": "extra-v"},
 	}
 }
@@ -807,5 +807,60 @@ func TestGeminiEmptyThoughtDropped(t *testing.T) {
 	}
 	if len(parts) != 1 {
 		t.Errorf("parts = %d, want 1 (the empty thought is dropped)", len(parts))
+	}
+}
+
+func TestGeminiDocumentInput(t *testing.T) {
+	ct := &captureTransport{chunks: []string{
+		gemData(`{"candidates":[{"content":{"parts":[{"text":"a spec"}]},"finishReason":"STOP"}]}`),
+	}}
+	_, err := gemClient(ct).Complete(context.Background(), Request{
+		Model:    gemModel(),
+		Messages: []Message{UserBlocks(TextBlock("read"), DocumentBlock("application/pdf", "spec.pdf", []byte{1, 2, 3}))},
+	})
+	if err != nil {
+		t.Fatalf("Complete: %v", err)
+	}
+	body := ct.lastBody(t)
+	doc := gemPath(t, body, "contents", 0, "parts", 1, "inlineData").(map[string]any)
+	if doc["mimeType"] != "application/pdf" {
+		t.Fatalf("mimeType = %v", doc["mimeType"])
+	}
+	if doc["data"] != base64.StdEncoding.EncodeToString([]byte{1, 2, 3}) {
+		t.Fatalf("data = %v", doc["data"])
+	}
+}
+
+// TestGeminiDocumentInToolResultDropped (R38): a functionResponse part
+// carries text, and images ride alongside as extra inlineData parts. A
+// document is dropped rather than smuggled in as an untyped blob.
+func TestGeminiDocumentInToolResultDropped(t *testing.T) {
+	assistant := Message{
+		Role: RoleAssistant, Model: "gem-test-model",
+		Blocks: []Block{{Type: BlockToolCall, ID: "call_1", Name: "fetch", Args: json.RawMessage(`{}`)}},
+	}
+	ct := &captureTransport{chunks: []string{
+		gemData(`{"candidates":[{"content":{"parts":[{"text":"nice"}]},"finishReason":"STOP"}]}`),
+	}}
+	_, err := gemClient(ct).Complete(context.Background(), Request{
+		Model: gemModel(),
+		Messages: []Message{
+			UserText("fetch the spec"),
+			assistant,
+			ToolResultMessage("call_1", "fetch", false,
+				TextBlock("got it"), DocumentBlock("application/pdf", "spec.pdf", []byte{1, 2, 3})),
+		},
+	})
+	if err != nil {
+		t.Fatalf("Complete: %v", err)
+	}
+	body := ct.lastBody(t)
+	parts := gemPath(t, body, "contents", 2, "parts").([]any)
+	if len(parts) != 1 {
+		t.Fatalf("tool result parts = %d, want 1 (functionResponse only): %v", len(parts), parts)
+	}
+	fr := gemPath(t, body, "contents", 2, "parts", 0, "functionResponse").(map[string]any)
+	if got := gemPath(t, fr, "response", "output"); got != "got it" {
+		t.Fatalf("output = %v", got)
 	}
 }

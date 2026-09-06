@@ -33,6 +33,7 @@ const (
 	BlockText     BlockType = "text"
 	BlockThinking BlockType = "thinking"
 	BlockImage    BlockType = "image"
+	BlockDocument BlockType = "document"
 	BlockToolCall BlockType = "tool_call"
 )
 
@@ -49,11 +50,12 @@ type Block struct {
 	// Redacted marks safety-redacted thinking (content lives in Signature).
 	Redacted bool `json:"redacted,omitempty"`
 
-	// BlockImage
+	// BlockImage, BlockDocument
 	Data     string `json:"data,omitempty"`      // base64, no data: prefix
-	MimeType string `json:"mime_type,omitempty"` // "image/png", "image/jpeg", ...
+	MimeType string `json:"mime_type,omitempty"` // "image/png", "application/pdf", ...
 
-	// BlockToolCall
+	// BlockToolCall; BlockDocument uses Name for the file name, which
+	// providers show to the model alongside the bytes.
 	ID   string          `json:"id,omitempty"`
 	Name string          `json:"name,omitempty"`
 	Args json.RawMessage `json:"args,omitempty"` // decoded JSON object; "{}" while empty
@@ -117,6 +119,15 @@ func TextBlock(text string) Block {
 // ImageBlock builds an image content block, base64-encoding data.
 func ImageBlock(mimeType string, data []byte) Block {
 	return Block{Type: BlockImage, MimeType: mimeType, Data: base64.StdEncoding.EncodeToString(data)}
+}
+
+// DocumentBlock builds a document content block, base64-encoding data. name
+// is the file name to show the model and may be empty. Documents are a user
+// message's to send (SPEC §5.3 R38): a model that does not accept them sees
+// text in their place rather than an error.
+func DocumentBlock(mimeType, name string, data []byte) Block {
+	return Block{Type: BlockDocument, MimeType: mimeType, Name: name,
+		Data: base64.StdEncoding.EncodeToString(data)}
 }
 
 // ToolResultMessage builds a tool result message (R3).

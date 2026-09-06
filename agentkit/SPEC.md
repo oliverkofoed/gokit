@@ -131,6 +131,7 @@ type Model struct {
     MaxOutput     int               `json:"max_output"`     // tokens; used when Request.MaxTokens == 0
     Reasoning     bool              `json:"reasoning"`      // supports thinking/reasoning
     Vision        bool              `json:"vision"`         // accepts image input
+    Documents     bool              `json:"documents"`      // accepts document (PDF) input
     Headers       map[string]string `json:"headers,omitempty"` // extra headers on every request
     Quirks        Quirks            `json:"quirks,omitempty"`
 }
@@ -190,6 +191,7 @@ const (
     BlockText     BlockType = "text"
     BlockThinking BlockType = "thinking"
     BlockImage    BlockType = "image"
+    BlockDocument BlockType = "document"
     BlockToolCall BlockType = "tool_call"
 )
 
@@ -207,11 +209,11 @@ type Block struct {
     // Redacted marks safety-redacted thinking (content lives in Signature).
     Redacted bool `json:"redacted,omitempty"`
 
-    // BlockImage
+    // BlockImage, BlockDocument
     Data     string `json:"data,omitempty"`      // base64, no data: prefix
-    MimeType string `json:"mime_type,omitempty"` // "image/png", "image/jpeg", ...
+    MimeType string `json:"mime_type,omitempty"` // "image/png", "application/pdf", ...
 
-    // BlockToolCall
+    // BlockToolCall; BlockDocument uses Name for the file name
     ID   string          `json:"id,omitempty"`
     Name string          `json:"name,omitempty"`
     Args json.RawMessage `json:"args,omitempty"` // decoded JSON object; "{}" while empty
@@ -261,6 +263,7 @@ func UserText(text string) Message
 func UserBlocks(blocks ...Block) Message
 func TextBlock(text string) Block
 func ImageBlock(mimeType string, data []byte) Block // base64-encodes
+func DocumentBlock(mimeType, name string, data []byte) Block // base64-encodes
 func ToolResultMessage(callID, toolName string, isError bool, blocks ...Block) Message
 func AppMessage(kind string, meta json.RawMessage) Message // Kind message, no Role
 ```
@@ -496,6 +499,8 @@ Applied to a copy of `Request.Messages` before protocol encoding, in this order 
 
 **R20 — Vision downgrade.** If `Model.Vision` is false, image blocks are replaced by the text `[image omitted]` rather than causing an error.
 
+**R38 — Document downgrade.** If `Model.Documents` is false, document blocks are replaced by the text `[document <name> omitted]` (`[document omitted]` when the block carries no name) rather than causing an error. Documents are a user message's to send: every protocol encoder drops a document block placed in a tool result, since no provider accepts one in that position — text and images are all a tool result carries (§8.1–§8.4).
+
 ---
 
 ## 6. The `transport` Package
@@ -676,6 +681,7 @@ The tables below define the mapping. Cassettes are ground truth for exact payloa
 | `Reasoning`                     | `thinking: {"type":"enabled","budget_tokens":N}`; omit `temperature`                                                                                |
 | `ToolDef`                       | `tools[]: {name, description, input_schema}`                                                                                                        |
 | user text/image                 | `messages[]: {role:"user", content:[{type:"text"},{type:"image",source:{type:"base64",media_type,data}}]}`                                          |
+| user document                   | `{type:"document", title?, source:{type:"base64",media_type,data}}`                                                                                 |
 | assistant text                  | `{type:"text"}`                                                                                                                                     |
 | assistant thinking (same model) | `{type:"thinking", thinking, signature}`; redacted → `{type:"redacted_thinking", data: Signature}`                                                  |
 | assistant tool_call             | `{type:"tool_use", id, name, input}`                                                                                                                |
@@ -696,6 +702,7 @@ The tables below define the mapping. Cassettes are ground truth for exact payloa
 | `Reasoning`     | `reasoning_effort` unless `Quirks.NoReasoningEffort`                                                                                                                               |
 | `ToolDef`       | `tools[]: {type:"function", function:{name, description, parameters}}`                                                                                                             |
 | user text/image | `{role:"user", content:[{type:"text"},{type:"image_url", image_url:{url:"data:<mime>;base64,<data>"}}]}`                                                                           |
+| user document   | `{type:"file", file:{filename?, file_data:"data:<mime>;base64,<data>"}}`                                                                                                           |
 | assistant       | `{role:"assistant", content, tool_calls:[{id, type:"function", function:{name, arguments:<string>}}]}`; thinking blocks dropped (R17 already textified cross-model ones)           |
 | tool_result     | `{role:"tool", tool_call_id, content:<text>}`; image blocks in tool results move to an immediately following user message (`content:[image]`), since role:tool cannot carry images |
 
@@ -713,6 +720,7 @@ The tables below define the mapping. Cassettes are ground truth for exact payloa
 | `Reasoning`                     | `reasoning: {"effort": "..."}`                                                                                                                                             |
 | `ToolDef`                       | `tools[]: {type:"function", name, description, parameters, strict:false}`                                                                                                  |
 | user msg                        | `input[]: {type:"message", role:"user", content:[{type:"input_text"},{type:"input_image", image_url:"data:…"}]}`                                                           |
+| user document                   | `{type:"input_file", filename?, file_data:"data:<mime>;base64,<data>"}`                                                                                                    |
 | assistant text                  | `{type:"message", role:"assistant", content:[{type:"output_text"}]}`                                                                                                       |
 | assistant thinking (same model) | `{type:"reasoning", id?, encrypted_content}` reconstructed from `Block.Signature` (Signature stores JSON `{"id":"…","encrypted_content":"…"}`); cross-model → text per R17 |
 | assistant tool_call             | `{type:"function_call", call_id, name, arguments:<string>}`                                                                                                                |
@@ -732,6 +740,7 @@ The tables below define the mapping. Cassettes are ground truth for exact payloa
 | `Reasoning`     | `generationConfig.thinkingConfig: {thinkingBudget:N, includeThoughts:true}`                                                                                                                 |
 | `ToolDef`       | `tools:[{functionDeclarations:[{name, description, parameters}]}]` — schema sanitized: strip `additionalProperties`, `$schema`, `format` values Gemini rejects; `enum` kept only on strings |
 | user text/image | `contents[]: {role:"user", parts:[{text},{inlineData:{mimeType,data}}]}`                                                                                                                    |
+| user document   | `{inlineData:{mimeType:"application/pdf",data}}` — the same part as an image; the mime type is the whole difference                                                                          |
 | assistant       | `{role:"model", parts:[{text}, {text, thought:true, thoughtSignature}, {functionCall:{name,args}}]}`                                                                                        |
 | tool_result     | `{role:"user", parts:[{functionResponse:{name, response:{output:<text>}}}]}`; images as additional `inlineData` parts                                                                       |
 
@@ -1165,6 +1174,10 @@ Everything runs offline by default (`go test ./...`), with `-race` in CI. Two me
 | `TestConvertOrphanInjection` | R16     | synthetic results injected                                                                                                                                     |
 | `TestConvertCrossModelThinking`         | R17     | thinking→`<thinking>` text across models; preserved same-model                                                                                                 |
 | `TestConvertIDSanitization`    | R18     | invalid + empty IDs, call/result consistency                                                                                                                   |
+| `TestConvertDocumentDowngrade`          | R38 | document downgrade, and that the caller's blocks are not mutated                                                                                    |
+| `TestAnthropicDocumentInput`, `TestOpenAIChatDocumentInput`, `TestOpenAIResponsesDocumentInput`, `TestGeminiDocumentInput` | §8 | document encoding per protocol                            |
+| `Test{Anthropic,OpenAIChat,OpenAIResponses}DocumentWithoutName` | §8 | an unnamed document omits the title/filename field rather than sending it empty |
+| `Test{Anthropic,OpenAIChat,OpenAIResponses,Gemini}DocumentInToolResultDropped` | R38 | a document in a tool result is dropped, and its bytes never reach the wire |
 | `TestConvertEmptyAndVision`             | R19,R20 | empty-message and non-vision handling                                                                                                                          |
 | `TestConvertKindRemoval`, `TestMessageJSONRoundTrip` | R37 | Kind messages round-trip JSON; normalization removes them before R16–R20 (an orphaned tool call followed only by a Kind message still gets a synthetic result) |
 
@@ -1181,6 +1194,7 @@ One table-driven suite (`llm/cassette_suite_test.go`) runs the same scenario mat
 | `thinking_replay`                             | same-model replay sends signatures/encrypted content back                                |
 | `image_input`                                 | base64 encoding per protocol                                                             |
 | `image_in_tool_result`                        | §8.2/8.3 user-message spillover; Gemini inlineData                                       |
+| `document_input`                              | document encoding per protocol; the provider extracts the PDF's text                     |
 | `multi_tool_parallel`                         | multiple tool_call blocks in one message, index mapping                                  |
 | `error_400`                                   | HTTP error body lands in ErrorText, StopError                                            |
 | `abort_mid_stream`                            | ctx cancel mid-SSE → StopAborted + partial content                                       |

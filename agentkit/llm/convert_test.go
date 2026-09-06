@@ -337,3 +337,53 @@ func TestConvertInputImmutability(t *testing.T) {
 		}
 	}
 }
+
+// TestConvertDocumentDowngrade (R38): a model that does not take documents is
+// told one was left out rather than handed bytes it cannot read, and one that
+// does keeps them untouched.
+func TestConvertDocumentDowngrade(t *testing.T) {
+	withDocs := convertTestModel
+	withDocs.Documents = true
+
+	t.Run("model without documents sees text", func(t *testing.T) {
+		in := []Message{UserBlocks(TextBlock("read this"), DocumentBlock("application/pdf", "spec.pdf", []byte{1, 2}))}
+		out := normalizeMessages(convertTestModel, in)
+		b := out[0].Blocks[1]
+		if b.Type != BlockText || b.Text != "[document spec.pdf omitted]" || b.Data != "" || b.MimeType != "" {
+			t.Fatalf("document block = %+v, want text naming the file", b)
+		}
+	})
+
+	t.Run("an unnamed document still says one was left out", func(t *testing.T) {
+		in := []Message{UserBlocks(DocumentBlock("application/pdf", "", []byte{1}))}
+		out := normalizeMessages(convertTestModel, in)
+		if b := out[0].Blocks[0]; b.Text != "[document omitted]" {
+			t.Fatalf("block = %+v", b)
+		}
+	})
+
+	t.Run("model with documents keeps them", func(t *testing.T) {
+		in := []Message{UserBlocks(DocumentBlock("application/pdf", "spec.pdf", []byte{1, 2}))}
+		out := normalizeMessages(withDocs, in)
+		b := out[0].Blocks[0]
+		if b.Type != BlockDocument || b.MimeType != "application/pdf" || b.Name != "spec.pdf" {
+			t.Fatalf("document block altered: %+v", b)
+		}
+	})
+
+	t.Run("the caller's blocks are not mutated", func(t *testing.T) {
+		in := []Message{UserBlocks(DocumentBlock("application/pdf", "spec.pdf", []byte{1, 2}))}
+		before, err := json.Marshal(in)
+		if err != nil {
+			t.Fatal(err)
+		}
+		normalizeMessages(convertTestModel, in)
+		after, err := json.Marshal(in)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if string(before) != string(after) {
+			t.Fatalf("input mutated:\nbefore: %s\nafter:  %s", before, after)
+		}
+	})
+}
