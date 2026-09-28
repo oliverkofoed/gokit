@@ -854,3 +854,133 @@ func TestAnthropicDocumentInToolResultDropped(t *testing.T) {
 		t.Errorf("nested[1].type = %v, want image", got)
 	}
 }
+
+func TestAnthropicAdaptiveThinking(t *testing.T) {
+	for _, tc := range []struct {
+		effort Effort
+		want   string
+	}{{EffortLow, "low"}, {EffortMedium, "medium"}, {EffortHigh, "high"}} {
+		tr := &captureTransport{chunks: anthBasicChunks()}
+		c := anthClient(tr)
+		temp := 0.5
+		if _, err := c.Complete(context.Background(), Request{
+			Model:       ClaudeOpus5,
+			Messages:    []Message{UserText("hard question")},
+			Reasoning:   tc.effort,
+			MaxTokens:   100,
+			Temperature: &temp,
+		}); err != nil {
+			t.Fatalf("%s: Complete: %v", tc.effort, err)
+		}
+
+		body := tr.lastBody(t)
+		thinking := anthGet(t, body, "thinking").(map[string]any)
+		if thinking["type"] != "adaptive" {
+			t.Errorf("%s: thinking.type = %v", tc.effort, thinking["type"])
+		}
+		if _, has := thinking["budget_tokens"]; has {
+			t.Errorf("%s: budget_tokens must be omitted for adaptive thinking", tc.effort)
+		}
+		if got := anthGet(t, body, "output_config", "effort"); got != tc.want {
+			t.Errorf("%s: output_config.effort = %v, want %s", tc.effort, got, tc.want)
+		}
+		if _, has := body["temperature"]; has {
+			t.Errorf("%s: temperature must be omitted", tc.effort)
+		}
+		if got := body["max_tokens"]; got != float64(100) {
+			t.Errorf("%s: max_tokens = %v, want 100 (no budget bump)", tc.effort, got)
+		}
+	}
+}
+
+func TestAnthropicNoSamplingDropsTemperature(t *testing.T) {
+	for _, m := range []Model{ClaudeOpus5, ClaudeSonnet5, ClaudeFable51} {
+		tr := &captureTransport{chunks: anthBasicChunks()}
+		c := anthClient(tr)
+		temp := 0.7
+		if _, err := c.Complete(context.Background(), Request{
+			Model: m, Messages: []Message{UserText("hi")}, Temperature: &temp,
+		}); err != nil {
+			t.Fatalf("%s: Complete: %v", m.ID, err)
+		}
+		body := tr.lastBody(t)
+		if _, has := body["temperature"]; has {
+			t.Errorf("%s: temperature must be omitted for no-sampling models", m.ID)
+		}
+		if _, has := body["thinking"]; has {
+			t.Errorf("%s: thinking must be omitted when no reasoning is requested", m.ID)
+		}
+	}
+
+	// Models without the quirk keep temperature.
+	tr := &captureTransport{chunks: anthBasicChunks()}
+	temp := 0.7
+	if _, err := anthClient(tr).Complete(context.Background(), Request{
+		Model: ClaudeHaiku45, Messages: []Message{UserText("hi")}, Temperature: &temp,
+	}); err != nil {
+		t.Fatalf("Complete: %v", err)
+	}
+	if got := tr.lastBody(t)["temperature"]; got != 0.7 {
+		t.Errorf("haiku temperature = %v, want 0.7", got)
+	}
+}
+
+func TestAnthropicHaikuKeepsBudgetThinking(t *testing.T) {
+	tr := &captureTransport{chunks: anthBasicChunks()}
+	c := anthClient(tr)
+	if _, err := c.Complete(context.Background(), Request{
+		Model: ClaudeHaiku45, Messages: []Message{UserText("hard question")}, Reasoning: EffortHigh,
+	}); err != nil {
+		t.Fatalf("Complete: %v", err)
+	}
+	body := tr.lastBody(t)
+	if got := anthGet(t, body, "thinking", "type"); got != "enabled" {
+		t.Errorf("thinking.type = %v, want enabled", got)
+	}
+	if got := anthGet(t, body, "thinking", "budget_tokens"); got != float64(c.thinkingBudget(EffortHigh)) {
+		t.Errorf("budget_tokens = %v", got)
+	}
+	if _, has := body["output_config"]; has {
+		t.Errorf("output_config must be omitted for budget thinking")
+	}
+}
+
+func TestAnthropicFableNoReasoningOmitsThinking(t *testing.T) {
+	tr := &captureTransport{chunks: anthBasicChunks()}
+	if _, err := anthClient(tr).Complete(context.Background(), Request{
+		Model: ClaudeFable51, Messages: []Message{UserText("hi")},
+	}); err != nil {
+		t.Fatalf("Complete: %v", err)
+	}
+	body := tr.lastBody(t)
+	for _, k := range []string{"thinking", "output_config", "temperature"} {
+		if _, has := body[k]; has {
+			t.Errorf("%s must be omitted, got %v", k, body[k])
+		}
+	}
+}
+
+// Adaptive-thinking models omit thinking text by default, so a replayed
+// thinking block can be empty; the field must still be sent (the API 400s
+// without it).
+func TestAnthropicReplayEmptyThinkingKeepsField(t *testing.T) {
+	tr := &captureTransport{chunks: anthBasicChunks()}
+	history := []Message{
+		UserText("q"),
+		{Role: RoleAssistant, Model: ClaudeSonnet5.ID, Provider: "anthropic", API: AnthropicMessages, Blocks: []Block{
+			{Type: BlockThinking, Text: "", Signature: "sig"},
+			{Type: BlockText, Text: "a"},
+		}},
+		UserText("again"),
+	}
+	if _, err := anthClient(tr).Complete(context.Background(), Request{Model: ClaudeSonnet5, Messages: history}); err != nil {
+		t.Fatalf("Complete: %v", err)
+	}
+	block := anthGet(t, tr.lastBody(t), "messages", 1, "content", 0).(map[string]any)
+	if block["type"] != "thinking" {
+		t.Fatalf("block = %v, want the thinking block replayed", block)
+	}
+	if got, has := block["thinking"]; !has || got != "" {
+		t.Errorf("thinking field = %v (present %v), want empty string", got, has)
+	}
+}

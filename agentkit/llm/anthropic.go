@@ -48,7 +48,11 @@ type anthCacheControl struct {
 
 type anthThinking struct {
 	Type         string `json:"type"`
-	BudgetTokens int    `json:"budget_tokens"`
+	BudgetTokens int    `json:"budget_tokens,omitempty"` // "enabled" only
+}
+
+type anthOutputConfig struct {
+	Effort string `json:"effort,omitempty"`
 }
 
 type anthTool struct {
@@ -72,10 +76,12 @@ type anthBlock struct {
 
 	// text
 	Text string `json:"text,omitempty"`
-	// thinking / redacted_thinking
-	Thinking  string `json:"thinking,omitempty"`
-	Signature string `json:"signature,omitempty"`
-	Data      string `json:"data,omitempty"`
+	// thinking / redacted_thinking. A pointer so a thinking block always
+	// carries the field: models that omit thinking text by default return it
+	// empty, and replaying it without the field is a 400.
+	Thinking  *string `json:"thinking,omitempty"`
+	Signature string  `json:"signature,omitempty"`
+	Data      string  `json:"data,omitempty"`
 	// image / document
 	Source *anthSource `json:"source,omitempty"`
 	Title  string      `json:"title,omitempty"` // document
@@ -97,14 +103,15 @@ type anthMessage struct {
 }
 
 type anthRequest struct {
-	Model       string        `json:"model"`
-	MaxTokens   int           `json:"max_tokens"`
-	Stream      bool          `json:"stream"`
-	System      []anthBlock   `json:"system,omitempty"`
-	Messages    []anthMessage `json:"messages"`
-	Tools       []anthTool    `json:"tools,omitempty"`
-	Temperature *float64      `json:"temperature,omitempty"`
-	Thinking    *anthThinking `json:"thinking,omitempty"`
+	Model        string            `json:"model"`
+	MaxTokens    int               `json:"max_tokens"`
+	Stream       bool              `json:"stream"`
+	System       []anthBlock       `json:"system,omitempty"`
+	Messages     []anthMessage     `json:"messages"`
+	Tools        []anthTool        `json:"tools,omitempty"`
+	Temperature  *float64          `json:"temperature,omitempty"`
+	Thinking     *anthThinking     `json:"thinking,omitempty"`
+	OutputConfig *anthOutputConfig `json:"output_config,omitempty"`
 }
 
 // anthBuildPayload maps a normalized Request onto the wire body (SPEC §8.1).
@@ -126,9 +133,23 @@ func anthBuildPayload(c *Client, req Request) *anthRequest {
 		p.System = []anthBlock{{Type: "text", Text: req.System, CacheControl: cache()}}
 	}
 
+	q := req.Model.Quirks
+	if q.AnthropicNoSampling {
+		p.Temperature = nil
+	}
+
 	// R14: thinking enabled → budget from effort, temperature omitted, and
-	// max_tokens must exceed the budget.
-	if req.Reasoning != "" && req.Model.Reasoning {
+	// max_tokens must exceed the budget. Adaptive-thinking models reject
+	// budget_tokens and take the effort level directly instead. With no
+	// reasoning requested, thinking is left out on every model (explicit
+	// "disabled" is a 400 on models that always think).
+	switch {
+	case req.Reasoning == "" || !req.Model.Reasoning:
+	case q.AnthropicAdaptiveThinking:
+		p.Thinking = &anthThinking{Type: "adaptive"}
+		p.OutputConfig = &anthOutputConfig{Effort: anthEffort(req.Reasoning)}
+		p.Temperature = nil
+	default:
 		budget := c.thinkingBudget(req.Reasoning)
 		p.Thinking = &anthThinking{Type: "enabled", BudgetTokens: budget}
 		p.Temperature = nil
@@ -162,6 +183,19 @@ func anthBuildPayload(c *Client, req Request) *anthRequest {
 		}
 	}
 	return p
+}
+
+// anthEffort maps Effort onto output_config.effort. Unknown levels fall back
+// to medium, matching thinkingBudget.
+func anthEffort(e Effort) string {
+	switch e {
+	case EffortLow:
+		return "low"
+	case EffortHigh:
+		return "high"
+	default:
+		return "medium"
+	}
 }
 
 // anthEncodeMessages maps normalized history to wire messages. Consecutive
@@ -242,7 +276,7 @@ func anthAssistantBlocks(blocks []Block) []anthBlock {
 			if b.Redacted {
 				out = append(out, anthBlock{Type: "redacted_thinking", Data: b.Signature})
 			} else {
-				out = append(out, anthBlock{Type: "thinking", Thinking: b.Text, Signature: b.Signature})
+				out = append(out, anthBlock{Type: "thinking", Thinking: &b.Text, Signature: b.Signature})
 			}
 		case BlockToolCall:
 			args := b.Args

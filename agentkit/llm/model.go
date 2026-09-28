@@ -42,6 +42,15 @@ type Quirks struct {
 	// (supported by OpenRouter when routing to Anthropic models).
 	AnthropicCacheControl bool `json:"anthropic_cache_control,omitempty"`
 
+	// AnthropicAdaptiveThinking selects `thinking: {type: "adaptive"}` with
+	// `output_config.effort` in place of `budget_tokens`, which newer Claude
+	// models (Fable 5.x, Opus 4.7+, Sonnet 5) reject with a 400.
+	AnthropicAdaptiveThinking bool `json:"anthropic_adaptive_thinking,omitempty"`
+	// AnthropicNoSampling omits temperature even when Request.Temperature is
+	// set; newer Claude models (Fable 5.x, Opus 4.7+, Sonnet 5) reject
+	// sampling parameters with a 400.
+	AnthropicNoSampling bool `json:"anthropic_no_sampling,omitempty"`
+
 	// GeminiV3 selects Gemini 3.x request encoding: `thinking_level` and
 	// `thinking_summaries` in place of `thinkingConfig`, and no sampling
 	// parameters — that generation deprecated temperature/top_p/top_k,

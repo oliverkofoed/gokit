@@ -1,0 +1,333 @@
+{
+  "version": 1,
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "header": {
+          "Anthropic-Version": [
+            "2023-06-01"
+          ],
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "max_tokens": 256,
+          "messages": [
+            {
+              "content": [
+                {
+                  "cache_control": {
+                    "type": "ephemeral"
+                  },
+                  "text": "Take a screenshot and tell me the dominant colour.",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-fable-5-1",
+          "stream": true,
+          "system": [
+            {
+              "cache_control": {
+                "type": "ephemeral"
+              },
+              "text": "Use the tools you are given. Do not ask follow-up questions.",
+              "type": "text"
+            }
+          ],
+          "tools": [
+            {
+              "cache_control": {
+                "type": "ephemeral"
+              },
+              "description": "Take a screenshot of the current page.",
+              "input_schema": {
+                "properties": {},
+                "type": "object"
+              },
+              "name": "screenshot"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Anthropic-Organization-Id": [
+            "REDACTED"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Limit": [
+            "4000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Remaining": [
+            "4000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Reset": [
+            "2026-09-28T14:03:05Z"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Limit": [
+            "800000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Remaining": [
+            "800000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Reset": [
+            "2026-09-28T14:03:05Z"
+          ],
+          "Anthropic-Ratelimit-Requests-Limit": [
+            "4000"
+          ],
+          "Anthropic-Ratelimit-Requests-Remaining": [
+            "3999"
+          ],
+          "Anthropic-Ratelimit-Requests-Reset": [
+            "2026-09-28T14:03:05Z"
+          ],
+          "Anthropic-Ratelimit-Tokens-Limit": [
+            "4800000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Remaining": [
+            "4800000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Reset": [
+            "2026-09-28T14:03:05Z"
+          ],
+          "Anthropic-Workspace-Id": [
+            "REDACTED"
+          ],
+          "Cache-Control": [
+            "no-cache"
+          ],
+          "Cf-Cache-Status": [
+            "DYNAMIC"
+          ],
+          "Cf-Ray": [
+            "REDACTED"
+          ],
+          "Content-Security-Policy": [
+            "default-src 'none'; frame-ancestors 'none'"
+          ],
+          "Content-Type": [
+            "text/event-stream; charset=utf-8"
+          ],
+          "Date": [
+            "Mon, 28 Sep 2026 14:03:07 GMT"
+          ],
+          "Request-Id": [
+            "REDACTED"
+          ],
+          "Server": [
+            "cloudflare"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "Traceresponse": [
+            "00-0984e3053e07f738b1741461f81d4eff-a13a264b2b45e895-01"
+          ],
+          "Vary": [
+            "Accept-Encoding"
+          ],
+          "X-Robots-Tag": [
+            "none"
+          ]
+        },
+        "chunks": [
+          "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"model\":\"claude-fable-5-1\",\"id\":\"msg_011CfVxkDxx31WTv2SKLqgFL\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"container\":null,\"stop_reason\":null,\"stop_sequence\":null,\"stop_details\":null,\"usage\":{\"input_tokens\":389,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":16,\"service_tier\":\"standard\",\"inference_geo\":\"global\"},\"diagnostics\":null}              }\n\nevent: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"tool_use\",\"id\":\"toolu_01Xz4gWSU5FjEEmNgDf1oA7W\",\"name\":\"screenshot\",\"input\":{},\"caller\":{\"type\":\"direct\"}}              }\n\nevent: ping\ndata: {\"type\": \"ping\"}\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"input_json_delta\",\"partial_json\":\"\"}              }\n\n",
+          "event: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":0              }\n\n",
+          "event: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"tool_use\",\"stop_sequence\":null,\"stop_details\":null,\"container\":null},\"usage\":{\"input_tokens\":389,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":27,\"output_tokens_details\":{\"thinking_tokens\":0}}            }\n\nevent: message_stop\ndata: {\"type\":\"message_stop\"        }\n\n"
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "header": {
+          "Anthropic-Version": [
+            "2023-06-01"
+          ],
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "max_tokens": 256,
+          "messages": [
+            {
+              "content": [
+                {
+                  "text": "Take a screenshot and tell me the dominant colour.",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            },
+            {
+              "content": [
+                {
+                  "id": "toolu_01Xz4gWSU5FjEEmNgDf1oA7W",
+                  "input": {},
+                  "name": "screenshot",
+                  "type": "tool_use"
+                }
+              ],
+              "role": "assistant"
+            },
+            {
+              "content": [
+                {
+                  "cache_control": {
+                    "type": "ephemeral"
+                  },
+                  "content": [
+                    {
+                      "text": "screenshot captured",
+                      "type": "text"
+                    },
+                    {
+                      "source": {
+                        "data": "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAHUlEQVR4nGK5I2LDQApgIkn1qIZRDUNKAyAAAP//0nUBT3dZ/MAAAAAASUVORK5CYII=",
+                        "media_type": "image/png",
+                        "type": "base64"
+                      },
+                      "type": "image"
+                    }
+                  ],
+                  "tool_use_id": "toolu_01Xz4gWSU5FjEEmNgDf1oA7W",
+                  "type": "tool_result"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-fable-5-1",
+          "stream": true,
+          "system": [
+            {
+              "cache_control": {
+                "type": "ephemeral"
+              },
+              "text": "Use the tools you are given. Do not ask follow-up questions.",
+              "type": "text"
+            }
+          ],
+          "tools": [
+            {
+              "cache_control": {
+                "type": "ephemeral"
+              },
+              "description": "Take a screenshot of the current page.",
+              "input_schema": {
+                "properties": {},
+                "type": "object"
+              },
+              "name": "screenshot"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Anthropic-Organization-Id": [
+            "REDACTED"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Limit": [
+            "4000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Remaining": [
+            "4000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Reset": [
+            "2026-09-28T14:03:08Z"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Limit": [
+            "800000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Remaining": [
+            "800000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Reset": [
+            "2026-09-28T14:03:08Z"
+          ],
+          "Anthropic-Ratelimit-Requests-Limit": [
+            "4000"
+          ],
+          "Anthropic-Ratelimit-Requests-Remaining": [
+            "3999"
+          ],
+          "Anthropic-Ratelimit-Requests-Reset": [
+            "2026-09-28T14:03:08Z"
+          ],
+          "Anthropic-Ratelimit-Tokens-Limit": [
+            "4800000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Remaining": [
+            "4800000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Reset": [
+            "2026-09-28T14:03:08Z"
+          ],
+          "Anthropic-Workspace-Id": [
+            "REDACTED"
+          ],
+          "Cache-Control": [
+            "no-cache"
+          ],
+          "Cf-Cache-Status": [
+            "DYNAMIC"
+          ],
+          "Cf-Ray": [
+            "REDACTED"
+          ],
+          "Content-Security-Policy": [
+            "default-src 'none'; frame-ancestors 'none'"
+          ],
+          "Content-Type": [
+            "text/event-stream; charset=utf-8"
+          ],
+          "Date": [
+            "Mon, 28 Sep 2026 14:03:12 GMT"
+          ],
+          "Request-Id": [
+            "REDACTED"
+          ],
+          "Server": [
+            "cloudflare"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "Traceresponse": [
+            "00-0020e80290033b2a4620e151164061ba-0b39c45c53f439ed-01"
+          ],
+          "Vary": [
+            "Accept-Encoding"
+          ],
+          "X-Robots-Tag": [
+            "none"
+          ]
+        },
+        "chunks": [
+          "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"model\":\"claude-fable-5-1\",\"id\":\"msg_011CfVxkU9E6zqiXyfgyxD9G\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"container\":null,\"stop_reason\":null,\"stop_sequence\":null,\"stop_details\":null,\"usage\":{\"input_tokens\":449,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":54,\"service_tier\":\"standard\",\"inference_geo\":\"global\"},\"diagnostics\":null}            }\n\nevent: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"text\",\"text\":\"\"}     }\n\nevent: ping\ndata: {\"type\": \"ping\"}\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"I\"}            }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" took the\"}             }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" screenshot.\"}  }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" The dominant colour is **\"}       }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"red** — a\"}               }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" b\"}    }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"old\"}       }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\", saturated cr\"}}\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"imson-like red (rough\"}           }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"ly #D\"}  }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"8203\"}   }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"C\"}          }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\")\"}          }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" that fills the ent\"}    }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"ire captured image.\"}         }\n\n",
+          "event: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":0}\n\n",
+          "event: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\",\"stop_sequence\":null,\"stop_details\":null,\"container\":null},\"usage\":{\"input_tokens\":449,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":54,\"output_tokens_details\":{\"thinking_tokens\":0}}        }\n\nevent: message_stop\ndata: {\"type\":\"message_stop\"            }\n\n"
+        ]
+      }
+    }
+  ]
+}

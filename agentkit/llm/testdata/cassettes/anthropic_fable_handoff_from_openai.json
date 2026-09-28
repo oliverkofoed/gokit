@@ -1,0 +1,235 @@
+{
+  "version": 1,
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "header": {
+          "Anthropic-Version": [
+            "2023-06-01"
+          ],
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "max_tokens": 256,
+          "messages": [
+            {
+              "content": [
+                {
+                  "text": "What is the weather in Copenhagen right now?",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            },
+            {
+              "content": [
+                {
+                  "text": "\u003cthinking\u003e\nThe user wants current weather; call the tool.\n\u003c/thinking\u003e\n",
+                  "type": "text"
+                },
+                {
+                  "text": "Let me look that up.",
+                  "type": "text"
+                },
+                {
+                  "id": "call_9xKpQr2Lm",
+                  "input": {
+                    "city": "Copenhagen"
+                  },
+                  "name": "get_weather",
+                  "type": "tool_use"
+                }
+              ],
+              "role": "assistant"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "{\"temp_c\":18,\"conditions\":\"light rain\"}",
+                      "type": "text"
+                    }
+                  ],
+                  "tool_use_id": "call_9xKpQr2Lm",
+                  "type": "tool_result"
+                }
+              ],
+              "role": "user"
+            },
+            {
+              "content": [
+                {
+                  "id": "call_7zBnWq4Tv",
+                  "input": {
+                    "city": "Aarhus"
+                  },
+                  "name": "get_weather",
+                  "type": "tool_use"
+                }
+              ],
+              "role": "assistant"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "tool call was interrupted; no result available",
+                      "type": "text"
+                    }
+                  ],
+                  "is_error": true,
+                  "tool_use_id": "call_7zBnWq4Tv",
+                  "type": "tool_result"
+                }
+              ],
+              "role": "user"
+            },
+            {
+              "content": [
+                {
+                  "cache_control": {
+                    "type": "ephemeral"
+                  },
+                  "text": "Just summarise what you found for Copenhagen.",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-fable-5-1",
+          "stream": true,
+          "system": [
+            {
+              "cache_control": {
+                "type": "ephemeral"
+              },
+              "text": "Be brief.",
+              "type": "text"
+            }
+          ],
+          "tools": [
+            {
+              "cache_control": {
+                "type": "ephemeral"
+              },
+              "description": "Get the current weather for a city.",
+              "input_schema": {
+                "properties": {
+                  "city": {
+                    "description": "City name, e.g. Copenhagen",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "city"
+                ],
+                "type": "object"
+              },
+              "name": "get_weather"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Anthropic-Organization-Id": [
+            "REDACTED"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Limit": [
+            "4000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Remaining": [
+            "4000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Reset": [
+            "2026-09-28T14:03:40Z"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Limit": [
+            "800000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Remaining": [
+            "800000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Reset": [
+            "2026-09-28T14:03:40Z"
+          ],
+          "Anthropic-Ratelimit-Requests-Limit": [
+            "4000"
+          ],
+          "Anthropic-Ratelimit-Requests-Remaining": [
+            "3999"
+          ],
+          "Anthropic-Ratelimit-Requests-Reset": [
+            "2026-09-28T14:03:40Z"
+          ],
+          "Anthropic-Ratelimit-Tokens-Limit": [
+            "4800000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Remaining": [
+            "4800000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Reset": [
+            "2026-09-28T14:03:40Z"
+          ],
+          "Anthropic-Workspace-Id": [
+            "REDACTED"
+          ],
+          "Cache-Control": [
+            "no-cache"
+          ],
+          "Cf-Cache-Status": [
+            "DYNAMIC"
+          ],
+          "Cf-Ray": [
+            "REDACTED"
+          ],
+          "Content-Security-Policy": [
+            "default-src 'none'; frame-ancestors 'none'"
+          ],
+          "Content-Type": [
+            "text/event-stream; charset=utf-8"
+          ],
+          "Date": [
+            "Mon, 28 Sep 2026 14:03:45 GMT"
+          ],
+          "Request-Id": [
+            "REDACTED"
+          ],
+          "Server": [
+            "cloudflare"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "Traceresponse": [
+            "00-a37b30ce7f481b978438c526afcb4462-eb69ff51ec2d2951-01"
+          ],
+          "Vary": [
+            "Accept-Encoding"
+          ],
+          "X-Robots-Tag": [
+            "none"
+          ]
+        },
+        "chunks": [
+          "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"model\":\"claude-fable-5-1\",\"id\":\"msg_011CfVxnpVPrR6LhfNCVw3m3\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"container\":null,\"stop_reason\":null,\"stop_sequence\":null,\"stop_details\":null,\"usage\":{\"input_tokens\":4,\"cache_creation_input_tokens\":608,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":608,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":20,\"service_tier\":\"standard\",\"inference_geo\":\"global\"},\"diagnostics\":null}           }\n\nevent: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"text\",\"text\":\"\"}      }\n\nevent: ping\ndata: {\"type\": \"ping\"}\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"Copenhagen is\"}            }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" currently 18°C with light\"}               }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" rain.\"}        }\n\n",
+          "event: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":0}\n\n",
+          "event: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\",\"stop_sequence\":null,\"stop_details\":null,\"container\":null},\"usage\":{\"input_tokens\":4,\"cache_creation_input_tokens\":608,\"cache_read_input_tokens\":0,\"output_tokens\":20,\"output_tokens_details\":{\"thinking_tokens\":0}}}\n\nevent: message_stop\ndata: {\"type\":\"message_stop\"     }\n\n"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "header": {
+          "Anthropic-Version": [
+            "2023-06-01"
+          ],
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "max_tokens": 128,
+          "messages": [
+            {
+              "content": [
+                {
+                  "cache_control": {
+                    "type": "ephemeral"
+                  },
+                  "text": "héllo 日本語 👨‍👩‍👧‍👦 🇩🇰 🧑‍🚀",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-fable-5-1",
+          "stream": true,
+          "system": [
+            {
+              "cache_control": {
+                "type": "ephemeral"
+              },
+              "text": "Reply with exactly the text the user gives you, nothing else.",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Anthropic-Organization-Id": [
+            "REDACTED"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Limit": [
+            "4000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Remaining": [
+            "4000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Reset": [
+            "2026-09-28T14:03:28Z"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Limit": [
+            "800000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Remaining": [
+            "800000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Reset": [
+            "2026-09-28T14:03:28Z"
+          ],
+          "Anthropic-Ratelimit-Requests-Limit": [
+            "4000"
+          ],
+          "Anthropic-Ratelimit-Requests-Remaining": [
+            "3999"
+          ],
+          "Anthropic-Ratelimit-Requests-Reset": [
+            "2026-09-28T14:03:28Z"
+          ],
+          "Anthropic-Ratelimit-Tokens-Limit": [
+            "4800000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Remaining": [
+            "4800000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Reset": [
+            "2026-09-28T14:03:28Z"
+          ],
+          "Anthropic-Workspace-Id": [
+            "REDACTED"
+          ],
+          "Cache-Control": [
+            "no-cache"
+          ],
+          "Cf-Cache-Status": [
+            "DYNAMIC"
+          ],
+          "Cf-Ray": [
+            "REDACTED"
+          ],
+          "Content-Security-Policy": [
+            "default-src 'none'; frame-ancestors 'none'"
+          ],
+          "Content-Type": [
+            "text/event-stream; charset=utf-8"
+          ],
+          "Date": [
+            "Mon, 28 Sep 2026 14:03:30 GMT"
+          ],
+          "Request-Id": [
+            "REDACTED"
+          ],
+          "Server": [
+            "cloudflare"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "Traceresponse": [
+            "00-fdb8efa99c03e4fb0bb675c32e855f90-8299eabc722fcd8e-01"
+          ],
+          "Vary": [
+            "Accept-Encoding"
+          ],
+          "X-Robots-Tag": [
+            "none"
+          ]
+        },
+        "chunks": [
+          "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"model\":\"claude-fable-5-1\",\"id\":\"msg_011CfVxmwfiBc8u5NVnnyeh9\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"container\":null,\"stop_reason\":null,\"stop_sequence\":null,\"stop_details\":null,\"usage\":{\"input_tokens\":67,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":1,\"service_tier\":\"standard\",\"inference_geo\":\"global\"},\"diagnostics\":null}  }\n\nevent: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"text\",\"text\":\"\"}  }\n\nevent: ping\ndata: {\"type\": \"ping\"}\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"hé\"}    }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"llo 日本語 \"}        }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"👨‍👩‍\"}               }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"👧‍👦 \"}           }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"🇩🇰 🧑\"}              }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"‍🚀\"}         }\n\n",
+          "event: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":0    }\n\n",
+          "event: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\",\"stop_sequence\":null,\"stop_details\":null,\"container\":null},\"usage\":{\"input_tokens\":67,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":40,\"output_tokens_details\":{\"thinking_tokens\":0}} }\n\nevent: message_stop\ndata: {\"type\":\"message_stop\"     }\n\n"
+        ]
+      }
+    }
+  ]
+}
