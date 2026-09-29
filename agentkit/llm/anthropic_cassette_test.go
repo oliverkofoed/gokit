@@ -109,7 +109,7 @@ func TestCassetteAnthropicFable(t *testing.T) {
 // replays next to a tool call and its result. The prompt is a puzzle so the
 // model reasons before calling the tool; the suite's prompts are too easy
 // for Fable to think about at all. It runs for each model that always
-// thinks: Fable 5.1 and Opus 5.5.
+// thinks: Fable 5.1, Opus 5.5 and Sonnet 5.5.
 //
 //	ANTHROPIC_API_KEY=sk-... RECORD=1 go test ./llm/ -run TestCassetteAnthropicAlwaysThinkingToolRoundtrip -count=1
 func TestCassetteAnthropicAlwaysThinkingToolRoundtrip(t *testing.T) {
@@ -119,6 +119,7 @@ func TestCassetteAnthropicAlwaysThinkingToolRoundtrip(t *testing.T) {
 	}{
 		{"anthropic_fable", ClaudeFable51},
 		{"anthropic_opus55", ClaudeOpus55},
+		{"anthropic_sonnet55", ClaudeSonnet55},
 	} {
 		t.Run(tc.model.ID, func(t *testing.T) {
 			anthThinkingToolRoundtrip(t, anthAdaptiveProvider(tc.name, tc.model))

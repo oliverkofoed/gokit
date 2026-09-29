@@ -1,0 +1,377 @@
+{
+  "version": 1,
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "header": {
+          "Anthropic-Version": [
+            "2023-06-01"
+          ],
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "max_tokens": 8192,
+          "messages": [
+            {
+              "content": [
+                {
+                  "cache_control": {
+                    "type": "ephemeral"
+                  },
+                  "text": "Anna, Ben, Cleo, Dan and Eva each live in a different one of Oslo, Lisbon, Vienna, Dublin and Prague. Anna does not live in Oslo, Lisbon, Dublin or Prague. Dan lives in Prague or Vienna. Ben's city has the fewest letters of the five. Cleo's and Eva's cities both end in the letter n, and Eva's does not start with D. Work out where Cleo lives, then get the current weather there.",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-sonnet-5-5",
+          "output_config": {
+            "effort": "high"
+          },
+          "stream": true,
+          "system": [
+            {
+              "cache_control": {
+                "type": "ephemeral"
+              },
+              "text": "Use the tools you are given. Do not ask follow-up questions.",
+              "type": "text"
+            }
+          ],
+          "thinking": {
+            "type": "adaptive"
+          },
+          "tools": [
+            {
+              "cache_control": {
+                "type": "ephemeral"
+              },
+              "description": "Get the current weather for a city.",
+              "input_schema": {
+                "properties": {
+                  "city": {
+                    "description": "City name, e.g. Copenhagen",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "city"
+                ],
+                "type": "object"
+              },
+              "name": "get_weather"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Anthropic-Organization-Id": [
+            "REDACTED"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Limit": [
+            "10000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Remaining": [
+            "10000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Reset": [
+            "2026-09-29T08:32:31Z"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Limit": [
+            "2000000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Remaining": [
+            "2000000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Reset": [
+            "2026-09-29T08:32:31Z"
+          ],
+          "Anthropic-Ratelimit-Requests-Limit": [
+            "10000"
+          ],
+          "Anthropic-Ratelimit-Requests-Remaining": [
+            "9999"
+          ],
+          "Anthropic-Ratelimit-Requests-Reset": [
+            "2026-09-29T08:32:31Z"
+          ],
+          "Anthropic-Ratelimit-Tokens-Limit": [
+            "12000000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Remaining": [
+            "12000000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Reset": [
+            "2026-09-29T08:32:31Z"
+          ],
+          "Anthropic-Workspace-Id": [
+            "REDACTED"
+          ],
+          "Cache-Control": [
+            "no-cache"
+          ],
+          "Cf-Cache-Status": [
+            "DYNAMIC"
+          ],
+          "Cf-Ray": [
+            "REDACTED"
+          ],
+          "Content-Security-Policy": [
+            "default-src 'none'; frame-ancestors 'none'"
+          ],
+          "Content-Type": [
+            "text/event-stream; charset=utf-8"
+          ],
+          "Date": [
+            "Tue, 29 Sep 2026 08:32:32 GMT"
+          ],
+          "Request-Id": [
+            "REDACTED"
+          ],
+          "Server": [
+            "cloudflare"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "Traceresponse": [
+            "00-d5f65b1df3e0edf036205ba8816147d4-b9f7e9c897532629-01"
+          ],
+          "Vary": [
+            "Accept-Encoding"
+          ],
+          "X-Robots-Tag": [
+            "none"
+          ]
+        },
+        "chunks": [
+          "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"model\":\"claude-sonnet-5-5\",\"id\":\"msg_011CfXRM7Zj2fjYYDY6QHPbt\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"container\":null,\"stop_reason\":null,\"stop_sequence\":null,\"stop_details\":null,\"usage\":{\"input_tokens\":4,\"cache_creation_input_tokens\":562,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":562,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":3,\"service_tier\":\"standard\",\"inference_geo\":\"global\"},\"diagnostics\":null}     }\n\nevent: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"thinking\",\"thinking\":\"\",\"signature\":\"\"}     }\n\n",
+          "event: ping\ndata: {\"type\": \"ping\"}\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"\"} }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"signature_delta\",\"signature\":\"CAQS/AUKEAgSGAI4AUIIdGhpbmtpbmcSDBDIcG5HuV6p12AHehoMnbnLzITkPbCEFoIsIjDyBkmivemVU7WqKzr4cK49iyqOtbRPAX+x60hierEMEwN9PJSZxBGaz1fWy491KtQqmQWWK4zIZzVytE55B6VN9YJpDkx9859XUFWY68dBJoyWlubxlakN0gDBart7SlOdfcipx/pzh2Tb2OpLKpfvs2Lq9oMRUdMlUhJCL+KnbJUHsNDBOZC6k0AyMcxaQg8mCu4dh8kGkEZGwaYUDjlWW5rzDHLB3mNK22tm//wvD9H7Tecuf3Zd30GwSBjTgBJCXMOv2NE2s9X/M0s2wgVxXfsxODV5A8BVxjCjYWOBUltfupuZEpvL2IqF4scF+bbcxZOuvgeBPI8xEjcCUuVBvmPmtn6xAFOdVQDHCzM2kVa7yj5T9HMW7MbaVw21KLu62opm+WCsa7bs6yimhfPRormCO9eQGOPILaMDXeMbBuIQqyBHY4Xac1c6F9CYGB+uU2N8HX0RJsvUC+Xr8MpKuyhcf8vT9UYK4w4ulbUy2jl2UJyvFlkMWF7KqOkr13qXfGpzkmlF6ANWVf245to6TAFs2rbpZJjsZ5hgVYhNg4k0JPwXTPiDwcpB2db7aTEl8qmjvylLQvnbAbrPSeLHjpMs0zPeVFuyKQEgxt3Iow+ekZ51r0x5RMsjFkoJmbAWglj1B8XA53kf2yWpqOqWak4Jb8vG20ZH1JrLa0vKAjdG372X+PidFw0GDGOoCN4yYaqGL9O10TeeKG/PCWTb2GESNZCVgln7xgHDHTGsFjBZEwMwb7sMzAhuct75DckGOv7ti+sm7/HKbL4AWumgtzjk50vZRn7yF4tDkqLIaVZulqX6rVkIYeg4sV+v2juc8azmYAxu/cWeTNZgK9sbIce9NzL/ZQXXDiYK7LjKmtxfRnLvcYkMomnt7P/3j0nOF8JRbvjzVtxSvNMTG1nRuYR29zQWTPCAUI9PoTSgRuHIrJmwrsFA/HSbThgB\"}        }\n\nevent: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":0        }\n\nevent: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":1,\"content_block\":{\"type\":\"text\",\"text\":\"\"}          }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"Cleo lives in D\"}}\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"ublin.\"}           }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" Here is\"}            }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" how the\"}   }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" cl\"}          }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"ues l\"}              }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"ead there\"}      }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\":\\n\\n- Anna can\"}           }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"'t live in Oslo,\"}     }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" Lisbon, D\"}        }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"ublin or Prague, so\"}    }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" she lives in Vienna\"}             }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\".\\n- Dan l\"}            }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"ives in Prague or V\"}    }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"ienna.\"}            }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" Vienna is\"}          }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" Anna's, so Dan\"}          }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" lives in Prague.\"}            }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"\\n- Ben's city has the\"}             }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" fewest letters, which\"}    }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" is Oslo (4 \"}               }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"letters).\\n- L\"}        }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"isbon and Dublin\"}               }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" are left for Cleo and\"}    }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" Eva, and both end in\"}   }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" \\\"\"}               }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"n\\\". Eva's\"}}\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" city doesn't start with D\"}        }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\", so Eva lives in\"}             }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" Lisbon and C\"}              }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"leo lives in Dubl\"}               }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"in.\\n\\nNow I'll\"}           }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" get the weather for Dubl\"}  }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"in.\"}             }\n\n",
+          "event: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":1     }\n\nevent: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":2,\"content_block\":{\"type\":\"tool_use\",\"id\":\"toolu_01W3LWsbHTjUY35iVFPWYWtv\",\"name\":\"get_weather\",\"input\":{},\"caller\":{\"type\":\"direct\"}}            }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":2,\"delta\":{\"type\":\"input_json_delta\",\"partial_json\":\"\"}       }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":2,\"delta\":{\"type\":\"input_json_delta\",\"partial_json\":\"{\\\"city\\\"\"}     }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":2,\"delta\":{\"type\":\"input_json_delta\",\"partial_json\":\": \\\"Dubl\"}            }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":2,\"delta\":{\"type\":\"input_json_delta\",\"partial_json\":\"in\\\"}\"}               }\n\nevent: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":2          }\n\n",
+          "event: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"tool_use\",\"stop_sequence\":null,\"stop_details\":null,\"container\":null},\"usage\":{\"input_tokens\":4,\"cache_creation_input_tokens\":562,\"cache_read_input_tokens\":0,\"output_tokens\":388,\"output_tokens_details\":{\"thinking_tokens\":124}}            }\n\nevent: message_stop\ndata: {\"type\":\"message_stop\" }\n\n"
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "header": {
+          "Anthropic-Version": [
+            "2023-06-01"
+          ],
+          "Content-Type": [
+            "application/json"
+          ],
+          "X-Api-Key": [
+            "REDACTED"
+          ]
+        },
+        "body_json": {
+          "max_tokens": 8192,
+          "messages": [
+            {
+              "content": [
+                {
+                  "text": "Anna, Ben, Cleo, Dan and Eva each live in a different one of Oslo, Lisbon, Vienna, Dublin and Prague. Anna does not live in Oslo, Lisbon, Dublin or Prague. Dan lives in Prague or Vienna. Ben's city has the fewest letters of the five. Cleo's and Eva's cities both end in the letter n, and Eva's does not start with D. Work out where Cleo lives, then get the current weather there.",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            },
+            {
+              "content": [
+                {
+                  "signature": "CAQS/AUKEAgSGAI4AUIIdGhpbmtpbmcSDBDIcG5HuV6p12AHehoMnbnLzITkPbCEFoIsIjDyBkmivemVU7WqKzr4cK49iyqOtbRPAX+x60hierEMEwN9PJSZxBGaz1fWy491KtQqmQWWK4zIZzVytE55B6VN9YJpDkx9859XUFWY68dBJoyWlubxlakN0gDBart7SlOdfcipx/pzh2Tb2OpLKpfvs2Lq9oMRUdMlUhJCL+KnbJUHsNDBOZC6k0AyMcxaQg8mCu4dh8kGkEZGwaYUDjlWW5rzDHLB3mNK22tm//wvD9H7Tecuf3Zd30GwSBjTgBJCXMOv2NE2s9X/M0s2wgVxXfsxODV5A8BVxjCjYWOBUltfupuZEpvL2IqF4scF+bbcxZOuvgeBPI8xEjcCUuVBvmPmtn6xAFOdVQDHCzM2kVa7yj5T9HMW7MbaVw21KLu62opm+WCsa7bs6yimhfPRormCO9eQGOPILaMDXeMbBuIQqyBHY4Xac1c6F9CYGB+uU2N8HX0RJsvUC+Xr8MpKuyhcf8vT9UYK4w4ulbUy2jl2UJyvFlkMWF7KqOkr13qXfGpzkmlF6ANWVf245to6TAFs2rbpZJjsZ5hgVYhNg4k0JPwXTPiDwcpB2db7aTEl8qmjvylLQvnbAbrPSeLHjpMs0zPeVFuyKQEgxt3Iow+ekZ51r0x5RMsjFkoJmbAWglj1B8XA53kf2yWpqOqWak4Jb8vG20ZH1JrLa0vKAjdG372X+PidFw0GDGOoCN4yYaqGL9O10TeeKG/PCWTb2GESNZCVgln7xgHDHTGsFjBZEwMwb7sMzAhuct75DckGOv7ti+sm7/HKbL4AWumgtzjk50vZRn7yF4tDkqLIaVZulqX6rVkIYeg4sV+v2juc8azmYAxu/cWeTNZgK9sbIce9NzL/ZQXXDiYK7LjKmtxfRnLvcYkMomnt7P/3j0nOF8JRbvjzVtxSvNMTG1nRuYR29zQWTPCAUI9PoTSgRuHIrJmwrsFA/HSbThgB",
+                  "thinking": "",
+                  "type": "thinking"
+                },
+                {
+                  "text": "Cleo lives in Dublin. Here is how the clues lead there:\n\n- Anna can't live in Oslo, Lisbon, Dublin or Prague, so she lives in Vienna.\n- Dan lives in Prague or Vienna. Vienna is Anna's, so Dan lives in Prague.\n- Ben's city has the fewest letters, which is Oslo (4 letters).\n- Lisbon and Dublin are left for Cleo and Eva, and both end in \"n\". Eva's city doesn't start with D, so Eva lives in Lisbon and Cleo lives in Dublin.\n\nNow I'll get the weather for Dublin.",
+                  "type": "text"
+                },
+                {
+                  "id": "toolu_01W3LWsbHTjUY35iVFPWYWtv",
+                  "input": {
+                    "city": "Dublin"
+                  },
+                  "name": "get_weather",
+                  "type": "tool_use"
+                }
+              ],
+              "role": "assistant"
+            },
+            {
+              "content": [
+                {
+                  "cache_control": {
+                    "type": "ephemeral"
+                  },
+                  "content": [
+                    {
+                      "text": "{\"temp_c\":18,\"conditions\":\"light rain\"}",
+                      "type": "text"
+                    }
+                  ],
+                  "tool_use_id": "toolu_01W3LWsbHTjUY35iVFPWYWtv",
+                  "type": "tool_result"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-sonnet-5-5",
+          "output_config": {
+            "effort": "high"
+          },
+          "stream": true,
+          "system": [
+            {
+              "cache_control": {
+                "type": "ephemeral"
+              },
+              "text": "Use the tools you are given. Do not ask follow-up questions.",
+              "type": "text"
+            }
+          ],
+          "thinking": {
+            "type": "adaptive"
+          },
+          "tools": [
+            {
+              "cache_control": {
+                "type": "ephemeral"
+              },
+              "description": "Get the current weather for a city.",
+              "input_schema": {
+                "properties": {
+                  "city": {
+                    "description": "City name, e.g. Copenhagen",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "city"
+                ],
+                "type": "object"
+              },
+              "name": "get_weather"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "header": {
+          "Anthropic-Organization-Id": [
+            "REDACTED"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Limit": [
+            "10000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Remaining": [
+            "10000000"
+          ],
+          "Anthropic-Ratelimit-Input-Tokens-Reset": [
+            "2026-09-29T08:32:34Z"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Limit": [
+            "2000000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Remaining": [
+            "2000000"
+          ],
+          "Anthropic-Ratelimit-Output-Tokens-Reset": [
+            "2026-09-29T08:32:34Z"
+          ],
+          "Anthropic-Ratelimit-Requests-Limit": [
+            "10000"
+          ],
+          "Anthropic-Ratelimit-Requests-Remaining": [
+            "9999"
+          ],
+          "Anthropic-Ratelimit-Requests-Reset": [
+            "2026-09-29T08:32:34Z"
+          ],
+          "Anthropic-Ratelimit-Tokens-Limit": [
+            "12000000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Remaining": [
+            "12000000"
+          ],
+          "Anthropic-Ratelimit-Tokens-Reset": [
+            "2026-09-29T08:32:34Z"
+          ],
+          "Anthropic-Workspace-Id": [
+            "REDACTED"
+          ],
+          "Cache-Control": [
+            "no-cache"
+          ],
+          "Cf-Cache-Status": [
+            "DYNAMIC"
+          ],
+          "Cf-Ray": [
+            "REDACTED"
+          ],
+          "Content-Security-Policy": [
+            "default-src 'none'; frame-ancestors 'none'"
+          ],
+          "Content-Type": [
+            "text/event-stream; charset=utf-8"
+          ],
+          "Date": [
+            "Tue, 29 Sep 2026 08:32:38 GMT"
+          ],
+          "Request-Id": [
+            "REDACTED"
+          ],
+          "Server": [
+            "cloudflare"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "Traceresponse": [
+            "00-670ca6a4a40b731a4e838ecaad9353e9-501f318d8149e78a-01"
+          ],
+          "Vary": [
+            "Accept-Encoding"
+          ],
+          "X-Robots-Tag": [
+            "none"
+          ]
+        },
+        "chunks": [
+          "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"model\":\"claude-sonnet-5-5\",\"id\":\"msg_011CfXRMM5LRgHxyA7ybuT8u\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"container\":null,\"stop_reason\":null,\"stop_sequence\":null,\"stop_details\":null,\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":415,\"cache_read_input_tokens\":562,\"cache_creation\":{\"ephemeral_5m_input_tokens\":415,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":29,\"service_tier\":\"standard\",\"inference_geo\":\"global\"},\"diagnostics\":null}             }\n\nevent: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"text\",\"text\":\"\"}               }\n\nevent: ping\ndata: {\"type\": \"ping\"}\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"Cleo lives in D\"}            }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"ublin, where\"}    }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" it\"} }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"'s currently 18 \"} }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"°C with light rain.\"}  }\n\n",
+          "event: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":0  }\n\n",
+          "event: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\",\"stop_sequence\":null,\"stop_details\":null,\"container\":null},\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":415,\"cache_read_input_tokens\":562,\"output_tokens\":29,\"output_tokens_details\":{\"thinking_tokens\":0}}       }\n\nevent: message_stop\ndata: {\"type\":\"message_stop\"              }\n\n"
+        ]
+      }
+    }
+  ]
+}

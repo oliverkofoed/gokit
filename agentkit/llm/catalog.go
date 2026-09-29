@@ -28,6 +28,18 @@ var ClaudeOpus5 = Model{
 	Quirks: Quirks{AnthropicAdaptiveThinking: true, AnthropicNoSampling: true},
 }
 
+// ClaudeSonnet55 always thinks: it rejects thinking type "disabled", so with
+// no Request.Reasoning it runs at the API's default effort.
+var ClaudeSonnet55 = Model{
+	ID: "claude-sonnet-5-5", Name: "Claude Sonnet 5.5",
+	API: AnthropicMessages, Provider: "anthropic",
+	BaseURL:       "https://api.anthropic.com",
+	Cost:          Cost{Input: 2, Output: 10, CacheRead: 0.20, CacheWrite: 2.50},
+	ContextWindow: 1_000_000, MaxOutput: 128_000,
+	Reasoning: true, Vision: true, Documents: true,
+	Quirks: Quirks{AnthropicAdaptiveThinking: true, AnthropicNoSampling: true},
+}
+
 var ClaudeSonnet5 = Model{
 	ID: "claude-sonnet-5", Name: "Claude Sonnet 5",
 	API: AnthropicMessages, Provider: "anthropic",
@@ -185,7 +197,7 @@ var Gemini37Flash = Model{
 // caller may modify. OpenRouter models are built per id and not included.
 func Catalog() []Model {
 	return []Model{
-		ClaudeFable51, ClaudeOpus55, ClaudeOpus5, ClaudeSonnet5, ClaudeOpus46, ClaudeSonnet45, ClaudeHaiku45,
+		ClaudeFable51, ClaudeOpus55, ClaudeOpus5, ClaudeSonnet55, ClaudeSonnet5, ClaudeOpus46, ClaudeSonnet45, ClaudeHaiku45,
 		GPT6Astra, GPT6Sol, GPT6Luna, GPT5, GPT5Mini,
 		Gemini25Pro, Gemini25Flash, Gemini38Flash, Gemini37Flash, Gemini35FlashLite,
 	}
