@@ -89,6 +89,19 @@ var ClaudeHaiku45 = Model{
 	Reasoning: true, Vision: true, Documents: true,
 }
 
+// ClaudeHaiku55 thinks by default; with no Request.Reasoning it runs at the
+// API's default effort, which is medium on this model. Prices are for prompts
+// up to 100K tokens; longer prompts bill at 5x, which Cost does not model.
+var ClaudeHaiku55 = Model{
+	ID: "claude-haiku-5-5", Name: "Claude Haiku 5.5",
+	API: AnthropicMessages, Provider: "anthropic",
+	BaseURL:       "https://api.anthropic.com",
+	Cost:          Cost{Input: 0.10, Output: 0.50, CacheRead: 0.01, CacheWrite: 0.125},
+	ContextWindow: 1_000_000, MaxOutput: 128_000,
+	Reasoning: true, Vision: true, Documents: true,
+	Quirks: Quirks{AnthropicAdaptiveThinking: true, AnthropicNoSampling: true},
+}
+
 // GPT-6 prices are the standard tier for prompts up to 272K input tokens;
 // longer prompts bill at a higher rate that Cost does not model. All three
 // reason by default. Sol and Luna accept reasoning_effort "none", which
@@ -197,7 +210,7 @@ var Gemini37Flash = Model{
 // caller may modify. OpenRouter models are built per id and not included.
 func Catalog() []Model {
 	return []Model{
-		ClaudeFable51, ClaudeOpus55, ClaudeOpus5, ClaudeSonnet55, ClaudeSonnet5, ClaudeOpus46, ClaudeSonnet45, ClaudeHaiku45,
+		ClaudeFable51, ClaudeOpus55, ClaudeOpus5, ClaudeSonnet55, ClaudeSonnet5, ClaudeOpus46, ClaudeSonnet45, ClaudeHaiku55, ClaudeHaiku45,
 		GPT6Astra, GPT6Sol, GPT6Luna, GPT5, GPT5Mini,
 		Gemini25Pro, Gemini25Flash, Gemini38Flash, Gemini37Flash, Gemini35FlashLite,
 	}

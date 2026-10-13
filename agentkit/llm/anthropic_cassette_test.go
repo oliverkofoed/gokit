@@ -108,8 +108,8 @@ func TestCassetteAnthropicFable(t *testing.T) {
 // thinking block with empty text (the default display on this generation)
 // replays next to a tool call and its result. The prompt is a puzzle so the
 // model reasons before calling the tool; the suite's prompts are too easy
-// for Fable to think about at all. It runs for each model that always
-// thinks: Fable 5.1, Opus 5.5 and Sonnet 5.5.
+// for Fable to think about at all. It runs for each model that thinks by
+// default: Fable 5.1, Opus 5.5, Sonnet 5.5 and Haiku 5.5.
 //
 //	ANTHROPIC_API_KEY=sk-... RECORD=1 go test ./llm/ -run TestCassetteAnthropicAlwaysThinkingToolRoundtrip -count=1
 func TestCassetteAnthropicAlwaysThinkingToolRoundtrip(t *testing.T) {
@@ -120,6 +120,7 @@ func TestCassetteAnthropicAlwaysThinkingToolRoundtrip(t *testing.T) {
 		{"anthropic_fable", ClaudeFable51},
 		{"anthropic_opus55", ClaudeOpus55},
 		{"anthropic_sonnet55", ClaudeSonnet55},
+		{"anthropic_haiku55", ClaudeHaiku55},
 	} {
 		t.Run(tc.model.ID, func(t *testing.T) {
 			anthThinkingToolRoundtrip(t, anthAdaptiveProvider(tc.name, tc.model))
